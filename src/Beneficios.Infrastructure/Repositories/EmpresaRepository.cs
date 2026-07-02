@@ -1,0 +1,102 @@
+﻿using Beneficios.Domain.Interfaces;
+using Beneficios.Domain.Models;
+using Dapper;
+using System.Data;
+
+namespace Beneficios.Infrastructure.Repositories;
+
+public class EmpresaRepository : IEmpresaRepository
+{
+    private readonly IDbConnection _dbConnection;
+
+    public EmpresaRepository(IDbConnection dbConnection)
+    {
+        _dbConnection = dbConnection;
+    }
+
+    public async Task<Guid> CreateAsync(EmpresaCreateParams empresa)
+    {
+        var sql = @"
+            INSERT INTO empresas (id, razao_social, dominio, nome_banco, usuario_banco, senha_banco, data_inclusao)
+            VALUES (@Id, @RazaoSocial, @Dominio, @NomeBanco, @UsuarioBanco, @SenhaBanco, @DataInclusao)";
+
+        await _dbConnection.ExecuteAsync(sql, new
+        {
+            empresa.Id,
+            empresa.RazaoSocial,
+            empresa.Dominio,
+            empresa.NomeBanco,
+            empresa.UsuarioBanco,
+            empresa.SenhaBanco,
+            DataInclusao = DateTime.UtcNow
+        });
+
+        return empresa.Id;
+    }
+
+    public async Task<bool> UpdateAsync(EmpresaUpdateParams empresa)
+    {
+        var sql = @"
+            UPDATE empresas
+            SET razao_social = @RazaoSocial,
+                dominio = @Dominio,
+                nome_banco = @NomeBanco,
+                usuario_banco = @UsuarioBanco,
+                senha_banco = @SenhaBanco,
+                data_alteracao = @DataAlteracao,
+                usuario_alteracao_id = @UsuarioAlteracaoId
+            WHERE id = @Id";
+
+        var rowsAffected = await _dbConnection.ExecuteAsync(sql, new
+        {
+            empresa.Id,
+            empresa.RazaoSocial,
+            empresa.Dominio,
+            empresa.NomeBanco,
+            empresa.UsuarioBanco,
+            empresa.SenhaBanco,
+            DataAlteracao = DateTime.UtcNow,
+            empresa.UsuarioAlteracaoId
+        });
+
+        return rowsAffected > 0;
+    }
+
+    public async Task<bool> DeleteAsync(Guid id)
+    {
+        var sql = "DELETE FROM empresas WHERE id = @Id";
+        var rowsAffected = await _dbConnection.ExecuteAsync(sql, new { Id = id });
+        return rowsAffected > 0;
+    }
+
+    public async Task<EmpresaQueryResult?> GetByIdAsync(Guid id)
+    {
+        var sql = @"
+            SELECT 
+                id AS Id,
+                razao_social AS RazaoSocial,
+                dominio AS Dominio,
+                data_inclusao AS DataInclusao,
+                data_alteracao AS DataAlteracao
+            FROM empresas
+            WHERE id = @Id";
+
+        return await _dbConnection.QueryFirstOrDefaultAsync<EmpresaQueryResult>(sql, new { Id = id });
+    }
+
+    public async Task<EmpresaQueryResult[]> GetAllAsync()
+    {
+        var sql = @"
+            SELECT 
+                id AS Id,
+                razao_social AS RazaoSocial,
+                dominio AS Dominio,
+                data_inclusao AS DataInclusao,
+                data_alteracao AS DataAlteracao
+            FROM empresas
+            ORDER BY razao_social";
+
+        var result = await _dbConnection.QueryAsync<EmpresaQueryResult>(sql);
+        return result.ToArray();
+    }
+}

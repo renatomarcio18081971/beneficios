@@ -1,0 +1,147 @@
+﻿using Beneficios.Application.DTOs;
+using Beneficios.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+
+namespace Beneficios.Api.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+public class UsuariosController : ControllerBase
+{
+    private readonly IUsuarioService _usuarioService;
+    private readonly ILogger<UsuariosController> _logger;
+
+    public UsuariosController(IUsuarioService usuarioService, ILogger<UsuariosController> logger)
+    {
+        _usuarioService = usuarioService;
+        _logger = logger;
+    }
+
+    [HttpPost]
+    [Authorize]
+    public async Task<IActionResult> Create([FromBody] UsuarioCreateDto dto)
+    {
+        try
+        {
+            _logger.LogInformation("Criando novo usuário: {Email}", dto.Email);
+            var id = await _usuarioService.CreateAsync(dto);
+            return CreatedAtAction(nameof(GetById), new { id }, new { id });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erro ao criar usuário: {Email}", dto.Email);
+            return StatusCode(500, new { message = "Erro ao criar usuário" });
+        }
+    }
+
+    [HttpPut("{id}")]
+    [Authorize]
+    public async Task<IActionResult> Update(Guid id, [FromBody] UsuarioUpdateDto dto)
+    {
+        try
+        {
+            var usuarioAlteracaoId = GetUsuarioIdFromToken();
+            _logger.LogInformation("Atualizando usuário: {Id}", id);
+
+            var success = await _usuarioService.UpdateAsync(id, dto, usuarioAlteracaoId);
+            if (!success)
+                return NotFound(new { message = "Usuário não encontrado" });
+
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erro ao atualizar usuário: {Id}", id);
+            return StatusCode(500, new { message = "Erro ao atualizar usuário" });
+        }
+    }
+
+    [HttpGet("{id}")]
+    [Authorize]
+    public async Task<IActionResult> GetById(Guid id)
+    {
+        try
+        {
+            var usuario = await _usuarioService.GetByIdAsync(id);
+            if (usuario == null)
+                return NotFound(new { message = "Usuário não encontrado" });
+
+            return Ok(usuario);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erro ao buscar usuário: {Id}", id);
+            return StatusCode(500, new { message = "Erro ao buscar usuário" });
+        }
+    }
+
+    [HttpGet]
+    [Authorize]
+    public async Task<IActionResult> GetAll()
+    {
+        try
+        {
+            var usuarios = await _usuarioService.GetAllAsync();
+            return Ok(usuarios);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erro ao buscar usuários");
+            return StatusCode(500, new { message = "Erro ao buscar usuários" });
+        }
+    }
+
+    [HttpDelete("{id}")]
+    [Authorize]
+    public async Task<IActionResult> Delete(Guid id)
+    {
+        try
+        {
+            _logger.LogInformation("Deletando usuário: {Id}", id);
+            var success = await _usuarioService.DeleteAsync(id);
+            if (!success)
+                return NotFound(new { message = "Usuário não encontrado" });
+
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erro ao deletar usuário: {Id}", id);
+            return StatusCode(500, new { message = "Erro ao deletar usuário" });
+        }
+    }
+
+    [HttpPost("login")]
+    [AllowAnonymous]
+    public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
+    {
+        try
+        {
+            _logger.LogInformation("Tentativa de login: {Email}", loginDto.Email);
+            var response = await _usuarioService.LoginAsync(loginDto);
+
+            if (response == null)
+                return Unauthorized(new { message = "Email ou senha inválidos" });
+
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erro ao fazer login: {Email}", loginDto.Email);
+            return StatusCode(500, new { message = "Erro ao fazer login" });
+        }
+    }
+
+    private Guid? GetUsuarioIdFromToken()
+    {
+        var userIdClaim = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value
+            ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (Guid.TryParse(userIdClaim, out var userId))
+            return userId;
+
+        return null;
+    }
+}

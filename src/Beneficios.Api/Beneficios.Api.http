@@ -1,0 +1,6 @@
+﻿@Beneficios.Api_HostAddress = http://localhost:5160
+
+GET {{Beneficios.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
