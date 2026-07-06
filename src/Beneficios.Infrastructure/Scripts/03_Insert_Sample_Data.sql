@@ -11,9 +11,9 @@ WITH nova_empresa AS (
     RETURNING id, dominio
 )
 -- Inserir usuários vinculados às empresas criadas
-INSERT INTO usuarios (id, nome, senha, email, empresa_id, data_inclusao)
+INSERT INTO usuarios (id, nome, senha, email, perfil, empresa_id, data_inclusao)
 VALUES
     (gen_random_uuid(), 'Administrador', 'YWRtaW4xMjM=', 
-     'admin@exemplo.com', (SELECT id FROM nova_empresa WHERE dominio = 'exemplo'), NOW()),
+     'admin@exemplo.com', 'Admin', (SELECT id FROM nova_empresa WHERE dominio = 'exemplo'), NOW()),
     (gen_random_uuid(), 'Usuário Teste', 'dGVzdGUxMjM=', 
-     'teste@exemplo.com', (SELECT id FROM nova_empresa WHERE dominio = 'exemplo'), NOW());
+     'teste@exemplo.com', 'Empresa', (SELECT id FROM nova_empresa WHERE dominio = 'exemplo'), NOW());
