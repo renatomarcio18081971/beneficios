@@ -43,4 +43,49 @@ public class EmpresaTests
 
         Assert.True(empresa.DataInclusao <= DateTime.UtcNow);
     }
+
+    [Fact]
+    public void Empresa_DevePermitirCredenciaisDeBanco()
+    {
+        var empresa = new Empresa
+        {
+            NomeBanco = "beneficios_db",
+            UsuarioBanco = "postgres",
+            SenhaBanco = "secret"
+        };
+
+        Assert.Equal("beneficios_db", empresa.NomeBanco);
+        Assert.Equal("postgres", empresa.UsuarioBanco);
+        Assert.Equal("secret", empresa.SenhaBanco);
+    }
+
+    [Fact]
+    public void Empresa_DevePermitirPropriedadesDeAuditoria()
+    {
+        var usuarioAlteracaoId = Guid.NewGuid();
+        var dataAlteracao = DateTime.UtcNow;
+
+        var empresa = new Empresa
+        {
+            DataAlteracao = dataAlteracao,
+            UsuarioAlteracaoId = usuarioAlteracaoId
+        };
+
+        Assert.Equal(dataAlteracao, empresa.DataAlteracao);
+        Assert.Equal(usuarioAlteracaoId, empresa.UsuarioAlteracaoId);
+    }
+
+    [Fact]
+    public void Empresa_PropriedadesPadraoDevemSerInicializadas()
+    {
+        var empresa = new Empresa();
+
+        Assert.Equal(string.Empty, empresa.RazaoSocial);
+        Assert.Equal(string.Empty, empresa.Dominio);
+        Assert.Equal(string.Empty, empresa.NomeBanco);
+        Assert.Equal(string.Empty, empresa.UsuarioBanco);
+        Assert.Equal(string.Empty, empresa.SenhaBanco);
+        Assert.Null(empresa.DataAlteracao);
+        Assert.Null(empresa.UsuarioAlteracaoId);
+    }
 }

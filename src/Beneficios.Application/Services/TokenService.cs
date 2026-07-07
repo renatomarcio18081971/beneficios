@@ -1,4 +1,5 @@
 ﻿using Beneficios.Application.Interfaces;
+using Beneficios.Domain.Enums;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -19,7 +20,7 @@ public class TokenService : ITokenService
         _audience = audience;
     }
 
-    public string GenerateToken(Guid usuarioId, string email)
+    public string GenerateToken(Guid usuarioId, string email, UsuarioPerfil perfil, Guid? empresaId)
     {
         var tokenHandler = new JwtSecurityTokenHandler
         {
@@ -27,13 +28,19 @@ public class TokenService : ITokenService
         };
         var key = Encoding.UTF8.GetBytes(_secretKey);
 
+        var claims = new List<Claim>
+        {
+            new(JwtRegisteredClaimNames.Sub, usuarioId.ToString()),
+            new(JwtRegisteredClaimNames.Email, email),
+            new("perfil", perfil.ToString())
+        };
+
+        if (empresaId.HasValue)
+            claims.Add(new Claim("empresa_id", empresaId.Value.ToString()));
+
         var tokenDescriptor = new SecurityTokenDescriptor
         {
-            Subject = new ClaimsIdentity(new[]
-            {
-                new Claim(JwtRegisteredClaimNames.Sub, usuarioId.ToString()),
-                new Claim(JwtRegisteredClaimNames.Email, email)
-            }),
+            Subject = new ClaimsIdentity(claims),
             Expires = DateTime.UtcNow.AddHours(8),
             Issuer = _issuer,
             Audience = _audience,

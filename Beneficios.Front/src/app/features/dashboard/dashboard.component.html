@@ -1,0 +1,37 @@
+<div class="dashboard-page">
+  <h1>Dashboard</h1>
+
+  <div class="dashboard-grid">
+    <mat-card class="dashboard-card">
+      <mat-card-header>
+        <mat-card-title>Vale Transporte</mat-card-title>
+        <mat-card-subtitle>Gasto nos últimos 6 meses</mat-card-subtitle>
+      </mat-card-header>
+
+      <mat-card-content>
+        <p class="dashboard-total">{{ transporteTotal | currency: 'BRL' : 'symbol' : '1.2-2' : 'pt-BR' }}</p>
+        <div class="chart-container">
+          @if (chartsVisible) {
+            <canvas baseChart [data]="barChartData" [options]="barChartOptions" type="bar"></canvas>
+          }
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="dashboard-card">
+      <mat-card-header>
+        <mat-card-title>Vale Alimentação</mat-card-title>
+        <mat-card-subtitle>Distribuição por categoria</mat-card-subtitle>
+      </mat-card-header>
+
+      <mat-card-content>
+        <p class="dashboard-total">{{ alimentacaoTotal | currency: 'BRL' : 'symbol' : '1.2-2' : 'pt-BR' }}</p>
+        <div class="chart-container">
+          @if (chartsVisible) {
+            <canvas baseChart [data]="pieChartData" [options]="pieChartOptions" type="pie"></canvas>
+          }
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

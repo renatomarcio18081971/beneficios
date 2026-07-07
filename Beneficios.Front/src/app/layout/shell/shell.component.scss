@@ -1,0 +1,48 @@
+.shell-container {
+  height: 100vh;
+}
+
+.shell-sidenav {
+  width: 240px;
+}
+
+.shell-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.app-title {
+  margin-left: 8px;
+  font-weight: 500;
+}
+
+.subdomain-label {
+  margin-right: 16px;
+  opacity: 0.9;
+  font-size: 0.875rem;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.shell-content {
+  padding: 16px;
+  background: var(--beneficios-background);
+  min-height: calc(100vh - 64px);
+}
+
+.active-link {
+  background: rgba(21, 101, 192, 0.12);
+}
+
+@media (max-width: 599px) {
+  .subdomain-label {
+    display: none;
+  }
+
+  .shell-content {
+    padding: 12px;
+  }
+}

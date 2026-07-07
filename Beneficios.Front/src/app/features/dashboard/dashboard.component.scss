@@ -1,0 +1,39 @@
+.dashboard-page {
+  padding: 16px;
+}
+
+.dashboard-page h1 {
+  margin: 0 0 24px;
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: var(--beneficios-text);
+}
+
+.dashboard-grid {
+  display: grid;
+  gap: 24px;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 600px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.dashboard-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.dashboard-total {
+  margin: 8px 0 16px;
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: var(--beneficios-success);
+}
+
+.chart-container {
+  position: relative;
+  height: 280px;
+}

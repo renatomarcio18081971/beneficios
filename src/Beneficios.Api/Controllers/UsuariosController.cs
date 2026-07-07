@@ -22,40 +22,40 @@ public class UsuariosController : ControllerBase
 
     [HttpPost]
     [Authorize]
-    public async Task<IActionResult> Create([FromBody] UsuarioCreateDto dto)
+    public async Task<IActionResult> Create([FromBody] UsuarioSalvarDto dto)
     {
         try
         {
-            _logger.LogInformation("Criando novo usuário: {Email}", dto.Email);
-            var id = await _usuarioService.CreateAsync(dto);
+            _logger.LogInformation("Criando novo usu�rio: {Email}", dto.Email);
+            var id = await _usuarioService.SalvarAsync(dto);
             return CreatedAtAction(nameof(GetById), new { id }, new { id });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao criar usuário: {Email}", dto.Email);
-            return StatusCode(500, new { message = "Erro ao criar usuário" });
+            _logger.LogError(ex, "Erro ao criar usu�rio: {Email}", dto.Email);
+            return StatusCode(500, new { message = "Erro ao criar usu�rio" });
         }
     }
 
     [HttpPut("{id}")]
     [Authorize]
-    public async Task<IActionResult> Update(Guid id, [FromBody] UsuarioUpdateDto dto)
+    public async Task<IActionResult> Update(Guid id, [FromBody] UsuarioAtualizarDto dto)
     {
         try
         {
             var usuarioAlteracaoId = GetUsuarioIdFromToken();
-            _logger.LogInformation("Atualizando usuário: {Id}", id);
+            _logger.LogInformation("Atualizando usu�rio: {Id}", id);
 
-            var success = await _usuarioService.UpdateAsync(id, dto, usuarioAlteracaoId);
+            var success = await _usuarioService.AtualizarAsync(id, dto, usuarioAlteracaoId);
             if (!success)
-                return NotFound(new { message = "Usuário não encontrado" });
+                return NotFound(new { message = "Usu�rio n�o encontrado" });
 
             return NoContent();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao atualizar usuário: {Id}", id);
-            return StatusCode(500, new { message = "Erro ao atualizar usuário" });
+            _logger.LogError(ex, "Erro ao atualizar usu�rio: {Id}", id);
+            return StatusCode(500, new { message = "Erro ao atualizar usu�rio" });
         }
     }
 
@@ -65,16 +65,16 @@ public class UsuariosController : ControllerBase
     {
         try
         {
-            var usuario = await _usuarioService.GetByIdAsync(id);
+            var usuario = await _usuarioService.ObterUmAsync(id);
             if (usuario == null)
-                return NotFound(new { message = "Usuário não encontrado" });
+                return NotFound(new { message = "Usu�rio n�o encontrado" });
 
             return Ok(usuario);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao buscar usuário: {Id}", id);
-            return StatusCode(500, new { message = "Erro ao buscar usuário" });
+            _logger.LogError(ex, "Erro ao buscar usu�rio: {Id}", id);
+            return StatusCode(500, new { message = "Erro ao buscar usu�rio" });
         }
     }
 
@@ -84,13 +84,13 @@ public class UsuariosController : ControllerBase
     {
         try
         {
-            var usuarios = await _usuarioService.GetAllAsync();
+            var usuarios = await _usuarioService.ObterTodosAsync();
             return Ok(usuarios);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao buscar usuários");
-            return StatusCode(500, new { message = "Erro ao buscar usuários" });
+            _logger.LogError(ex, "Erro ao buscar usu�rios");
+            return StatusCode(500, new { message = "Erro ao buscar usu�rios" });
         }
     }
 
@@ -100,17 +100,17 @@ public class UsuariosController : ControllerBase
     {
         try
         {
-            _logger.LogInformation("Deletando usuário: {Id}", id);
+            _logger.LogInformation("Deletando usu�rio: {Id}", id);
             var success = await _usuarioService.DeleteAsync(id);
             if (!success)
-                return NotFound(new { message = "Usuário não encontrado" });
+                return NotFound(new { message = "Usu�rio n�o encontrado" });
 
             return NoContent();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao deletar usuário: {Id}", id);
-            return StatusCode(500, new { message = "Erro ao deletar usuário" });
+            _logger.LogError(ex, "Erro ao deletar usu�rio: {Id}", id);
+            return StatusCode(500, new { message = "Erro ao deletar usu�rio" });
         }
     }
 
@@ -121,7 +121,9 @@ public class UsuariosController : ControllerBase
         try
         {
             _logger.LogInformation("Tentativa de login: {Email}", loginDto.Email);
-            var response = await _usuarioService.LoginAsync(loginDto);
+            var tenant = Request.Headers["X-Tenant"].FirstOrDefault()
+                ?? ExtractSubdomain(Request.Host.Host);
+            var response = await _usuarioService.LoginAsync(loginDto, tenant);
 
             if (response == null)
                 return Unauthorized(new { message = "Email ou senha inválidos" });
@@ -143,5 +145,14 @@ public class UsuariosController : ControllerBase
             return userId;
 
         return null;
+    }
+
+    private static string ExtractSubdomain(string host)
+    {
+        if (string.IsNullOrWhiteSpace(host))
+            return "admin";
+
+        var parts = host.Split('.');
+        return parts.Length < 2 ? "admin" : parts[0];
     }
 }

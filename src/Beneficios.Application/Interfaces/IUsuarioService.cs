@@ -1,13 +1,13 @@
-﻿using Beneficios.Application.DTOs;
+using Beneficios.Application.DTOs;
 
 namespace Beneficios.Application.Interfaces;
 
 public interface IUsuarioService
 {
-    Task<Guid> CreateAsync(UsuarioCreateDto dto);
-    Task<bool> UpdateAsync(Guid id, UsuarioUpdateDto dto, Guid? usuarioAlteracaoId);
+    Task<Guid> SalvarAsync(UsuarioSalvarDto dto);
+    Task<bool> AtualizarAsync(Guid id, UsuarioAtualizarDto dto, Guid? usuarioAlteracaoId);
     Task<bool> DeleteAsync(Guid id);
-    Task<UsuarioDto?> GetByIdAsync(Guid id);
-    Task<UsuarioDto[]> GetAllAsync();
-    Task<LoginResponseDto?> LoginAsync(LoginDto loginDto);
+    Task<UsuarioDto?> ObterUmAsync(Guid id);
+    Task<UsuarioDto[]> ObterTodosAsync();
+    Task<LoginResponseDto?> LoginAsync(LoginDto loginDto, string tenantSubdomain);
 }

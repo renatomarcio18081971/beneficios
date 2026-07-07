@@ -1,0 +1,31 @@
+@use '@angular/material' as mat;
+
+html {
+  @include mat.theme((
+    color: (
+      theme-type: light,
+      primary: mat.$azure-palette,
+    ),
+    typography: Roboto,
+    density: 0,
+  ));
+}
+
+body {
+  background-color: #f5f7fa;
+  color: #263238;
+  margin: 0;
+  font-family: Roboto, 'Helvetica Neue', sans-serif;
+}
+
+.mat-icon {
+  font-family: 'Material Icons';
+  font-feature-settings: 'liga';
+}
+
+:root {
+  --beneficios-primary: #1565c0;
+  --beneficios-background: #f5f7fa;
+  --beneficios-text: #263238;
+  --beneficios-success: #2e7d32;
+}

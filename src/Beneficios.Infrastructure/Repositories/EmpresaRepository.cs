@@ -1,4 +1,4 @@
-﻿using Beneficios.Domain.Interfaces;
+using Beneficios.Domain.Interfaces;
 using Beneficios.Domain.Models;
 using Dapper;
 using System.Data;
@@ -14,7 +14,7 @@ public class EmpresaRepository : IEmpresaRepository
         _dbConnection = dbConnection;
     }
 
-    public async Task<Guid> CreateAsync(EmpresaCreateParams empresa)
+    public async Task<Guid> SalvarAsync(EmpresaSalvarParams empresa)
     {
         var sql = @"
             INSERT INTO empresas (id, razao_social, dominio, nome_banco, usuario_banco, senha_banco, data_inclusao)
@@ -34,7 +34,7 @@ public class EmpresaRepository : IEmpresaRepository
         return empresa.Id;
     }
 
-    public async Task<bool> UpdateAsync(EmpresaUpdateParams empresa)
+    public async Task<bool> AtualizarAsync(EmpresaAtualizarParams empresa)
     {
         var sql = @"
             UPDATE empresas
@@ -69,7 +69,7 @@ public class EmpresaRepository : IEmpresaRepository
         return rowsAffected > 0;
     }
 
-    public async Task<EmpresaQueryResult?> GetByIdAsync(Guid id)
+    public async Task<EmpresaQueryResult?> ObterUmAsync(Guid id)
     {
         var sql = @"
             SELECT 
@@ -84,7 +84,7 @@ public class EmpresaRepository : IEmpresaRepository
         return await _dbConnection.QueryFirstOrDefaultAsync<EmpresaQueryResult>(sql, new { Id = id });
     }
 
-    public async Task<EmpresaQueryResult[]> GetAllAsync()
+    public async Task<EmpresaQueryResult[]> ObterTodosAsync()
     {
         var sql = @"
             SELECT 

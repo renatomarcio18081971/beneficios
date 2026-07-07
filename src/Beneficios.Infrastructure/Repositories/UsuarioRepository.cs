@@ -1,4 +1,4 @@
-﻿using Beneficios.Domain.Interfaces;
+using Beneficios.Domain.Interfaces;
 using Beneficios.Domain.Models;
 using Dapper;
 using System.Data;
@@ -14,7 +14,7 @@ public class UsuarioRepository : IUsuarioRepository
         _dbConnection = dbConnection;
     }
 
-    public async Task<Guid> CreateAsync(UsuarioCreateParams usuario)
+    public async Task<Guid> SalvarAsync(UsuarioSalvarParams usuario)
     {
         var sql = @"
             INSERT INTO usuarios (id, nome, senha, email, empresa_id, data_inclusao)
@@ -33,7 +33,7 @@ public class UsuarioRepository : IUsuarioRepository
         return usuario.Id;
     }
 
-    public async Task<bool> UpdateAsync(UsuarioUpdateParams usuario)
+    public async Task<bool> AtualizarAsync(UsuarioAtualizarParams usuario)
     {
         var sql = @"
             UPDATE usuarios
@@ -64,7 +64,7 @@ public class UsuarioRepository : IUsuarioRepository
         return rowsAffected > 0;
     }
 
-    public async Task<UsuarioQueryResult?> GetByIdAsync(Guid id)
+    public async Task<UsuarioQueryResult?> ObterUmAsync(Guid id)
     {
         var sql = @"
             SELECT 
@@ -82,7 +82,7 @@ public class UsuarioRepository : IUsuarioRepository
         return await _dbConnection.QueryFirstOrDefaultAsync<UsuarioQueryResult>(sql, new { Id = id });
     }
 
-    public async Task<UsuarioQueryResult[]> GetAllAsync()
+    public async Task<UsuarioQueryResult[]> ObterTodosAsync()
     {
         var sql = @"
             SELECT 
@@ -110,8 +110,11 @@ public class UsuarioRepository : IUsuarioRepository
                 u.email AS Email,
                 u.senha AS Senha,
                 u.empresa_id AS EmpresaId,
+                u.perfil AS Perfil,
+                e.dominio AS EmpresaDominio,
                 u.token AS Token
             FROM usuarios u
+            LEFT JOIN empresas e ON u.empresa_id = e.id
             WHERE u.email = @Email";
 
         return await _dbConnection.QueryFirstOrDefaultAsync<UsuarioAuthResult>(sql, new { Email = email });

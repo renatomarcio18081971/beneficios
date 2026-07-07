@@ -1,9 +1,12 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Beneficios.Application.DTOs;
 using Beneficios.Application.Interfaces;
+using Beneficios.Application.Mappings;
 using Beneficios.Application.Services;
+using Beneficios.Domain.Enums;
 using Beneficios.Domain.Interfaces;
 using Beneficios.Domain.Models;
+using Beneficios.Domain.ValueObjects;
 using Moq;
 using Xunit;
 
@@ -12,46 +15,46 @@ namespace Beneficios.Tests.Application;
 public class UsuarioServiceTests
 {
     private readonly Mock<IUsuarioRepository> _repositoryMock;
-    private readonly Mock<IMapper> _mapperMock;
     private readonly Mock<ITokenService> _tokenServiceMock;
+    private readonly IMapper _mapper;
     private readonly UsuarioService _service;
 
     public UsuarioServiceTests()
     {
         _repositoryMock = new Mock<IUsuarioRepository>();
-        _mapperMock = new Mock<IMapper>();
         _tokenServiceMock = new Mock<ITokenService>();
-        _service = new UsuarioService(_repositoryMock.Object, _mapperMock.Object, _tokenServiceMock.Object);
+        _mapper = new MapperConfiguration(cfg => cfg.AddProfile<UsuarioProfile>()).CreateMapper();
+        _service = new UsuarioService(_repositoryMock.Object, _mapper, _tokenServiceMock.Object);
     }
 
     [Fact]
-    public async Task CreateAsync_DeveCriarUsuarioComSucesso()
+    public async Task SalvarAsync_DeveCriarUsuarioComSucesso()
     {
-        var dto = new UsuarioCreateDto("João Silva", "senha123", "joao@example.com", Guid.NewGuid());
+        var dto = new UsuarioSalvarDto("Joao Silva", "senha123", "joao@example.com", Guid.NewGuid());
 
-        _repositoryMock.Setup(x => x.CreateAsync(It.IsAny<UsuarioCreateParams>()))
-            .ReturnsAsync(Guid.NewGuid());
+        _repositoryMock.Setup(x => x.SalvarAsync(It.IsAny<UsuarioSalvarParams>()))
+            .ReturnsAsync((UsuarioSalvarParams p) => p.Id);
 
-        var result = await _service.CreateAsync(dto);
+        var result = await _service.SalvarAsync(dto);
 
         Assert.NotEqual(Guid.Empty, result);
-        _repositoryMock.Verify(x => x.CreateAsync(It.Is<UsuarioCreateParams>(p =>
+        _repositoryMock.Verify(x => x.SalvarAsync(It.Is<UsuarioSalvarParams>(p =>
             p.Nome == dto.Nome && p.Email == dto.Email && p.EmpresaId == dto.EmpresaId)), Times.Once);
     }
 
     [Fact]
-    public async Task UpdateAsync_DeveAtualizarUsuarioComSucesso()
+    public async Task AtualizarAsync_DeveAtualizarUsuarioComSucesso()
     {
         var id = Guid.NewGuid();
-        var dto = new UsuarioUpdateDto("João Silva", "joao@example.com", Guid.NewGuid());
+        var dto = new UsuarioAtualizarDto("Joao Silva", "joao@example.com", Guid.NewGuid());
 
-        _repositoryMock.Setup(x => x.UpdateAsync(It.IsAny<UsuarioUpdateParams>()))
+        _repositoryMock.Setup(x => x.AtualizarAsync(It.IsAny<UsuarioAtualizarParams>()))
             .ReturnsAsync(true);
 
-        var result = await _service.UpdateAsync(id, dto, null);
+        var result = await _service.AtualizarAsync(id, dto, null);
 
         Assert.True(result);
-        _repositoryMock.Verify(x => x.UpdateAsync(It.Is<UsuarioUpdateParams>(p =>
+        _repositoryMock.Verify(x => x.AtualizarAsync(It.Is<UsuarioAtualizarParams>(p =>
             p.Id == id && p.Nome == dto.Nome && p.Email == dto.Email)), Times.Once);
     }
 
@@ -67,5 +70,174 @@ public class UsuarioServiceTests
 
         Assert.True(result);
         _repositoryMock.Verify(x => x.DeleteAsync(id), Times.Once);
+    }
+
+    [Fact]
+    public async Task ObterUmAsync_DeveRetornarUsuarioQuandoEncontrado()
+    {
+        var id = Guid.NewGuid();
+        var queryResult = new UsuarioQueryResult
+        {
+            Id = id,
+            Nome = "Joao",
+            Email = "joao@example.com",
+            EmpresaId = Guid.NewGuid(),
+            EmpresaNome = "Empresa Teste"
+        };
+
+        _repositoryMock.Setup(x => x.ObterUmAsync(id)).ReturnsAsync(queryResult);
+
+        var result = await _service.ObterUmAsync(id);
+
+        Assert.NotNull(result);
+        Assert.Equal(id, result!.Id);
+        Assert.Equal("Joao", result.Nome);
+        Assert.Equal("Empresa Teste", result.EmpresaNome);
+    }
+
+    [Fact]
+    public async Task ObterUmAsync_DeveRetornarNullQuandoNaoEncontrado()
+    {
+        var id = Guid.NewGuid();
+
+        _repositoryMock.Setup(x => x.ObterUmAsync(id)).ReturnsAsync((UsuarioQueryResult?)null);
+
+        var result = await _service.ObterUmAsync(id);
+
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task ObterTodosAsync_DeveRetornarListaDeUsuarios()
+    {
+        var usuarios = new[]
+        {
+            new UsuarioQueryResult { Id = Guid.NewGuid(), Nome = "Joao", Email = "joao@example.com" },
+            new UsuarioQueryResult { Id = Guid.NewGuid(), Nome = "Maria", Email = "maria@example.com" }
+        };
+
+        _repositoryMock.Setup(x => x.ObterTodosAsync()).ReturnsAsync(usuarios);
+
+        var result = await _service.ObterTodosAsync();
+
+        Assert.Equal(2, result.Length);
+        Assert.Equal("Joao", result[0].Nome);
+        Assert.Equal("Maria", result[1].Nome);
+    }
+
+    [Fact]
+    public async Task LoginAsync_DeveRetornarTokenQuandoCredenciaisValidas()
+    {
+        var usuarioId = Guid.NewGuid();
+        var authResult = new UsuarioAuthResult
+        {
+            Id = usuarioId,
+            Nome = "Joao",
+            Email = "joao@example.com",
+            Senha = Criptografia.Encrypt("senha123"),
+            EmpresaId = Guid.NewGuid(),
+            Perfil = UsuarioPerfil.Empresa,
+            EmpresaDominio = "exemplo"
+        };
+
+        _repositoryMock.Setup(x => x.GetByEmailAsync("joao@example.com")).ReturnsAsync(authResult);
+        _tokenServiceMock.Setup(x => x.GenerateToken(usuarioId, "joao@example.com", UsuarioPerfil.Empresa, authResult.EmpresaId)).Returns("jwt-token");
+        _repositoryMock.Setup(x => x.UpdateTokenAsync(usuarioId, "jwt-token")).ReturnsAsync(true);
+
+        var result = await _service.LoginAsync(new LoginDto("joao@example.com", "senha123"), "exemplo");
+
+        Assert.NotNull(result);
+        Assert.Equal("jwt-token", result!.Token);
+        Assert.Equal(usuarioId, result.UsuarioId);
+        Assert.Equal("Joao", result.Nome);
+        _repositoryMock.Verify(x => x.UpdateTokenAsync(usuarioId, "jwt-token"), Times.Once);
+    }
+
+    [Fact]
+    public async Task LoginAsync_EmAdmin_ComPerfilEmpresa_DeveRetornarNull()
+    {
+        var authResult = new UsuarioAuthResult
+        {
+            Id = Guid.NewGuid(),
+            Email = "u@test.com",
+            Senha = Criptografia.Encrypt("senha123"),
+            Perfil = UsuarioPerfil.Empresa,
+            EmpresaDominio = "exemplo"
+        };
+        _repositoryMock.Setup(x => x.GetByEmailAsync("u@test.com")).ReturnsAsync(authResult);
+
+        var result = await _service.LoginAsync(new LoginDto("u@test.com", "senha123"), "admin");
+
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task LoginAsync_EmTenant_ComDominioDiferente_DeveRetornarNull()
+    {
+        var authResult = new UsuarioAuthResult
+        {
+            Id = Guid.NewGuid(),
+            Email = "u@test.com",
+            Senha = Criptografia.Encrypt("senha123"),
+            Perfil = UsuarioPerfil.Empresa,
+            EmpresaDominio = "exemplo"
+        };
+        _repositoryMock.Setup(x => x.GetByEmailAsync("u@test.com")).ReturnsAsync(authResult);
+
+        var result = await _service.LoginAsync(new LoginDto("u@test.com", "senha123"), "outra");
+
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task LoginAsync_EmAdmin_ComPerfilAdmin_DeveRetornarToken()
+    {
+        var authResult = new UsuarioAuthResult
+        {
+            Id = Guid.NewGuid(),
+            Nome = "Admin",
+            Email = "admin@test.com",
+            Senha = Criptografia.Encrypt("admin123"),
+            Perfil = UsuarioPerfil.Admin
+        };
+        _repositoryMock.Setup(x => x.GetByEmailAsync("admin@test.com")).ReturnsAsync(authResult);
+        _tokenServiceMock.Setup(x => x.GenerateToken(authResult.Id, authResult.Email, UsuarioPerfil.Admin, null))
+            .Returns("jwt-token");
+        _repositoryMock.Setup(x => x.UpdateTokenAsync(authResult.Id, "jwt-token")).ReturnsAsync(true);
+
+        var result = await _service.LoginAsync(new LoginDto("admin@test.com", "admin123"), "admin");
+
+        Assert.NotNull(result);
+        Assert.Equal("jwt-token", result!.Token);
+        Assert.Null(result.EmpresaId);
+    }
+
+    [Fact]
+    public async Task LoginAsync_DeveRetornarNullQuandoUsuarioNaoExiste()
+    {
+        _repositoryMock.Setup(x => x.GetByEmailAsync("inexistente@example.com"))
+            .ReturnsAsync((UsuarioAuthResult?)null);
+
+        var result = await _service.LoginAsync(new LoginDto("inexistente@example.com", "senha123"), "exemplo");
+
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task LoginAsync_DeveRetornarNullQuandoSenhaInvalida()
+    {
+        var authResult = new UsuarioAuthResult
+        {
+            Id = Guid.NewGuid(),
+            Email = "joao@example.com",
+            Senha = Criptografia.Encrypt("senha123")
+        };
+
+        _repositoryMock.Setup(x => x.GetByEmailAsync("joao@example.com")).ReturnsAsync(authResult);
+
+        var result = await _service.LoginAsync(new LoginDto("joao@example.com", "senhaErrada"), "exemplo");
+
+        Assert.Null(result);
+        _tokenServiceMock.Verify(x => x.GenerateToken(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<UsuarioPerfil>(), It.IsAny<Guid?>()), Times.Never);
     }
 }

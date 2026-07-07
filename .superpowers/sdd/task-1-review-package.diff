@@ -1,0 +1,224 @@
+﻿diff --git a/src/Beneficios.Domain/Entities/Usuario.cs b/src/Beneficios.Domain/Entities/Usuario.cs
+index 7f7bb24..6d454fd 100644
+--- a/src/Beneficios.Domain/Entities/Usuario.cs
++++ b/src/Beneficios.Domain/Entities/Usuario.cs
+@@ -1,16 +1,19 @@
+ ´╗┐namespace Beneficios.Domain.Entities;
+ 
++using Beneficios.Domain.Enums;
++
+ public class Usuario
+ {
+     public Guid Id { get; set; }
+     public string Nome { get; set; } = string.Empty;
+     public string Senha { get; set; } = string.Empty;
+     public string Email { get; set; } = string.Empty;
+     public Guid EmpresaId { get; set; }
++    public UsuarioPerfil Perfil { get; set; } = UsuarioPerfil.Empresa;
+     public string Token { get; set; } = string.Empty;
+     public DateTime DataInclusao { get; set; }
+     public DateTime? DataAlteracao { get; set; }
+     public Guid? UsuarioAlteracaoId { get; set; }
+ 
+     public Empresa? Empresa { get; set; }
+ }
+diff --git a/src/Beneficios.Domain/Enums/UsuarioPerfil.cs b/src/Beneficios.Domain/Enums/UsuarioPerfil.cs
+new file mode 100644
+index 0000000..6f51956
+--- /dev/null
++++ b/src/Beneficios.Domain/Enums/UsuarioPerfil.cs
+@@ -0,0 +1,7 @@
++namespace Beneficios.Domain.Enums;
++
++public enum UsuarioPerfil
++{
++    Empresa = 0,
++    Admin = 1
++}
+diff --git a/src/Beneficios.Domain/Models/UsuarioAuthResult.cs b/src/Beneficios.Domain/Models/UsuarioAuthResult.cs
+index 5c4bb5c..cf93ed8 100644
+--- a/src/Beneficios.Domain/Models/UsuarioAuthResult.cs
++++ b/src/Beneficios.Domain/Models/UsuarioAuthResult.cs
+@@ -1,11 +1,14 @@
+ ´╗┐namespace Beneficios.Domain.Models;
+ 
++using Beneficios.Domain.Enums;
++
+ public class UsuarioAuthResult
+ {
+     public Guid Id { get; set; }
+     public string Nome { get; set; } = string.Empty;
+     public string Email { get; set; } = string.Empty;
+     public string Senha { get; set; } = string.Empty;
+     public Guid EmpresaId { get; set; }
++    public UsuarioPerfil Perfil { get; set; }
+     public string Token { get; set; } = string.Empty;
+ }
+diff --git a/src/Beneficios.Domain/Models/UsuarioQueryResult.cs b/src/Beneficios.Domain/Models/UsuarioQueryResult.cs
+index 07bb5ff..d2315e5 100644
+--- a/src/Beneficios.Domain/Models/UsuarioQueryResult.cs
++++ b/src/Beneficios.Domain/Models/UsuarioQueryResult.cs
+@@ -1,12 +1,15 @@
+ ´╗┐namespace Beneficios.Domain.Models;
+ 
++using Beneficios.Domain.Enums;
++
+ public class UsuarioQueryResult
+ {
+     public Guid Id { get; set; }
+     public string Nome { get; set; } = string.Empty;
+     public string Email { get; set; } = string.Empty;
+     public Guid EmpresaId { get; set; }
++    public UsuarioPerfil Perfil { get; set; }
+     public string EmpresaNome { get; set; } = string.Empty;
+     public DateTime DataInclusao { get; set; }
+     public DateTime? DataAlteracao { get; set; }
+ }
+diff --git a/src/Beneficios.Domain/Models/UsuarioSalvarParams.cs b/src/Beneficios.Domain/Models/UsuarioSalvarParams.cs
+new file mode 100644
+index 0000000..7ee3209
+--- /dev/null
++++ b/src/Beneficios.Domain/Models/UsuarioSalvarParams.cs
+@@ -0,0 +1,13 @@
++namespace Beneficios.Domain.Models;
++
++using Beneficios.Domain.Enums;
++
++public record UsuarioSalvarParams
++{
++    public Guid Id { get; init; }
++    public string Nome { get; init; } = string.Empty;
++    public string Senha { get; init; } = string.Empty;
++    public string Email { get; init; } = string.Empty;
++    public Guid EmpresaId { get; init; }
++    public UsuarioPerfil Perfil { get; init; }
++}
+diff --git a/src/Beneficios.Infrastructure/Scripts/02_Create_Table_Usuarios.sql b/src/Beneficios.Infrastructure/Scripts/02_Create_Table_Usuarios.sql
+index ae9b229..df54fb2 100644
+--- a/src/Beneficios.Infrastructure/Scripts/02_Create_Table_Usuarios.sql
++++ b/src/Beneficios.Infrastructure/Scripts/02_Create_Table_Usuarios.sql
+@@ -1,16 +1,17 @@
+ ´╗┐CREATE TABLE beneficios.usuarios (
+     id UUID PRIMARY KEY,
+     nome VARCHAR(50) NOT NULL,
+     senha VARCHAR(50) NOT NULL,
+     email VARCHAR(256) NOT NULL,
++    perfil VARCHAR(20) NOT NULL DEFAULT 'Empresa',
+     empresa_id UUID NOT NULL,
+     token TEXT NULL,
+     data_inclusao TIMESTAMP NOT NULL DEFAULT NOW(),
+     data_alteracao TIMESTAMP NULL,
+     usuario_alteracao_id UUID NULL,
+-    CONSTRAINT fk_usuarios_empresa FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
++    CONSTRAINT fk_usuarios_empresa FOREIGN KEY (empresa_id) REFERENCES beneficios.empresas(id) ON DELETE CASCADE
+ );
+ 
+ CREATE UNIQUE INDEX idx_usuarios_email ON beneficios.usuarios(email);
+ CREATE INDEX idx_usuarios_empresa_id ON beneficios.usuarios(empresa_id);
+ CREATE INDEX idx_usuarios_nome ON beneficios.usuarios(nome);
+diff --git a/src/Beneficios.Infrastructure/Scripts/03_Insert_Sample_Data.sql b/src/Beneficios.Infrastructure/Scripts/03_Insert_Sample_Data.sql
+index b8f4689..62804e0 100644
+--- a/src/Beneficios.Infrastructure/Scripts/03_Insert_Sample_Data.sql
++++ b/src/Beneficios.Infrastructure/Scripts/03_Insert_Sample_Data.sql
+@@ -4,16 +4,16 @@
+ WITH nova_empresa AS (
+     INSERT INTO empresas (id, razao_social, dominio, nome_banco, usuario_banco, senha_banco, data_inclusao)
+     VALUES 
+         (gen_random_uuid(), 'Empresa Exemplo LTDA', 'exemplo', 
+          'ZGJfZXhlbXBsbw==', 'dXNlcl9leGVtcGxv', 'cGFzc19leGVtcGxv', NOW()),
+         (gen_random_uuid(), 'Outra Empresa SA', 'outra', 
+          'ZGJfb3V0cmE=', 'dXNlcl9vdXRyYQ==', 'cGFzc19vdXRyYQ==', NOW())
+     RETURNING id, dominio
+ )
+ -- Inserir usu├írios vinculados ├ás empresas criadas
+-INSERT INTO usuarios (id, nome, senha, email, empresa_id, data_inclusao)
++INSERT INTO usuarios (id, nome, senha, email, perfil, empresa_id, data_inclusao)
+ VALUES
+     (gen_random_uuid(), 'Administrador', 'YWRtaW4xMjM=', 
+-     'admin@exemplo.com', (SELECT id FROM nova_empresa WHERE dominio = 'exemplo'), NOW()),
++     'admin@exemplo.com', 'Admin', (SELECT id FROM nova_empresa WHERE dominio = 'exemplo'), NOW()),
+     (gen_random_uuid(), 'Usu├írio Teste', 'dGVzdGUxMjM=', 
+-     'teste@exemplo.com', (SELECT id FROM nova_empresa WHERE dominio = 'exemplo'), NOW());
++     'teste@exemplo.com', 'Empresa', (SELECT id FROM nova_empresa WHERE dominio = 'exemplo'), NOW());
+diff --git a/src/Beneficios.Infrastructure/Scripts/04_Alter_Table_Usuarios_Perfil.sql b/src/Beneficios.Infrastructure/Scripts/04_Alter_Table_Usuarios_Perfil.sql
+new file mode 100644
+index 0000000..b36d5f1
+--- /dev/null
++++ b/src/Beneficios.Infrastructure/Scripts/04_Alter_Table_Usuarios_Perfil.sql
+@@ -0,0 +1,4 @@
++ALTER TABLE beneficios.usuarios
++    ADD COLUMN perfil VARCHAR(20) NOT NULL DEFAULT 'Empresa';
++
++UPDATE beneficios.usuarios SET perfil = 'Admin' WHERE email = 'admin@exemplo.com';
+diff --git a/tests/Beneficios.Tests/Domain/UsuarioTests.cs b/tests/Beneficios.Tests/Domain/UsuarioTests.cs
+index c04ba72..51d5d1c 100644
+--- a/tests/Beneficios.Tests/Domain/UsuarioTests.cs
++++ b/tests/Beneficios.Tests/Domain/UsuarioTests.cs
+@@ -1,11 +1,12 @@
+ ´╗┐using Beneficios.Domain.Entities;
++using Beneficios.Domain.Enums;
+ using Xunit;
+ 
+ namespace Beneficios.Tests.Domain;
+ 
+ public class UsuarioTests
+ {
+     [Fact]
+     public void Usuario_DeveSerCriadoComPropriedadesCorretas()
+     {
+         var usuario = new Usuario
+@@ -38,11 +39,54 @@ public class UsuarioTests
+     [Fact]
+     public void Usuario_DataInclusaoDeveSerPreenchida()
+     {
+         var usuario = new Usuario
+         {
+             DataInclusao = DateTime.UtcNow
+         };
+ 
+         Assert.True(usuario.DataInclusao <= DateTime.UtcNow);
+     }
++
++    [Fact]
++    public void Usuario_DevePermitirTokenEPropriedadesDeAuditoria()
++    {
++        var usuarioAlteracaoId = Guid.NewGuid();
++        var dataAlteracao = DateTime.UtcNow;
++        var empresa = new Empresa { Id = Guid.NewGuid(), RazaoSocial = "Empresa" };
++
++        var usuario = new Usuario
++        {
++            Token = "jwt-token",
++            DataAlteracao = dataAlteracao,
++            UsuarioAlteracaoId = usuarioAlteracaoId,
++            Empresa = empresa
++        };
++
++        Assert.Equal("jwt-token", usuario.Token);
++        Assert.Equal(dataAlteracao, usuario.DataAlteracao);
++        Assert.Equal(usuarioAlteracaoId, usuario.UsuarioAlteracaoId);
++        Assert.Same(empresa, usuario.Empresa);
++    }
++
++    [Fact]
++    public void Usuario_DeveTerPropriedadePerfil()
++    {
++        var usuario = new Usuario { Perfil = UsuarioPerfil.Admin };
++        Assert.Equal(UsuarioPerfil.Admin, usuario.Perfil);
++    }
++
++    [Fact]
++    public void Usuario_PropriedadesPadraoDevemSerInicializadas()
++    {
++        var usuario = new Usuario();
++
++        Assert.Equal(string.Empty, usuario.Nome);
++        Assert.Equal(string.Empty, usuario.Senha);
++        Assert.Equal(string.Empty, usuario.Email);
++        Assert.Equal(string.Empty, usuario.Token);
++        Assert.Equal(UsuarioPerfil.Empresa, usuario.Perfil);
++        Assert.Null(usuario.Empresa);
++        Assert.Null(usuario.DataAlteracao);
++        Assert.Null(usuario.UsuarioAlteracaoId);
++    }
+ }

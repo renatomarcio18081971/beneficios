@@ -1,4 +1,5 @@
-﻿using Beneficios.Application.Interfaces;
+﻿using Beneficios.Api.Middleware;
+using Beneficios.Application.Interfaces;
 using Beneficios.Application.Mappings;
 using Beneficios.Application.Services;
 using Beneficios.Domain.Interfaces;
@@ -10,8 +11,14 @@ using Microsoft.OpenApi.Models;
 using Serilog;
 using System.Data;
 using System.Text;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
+
+if (builder.Environment.IsDevelopment())
+{
+    builder.WebHost.UseUrls("http://localhost:5000");
+}
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
@@ -20,7 +27,11 @@ Log.Logger = new LoggerConfiguration()
 
 builder.Host.UseSerilog();
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -61,11 +72,18 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-builder.Services.AddAutoMapper(typeof(MappingProfile));
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddAutoMapper(typeof(UsuarioProfile));
+
+builder.Services.AddScoped<ITenantCatalogRepository, TenantCatalogRepository>();
+builder.Services.AddScoped<ITenantResolver, TenantResolver>();
 
 builder.Services.AddScoped<IDbConnection>(sp =>
 {
-    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    var httpContextAccessor = sp.GetRequiredService<IHttpContextAccessor>();
+    var configuration = sp.GetRequiredService<IConfiguration>();
+    var connectionString = httpContextAccessor.HttpContext?.Items[TenantContextKeys.ConnectionString] as string
+        ?? configuration.GetConnectionString("DefaultConnection")
         ?? throw new InvalidOperationException("Connection string 'DefaultConnection' não configurada.");
     return DatabaseConfiguration.CreateConnection(connectionString);
 });
@@ -116,6 +134,16 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("FrontPolicy", policy => policy
+        .SetIsOriginAllowed(origin =>
+            origin.Contains("localhost:4200", StringComparison.OrdinalIgnoreCase) ||
+            origin.EndsWith(".minhaempresa.com.br", StringComparison.OrdinalIgnoreCase))
+        .AllowAnyHeader()
+        .AllowAnyMethod());
+});
+
 builder.Services.AddHealthChecks();
 
 var app = builder.Build();
@@ -126,7 +154,14 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
+
+app.UseCors("FrontPolicy");
+
+app.UseMiddleware<TenantMiddleware>();
 
 app.UseAuthentication();
 app.UseAuthorization();
@@ -135,3 +170,5 @@ app.MapControllers();
 app.MapHealthChecks("/health");
 
 app.Run();
+
+public partial class Program { }
