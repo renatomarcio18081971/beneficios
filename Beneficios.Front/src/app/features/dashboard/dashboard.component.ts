@@ -1,6 +1,7 @@
 import { CurrencyPipe } from '@angular/common';
-import { AfterViewInit, Component, inject, ChangeDetectionStrategy } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
+import { MatIconModule } from '@angular/material/icon';
 import { ChartConfiguration, ChartData } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
 import { DashboardMockService } from './dashboard-mock.service';
@@ -9,9 +10,9 @@ import { DashboardSummaryCardComponent } from './dashboard-summary-card/dashboar
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [MatCardModule, BaseChartDirective, CurrencyPipe, DashboardSummaryCardComponent],
+  imports: [MatCardModule, MatIconModule, BaseChartDirective, CurrencyPipe, DashboardSummaryCardComponent],
   templateUrl: './dashboard.component.html',
-  changeDetection: ChangeDetectionStrategy.Default,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './dashboard.component.scss',
 })
 export class DashboardComponent implements AfterViewInit {
@@ -88,8 +89,8 @@ export class DashboardComponent implements AfterViewInit {
         position: 'bottom',
         labels: {
           boxWidth: 10,
-          padding: 6,
-          font: { size: 10 },
+          padding: 8,
+          font: { size: 11 },
         },
       },
       tooltip: {
