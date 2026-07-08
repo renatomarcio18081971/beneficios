@@ -3,13 +3,13 @@
     nome VARCHAR(50) NOT NULL,
     senha VARCHAR(50) NOT NULL,
     email VARCHAR(256) NOT NULL,
-    perfil VARCHAR(20) NOT NULL DEFAULT 'Empresa',
-    empresa_id UUID NOT NULL,
+    perfil VARCHAR(20) NOT NULL DEFAULT 'Admin',
+    empresa_id UUID NULL,
     token TEXT NULL,
     data_inclusao TIMESTAMP NOT NULL DEFAULT NOW(),
     data_alteracao TIMESTAMP NULL,
     usuario_alteracao_id UUID NULL,
-    CONSTRAINT fk_usuarios_empresa FOREIGN KEY (empresa_id) REFERENCES beneficios.empresas(id) ON DELETE CASCADE
+    CONSTRAINT fk_usuarios_empresa FOREIGN KEY (empresa_id) REFERENCES beneficios.empresas(id) ON DELETE SET NULL
 );
 
 CREATE UNIQUE INDEX idx_usuarios_email ON beneficios.usuarios(email);

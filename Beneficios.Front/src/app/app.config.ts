@@ -7,6 +7,7 @@ import { provideAnimationsAsync } from '@angular/platform-browser/animations/asy
 import { provideRouter, withRouterConfig } from '@angular/router';
 
 import { MAT_ICON_DEFAULT_OPTIONS } from '@angular/material/icon';
+import { MatPaginatorIntl } from '@angular/material/paginator';
 
 import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
 
@@ -17,6 +18,7 @@ import { routes } from './app.routes';
 import { authInterceptor } from './core/auth/auth.interceptor';
 
 import { httpErrorInterceptor } from './core/http/http-error.interceptor';
+import { PtBrPaginatorIntl } from './shared/i18n/pt-br-paginator.intl';
 
 
 
@@ -43,6 +45,8 @@ export const appConfig: ApplicationConfig = {
     { provide: LOCALE_ID, useValue: 'pt-BR' },
 
     { provide: MAT_ICON_DEFAULT_OPTIONS, useValue: { fontSet: 'material-icons' } },
+
+    { provide: MatPaginatorIntl, useClass: PtBrPaginatorIntl },
 
   ],
 

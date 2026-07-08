@@ -1,6 +1,6 @@
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { DatePipe } from '@angular/common';
-import { AfterViewInit, Component, DestroyRef, ViewChild, inject, ChangeDetectionStrategy } from '@angular/core';
+import { Component, DestroyRef, ViewChild, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -11,16 +11,22 @@ import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTable, MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { finalize } from 'rxjs';
 import { UsuarioService } from '../../../core/api/usuario.service';
 import { Usuario } from '../../../core/api/usuario.models';
 import { TenantService } from '../../../core/tenant/tenant.service';
 import { ExportColumn } from '../../../shared/utils/export.models';
 import { ExportService } from '../../../shared/utils/export.service';
-import { applyTableData, syncTableRows } from '../../../shared/utils/list-page.helpers';
 import {
   ConfirmDeleteDialogComponent,
   ConfirmDeleteDialogData,
+  CONFIRM_DELETE_DIALOG_WIDTH,
 } from '../../../shared/dialogs/confirm-delete-dialog.component';
+import { isTenantDefaultUser } from '../../../shared/constants/tenant-default-user';
+import {
+  DATA_INCLUSAO_DATE_PIPE_FORMAT,
+  formatDataInclusao,
+} from '../../../shared/utils/date-format';
 
 @Component({
   selector: 'app-usuario-list',
@@ -37,10 +43,9 @@ import {
     MatTooltipModule,
   ],
   templateUrl: './usuario-list.component.html',
-  changeDetection: ChangeDetectionStrategy.Default,
   styleUrl: './usuario-list.component.scss',
 })
-export class UsuarioListComponent implements AfterViewInit {
+export class UsuarioListComponent {
   @ViewChild(MatPaginator) set matPaginator(paginator: MatPaginator | undefined) {
     if (paginator) {
       this.dataSource.paginator = paginator;
@@ -48,11 +53,10 @@ export class UsuarioListComponent implements AfterViewInit {
   }
 
   @ViewChild(MatTable) set matTable(table: MatTable<Usuario> | undefined) {
-    this.table = table;
-    this.syncTableRows();
+    if (table && this.dataSource.data.length > 0) {
+      queueMicrotask(() => table.renderRows());
+    }
   }
-
-  private table?: MatTable<Usuario>;
 
   private readonly usuarioService = inject(UsuarioService);
   private readonly exportService = inject(ExportService);
@@ -63,10 +67,11 @@ export class UsuarioListComponent implements AfterViewInit {
   private readonly destroyRef = inject(DestroyRef);
 
   readonly displayedColumns = ['nome', 'email', 'dataInclusao', 'acoes'];
+  readonly dataInclusaoFormat = DATA_INCLUSAO_DATE_PIPE_FORMAT;
   readonly dataSource = new MatTableDataSource<Usuario>([]);
 
-  loading = true;
-  errorMessage = '';
+  readonly loading = signal(true);
+  readonly errorMessage = signal('');
   isMobile = false;
 
   private readonly exportColumns: ExportColumn[] = [
@@ -75,7 +80,7 @@ export class UsuarioListComponent implements AfterViewInit {
     {
       key: 'dataInclusao',
       label: 'Data inclusão',
-      format: (value) => this.formatDate(value),
+      format: (value) => formatDataInclusao(value),
     },
   ];
 
@@ -86,31 +91,40 @@ export class UsuarioListComponent implements AfterViewInit {
       .subscribe((result) => {
         this.isMobile = result.matches;
       });
-  }
 
-  ngAfterViewInit(): void {
     this.loadUsuarios();
   }
 
   loadUsuarios(): void {
-    this.loading = true;
-    this.errorMessage = '';
+    this.loading.set(true);
+    this.errorMessage.set('');
 
-    this.usuarioService.list().subscribe({
-      next: (usuarios) => {
-        applyTableData(this.dataSource, usuarios);
-        this.loading = false;
-        this.syncTableRows();
-      },
-      error: () => {
-        this.loading = false;
-        this.errorMessage = 'Não foi possível carregar os usuários.';
-      },
-    });
+    this.usuarioService
+      .list()
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => this.loading.set(false)),
+      )
+      .subscribe({
+        next: (usuarios) => {
+          this.dataSource.data = usuarios;
+        },
+        error: () => {
+          this.errorMessage.set('Não foi possível carregar os usuários.');
+        },
+      });
   }
 
   edit(usuario: Usuario): void {
+    if (this.isProtectedUser(usuario)) {
+      return;
+    }
+
     void this.router.navigate(['/usuarios', usuario.id, 'editar']);
+  }
+
+  isProtectedUser(usuario: Usuario): boolean {
+    return isTenantDefaultUser(usuario.email);
   }
 
   exportExcel(): void {
@@ -126,10 +140,15 @@ export class UsuarioListComponent implements AfterViewInit {
   }
 
   confirmDelete(usuario: Usuario): void {
+    if (this.isProtectedUser(usuario)) {
+      return;
+    }
+
     const dialogRef = this.dialog.open<ConfirmDeleteDialogComponent, ConfirmDeleteDialogData, boolean>(
       ConfirmDeleteDialogComponent,
       {
-        width: '360px',
+        width: CONFIRM_DELETE_DIALOG_WIDTH,
+        maxWidth: '90vw',
         data: { nome: usuario.nome },
       },
     );
@@ -142,23 +161,10 @@ export class UsuarioListComponent implements AfterViewInit {
       this.usuarioService.delete(usuario.id).subscribe({
         next: () => this.loadUsuarios(),
         error: () => {
-          this.errorMessage = 'Não foi possível excluir o usuário.';
+          this.errorMessage.set('Não foi possível excluir o usuário.');
         },
       });
     });
   }
 
-  private syncTableRows(): void {
-    if (this.dataSource.data.length > 0) {
-      syncTableRows(this.table);
-    }
-  }
-
-  private formatDate(value: unknown): string {
-    if (!value) {
-      return '';
-    }
-
-    return new Date(String(value)).toLocaleDateString('pt-BR');
-  }
 }

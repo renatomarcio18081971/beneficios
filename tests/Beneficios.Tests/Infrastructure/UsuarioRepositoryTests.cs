@@ -8,19 +8,22 @@ namespace Beneficios.Tests.Infrastructure;
 [Collection("Postgres")]
 public class UsuarioRepositoryTests(PostgresFixture fixture)
 {
+    private const string TenantRazaoSocial = "Empresa Teste";
+
     [SkippableFact]
     public async Task SalvarAsync_DeveInserirUsuarioNoBanco()
     {
         await PostgresTestHelper.PrepareAsync(fixture);
 
         var empresaId = await SeedEmpresaAsync();
-        var repository = new UsuarioRepository(fixture.Connection!);
+        await using var tenantConnection = await fixture.CreateTenantConnectionAsync(TenantRazaoSocial);
+        var repository = new UsuarioRepository(tenantConnection);
         var usuarioId = Guid.NewGuid();
 
         var result = await repository.SalvarAsync(new UsuarioSalvarParams
         {
             Id = usuarioId,
-            Nome = "Jo?o Silva",
+            Nome = "Joao Silva",
             Senha = Criptografia.Encrypt("senha123"),
             Email = "joao@example.com",
             EmpresaId = empresaId
@@ -30,7 +33,7 @@ public class UsuarioRepositoryTests(PostgresFixture fixture)
 
         var usuario = await repository.ObterUmAsync(usuarioId);
         Assert.NotNull(usuario);
-        Assert.Equal("Jo?o Silva", usuario.Nome);
+        Assert.Equal("Joao Silva", usuario.Nome);
         Assert.Equal("joao@example.com", usuario.Email);
     }
 
@@ -40,7 +43,8 @@ public class UsuarioRepositoryTests(PostgresFixture fixture)
         await PostgresTestHelper.PrepareAsync(fixture);
 
         var empresaId = await SeedEmpresaAsync();
-        var repository = new UsuarioRepository(fixture.Connection!);
+        await using var tenantConnection = await fixture.CreateTenantConnectionAsync(TenantRazaoSocial);
+        var repository = new UsuarioRepository(tenantConnection);
         var usuarioId = Guid.NewGuid();
         var senhaCriptografada = Criptografia.Encrypt("admin123");
 
@@ -66,7 +70,8 @@ public class UsuarioRepositoryTests(PostgresFixture fixture)
         await PostgresTestHelper.PrepareAsync(fixture);
 
         var empresaId = await SeedEmpresaAsync();
-        var repository = new UsuarioRepository(fixture.Connection!);
+        await using var tenantConnection = await fixture.CreateTenantConnectionAsync(TenantRazaoSocial);
+        var repository = new UsuarioRepository(tenantConnection);
         var usuarioId = Guid.NewGuid();
 
         await repository.SalvarAsync(new UsuarioSalvarParams
@@ -94,7 +99,8 @@ public class UsuarioRepositoryTests(PostgresFixture fixture)
         await PostgresTestHelper.PrepareAsync(fixture);
 
         var empresaId = await SeedEmpresaAsync();
-        var repository = new UsuarioRepository(fixture.Connection!);
+        await using var tenantConnection = await fixture.CreateTenantConnectionAsync(TenantRazaoSocial);
+        var repository = new UsuarioRepository(tenantConnection);
         var usuarioId = Guid.NewGuid();
 
         await repository.SalvarAsync(new UsuarioSalvarParams
@@ -128,7 +134,8 @@ public class UsuarioRepositoryTests(PostgresFixture fixture)
         await PostgresTestHelper.PrepareAsync(fixture);
 
         var empresaId = await SeedEmpresaAsync();
-        var repository = new UsuarioRepository(fixture.Connection!);
+        await using var tenantConnection = await fixture.CreateTenantConnectionAsync(TenantRazaoSocial);
+        var repository = new UsuarioRepository(tenantConnection);
         var usuarioId = Guid.NewGuid();
 
         await repository.SalvarAsync(new UsuarioSalvarParams
@@ -152,7 +159,8 @@ public class UsuarioRepositoryTests(PostgresFixture fixture)
         await PostgresTestHelper.PrepareAsync(fixture);
 
         var empresaId = await SeedEmpresaAsync();
-        var repository = new UsuarioRepository(fixture.Connection!);
+        await using var tenantConnection = await fixture.CreateTenantConnectionAsync(TenantRazaoSocial);
+        var repository = new UsuarioRepository(tenantConnection);
 
         await repository.SalvarAsync(new UsuarioSalvarParams
         {
@@ -186,11 +194,8 @@ public class UsuarioRepositoryTests(PostgresFixture fixture)
         await empresaRepository.SalvarAsync(new EmpresaSalvarParams
         {
             Id = empresaId,
-            RazaoSocial = "Empresa Teste",
+            RazaoSocial = TenantRazaoSocial,
             Dominio = "teste",
-            NomeBanco = "db",
-            UsuarioBanco = "user",
-            SenhaBanco = "pass"
         });
 
         return empresaId;

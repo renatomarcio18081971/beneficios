@@ -1,4 +1,6 @@
-﻿using Dapper;
+﻿using Beneficios.Domain;
+using Beneficios.Infrastructure.Tenancy;
+using Dapper;
 using Npgsql;
 using System.Data;
 using Testcontainers.PostgreSql;
@@ -113,7 +115,45 @@ public class PostgresFixture : IDisposable
         if (Connection.State != ConnectionState.Open)
             Connection.Open();
 
+        await Connection.ExecuteAsync("""
+            DO $$
+            DECLARE schema_record RECORD;
+            BEGIN
+                FOR schema_record IN
+                    SELECT schema_name
+                    FROM information_schema.schemata
+                    WHERE schema_name LIKE 'tenant_%'
+                LOOP
+                    EXECUTE format('DROP SCHEMA IF EXISTS %I CASCADE', schema_record.schema_name);
+                END LOOP;
+            END $$;
+            """);
+
         await Connection.ExecuteAsync("TRUNCATE TABLE beneficios.usuarios, beneficios.empresas CASCADE;");
+    }
+
+    public async Task<NpgsqlConnection> CreateTenantConnectionAsync(string razaoSocial)
+    {
+        if (!Disponivel || Connection is null || CatalogConnectionString is null)
+            throw new InvalidOperationException("PostgreSQL indisponível para testes.");
+
+        await ProvisionTenantSchemaAsync(Connection, razaoSocial);
+
+        var builder = new NpgsqlConnectionStringBuilder(CatalogConnectionString)
+        {
+            SearchPath = TenantSchemaNames.GetTenantSearchPath(razaoSocial),
+        };
+
+        var tenantConnection = new NpgsqlConnection(builder.ConnectionString);
+        await tenantConnection.OpenAsync();
+        return tenantConnection;
+    }
+
+    public static async Task ProvisionTenantSchemaAsync(IDbConnection connection, string razaoSocial)
+    {
+        var schemaName = TenantSchemaSql.BuildSchemaName(razaoSocial);
+        await connection.ExecuteAsync(TenantSchemaSql.CreateSchema(schemaName));
+        await connection.ExecuteAsync(TenantSchemaSql.CreateUsuariosTable(schemaName));
     }
 
     public void Dispose()

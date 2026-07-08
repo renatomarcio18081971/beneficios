@@ -34,4 +34,11 @@
       </mat-card-content>
     </mat-card>
   </div>
+
+  <section class="dashboard-summary-section" aria-label="Resumo de benefícios">
+    <div class="dashboard-summary-grid">
+      <app-dashboard-summary-card [resumo]="combustivelResumo" />
+      <app-dashboard-summary-card [resumo]="culturaResumo" />
+    </div>
+  </section>
 </div>

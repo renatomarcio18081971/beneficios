@@ -130,7 +130,7 @@ public class EmpresasControllerTests
     [Fact]
     public async Task Create_DeveRetornarCreatedQuandoSucesso()
     {
-        var dto = new EmpresaSalvarDto("Empresa Teste LTDA", "empresateste", "dbname", "dbuser", "dbpass");
+        var dto = new EmpresaSalvarDto("Empresa Teste LTDA", "empresateste");
         var id = Guid.NewGuid();
 
         _serviceMock.Setup(x => x.SalvarAsync(dto)).ReturnsAsync(id);
@@ -144,7 +144,7 @@ public class EmpresasControllerTests
     [Fact]
     public async Task Create_DeveRetornar500QuandoExcecao()
     {
-        var dto = new EmpresaSalvarDto("Empresa Teste LTDA", "empresateste", "dbname", "dbuser", "dbpass");
+        var dto = new EmpresaSalvarDto("Empresa Teste LTDA", "empresateste");
 
         _serviceMock.Setup(x => x.SalvarAsync(dto)).ThrowsAsync(new Exception("Erro"));
 
@@ -159,7 +159,7 @@ public class EmpresasControllerTests
     {
         var id = Guid.NewGuid();
         var usuarioAlteracaoId = Guid.NewGuid();
-        var dto = new EmpresaAtualizarDto("Empresa Teste LTDA", "empresateste", "dbname", "dbuser", "dbpass");
+        var dto = new EmpresaAtualizarDto("Empresa Teste LTDA", "empresateste");
 
         ControllerTestHelper.SetAuthenticatedUser(_controller, usuarioAlteracaoId);
         _serviceMock.Setup(x => x.AtualizarAsync(id, dto, usuarioAlteracaoId)).ReturnsAsync(true);
@@ -173,7 +173,7 @@ public class EmpresasControllerTests
     public async Task Update_DeveRetornarNotFoundQuandoEmpresaNaoExiste()
     {
         var id = Guid.NewGuid();
-        var dto = new EmpresaAtualizarDto("Empresa Teste LTDA", "empresateste", "dbname", "dbuser", "dbpass");
+        var dto = new EmpresaAtualizarDto("Empresa Teste LTDA", "empresateste");
 
         ControllerTestHelper.SetAuthenticatedUser(_controller);
         _serviceMock.Setup(x => x.AtualizarAsync(id, dto, It.IsAny<Guid?>())).ReturnsAsync(false);
@@ -187,7 +187,7 @@ public class EmpresasControllerTests
     public async Task Update_DeveRetornar500QuandoExcecao()
     {
         var id = Guid.NewGuid();
-        var dto = new EmpresaAtualizarDto("Empresa Teste LTDA", "empresateste", "dbname", "dbuser", "dbpass");
+        var dto = new EmpresaAtualizarDto("Empresa Teste LTDA", "empresateste");
 
         ControllerTestHelper.SetAuthenticatedUser(_controller);
         _serviceMock.Setup(x => x.AtualizarAsync(id, dto, It.IsAny<Guid?>())).ThrowsAsync(new Exception("Erro"));

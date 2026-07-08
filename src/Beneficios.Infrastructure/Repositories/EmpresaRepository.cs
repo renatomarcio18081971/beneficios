@@ -17,17 +17,14 @@ public class EmpresaRepository : IEmpresaRepository
     public async Task<Guid> SalvarAsync(EmpresaSalvarParams empresa)
     {
         var sql = @"
-            INSERT INTO empresas (id, razao_social, dominio, nome_banco, usuario_banco, senha_banco, data_inclusao)
-            VALUES (@Id, @RazaoSocial, @Dominio, @NomeBanco, @UsuarioBanco, @SenhaBanco, @DataInclusao)";
+            INSERT INTO empresas (id, razao_social, dominio, data_inclusao)
+            VALUES (@Id, @RazaoSocial, @Dominio, @DataInclusao)";
 
         await _dbConnection.ExecuteAsync(sql, new
         {
             empresa.Id,
             empresa.RazaoSocial,
             empresa.Dominio,
-            empresa.NomeBanco,
-            empresa.UsuarioBanco,
-            empresa.SenhaBanco,
             DataInclusao = DateTime.UtcNow
         });
 
@@ -40,9 +37,6 @@ public class EmpresaRepository : IEmpresaRepository
             UPDATE empresas
             SET razao_social = @RazaoSocial,
                 dominio = @Dominio,
-                nome_banco = @NomeBanco,
-                usuario_banco = @UsuarioBanco,
-                senha_banco = @SenhaBanco,
                 data_alteracao = @DataAlteracao,
                 usuario_alteracao_id = @UsuarioAlteracaoId
             WHERE id = @Id";
@@ -52,9 +46,6 @@ public class EmpresaRepository : IEmpresaRepository
             empresa.Id,
             empresa.RazaoSocial,
             empresa.Dominio,
-            empresa.NomeBanco,
-            empresa.UsuarioBanco,
-            empresa.SenhaBanco,
             DataAlteracao = DateTime.UtcNow,
             empresa.UsuarioAlteracaoId
         });

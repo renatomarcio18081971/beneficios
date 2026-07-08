@@ -1,81 +1,55 @@
-<div class="empresa-form-page">
-  <mat-card class="empresa-form-card">
-    <mat-card-header>
-      <mat-card-title>{{ title }}</mat-card-title>
-    </mat-card-header>
-
-    <mat-card-content>
-      @if (loadingData) {
-        <div class="loading-container">
-          <mat-spinner diameter="40"></mat-spinner>
-        </div>
-      } @else {
-        <form [formGroup]="form" (ngSubmit)="submit()">
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Razão Social</mat-label>
-            <input matInput type="text" formControlName="razaoSocial">
-            @if (form.controls.razaoSocial.hasError('required') && form.controls.razaoSocial.touched) {
-              <mat-error>Razão Social é obrigatória.</mat-error>
-            }
-          </mat-form-field>
-
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Domínio</mat-label>
-            <input matInput type="text" formControlName="dominio" placeholder="empresa1">
-            @if (form.controls.dominio.hasError('required') && form.controls.dominio.touched) {
-              <mat-error>Domínio é obrigatório.</mat-error>
-            }
-            @if (form.controls.dominio.hasError('pattern') && form.controls.dominio.touched) {
-              <mat-error>Use apenas letras minúsculas, números e hífen.</mat-error>
-            }
-          </mat-form-field>
-
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Nome do Banco</mat-label>
-            <input matInput type="text" formControlName="nomeBanco">
-            @if (form.controls.nomeBanco.hasError('required') && form.controls.nomeBanco.touched) {
-              <mat-error>Nome do Banco é obrigatório.</mat-error>
-            }
-          </mat-form-field>
-
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Usuário do Banco</mat-label>
-            <input matInput type="text" formControlName="usuarioBanco" autocomplete="off">
-            @if (form.controls.usuarioBanco.hasError('required') && form.controls.usuarioBanco.touched) {
-              <mat-error>Usuário do Banco é obrigatório.</mat-error>
-            }
-          </mat-form-field>
-
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Senha do Banco</mat-label>
-            <input matInput type="password" formControlName="senhaBanco" autocomplete="new-password">
-            @if (!isEdit && form.controls.senhaBanco.hasError('required') && form.controls.senhaBanco.touched) {
-              <mat-error>Senha do Banco é obrigatória.</mat-error>
-            }
-            @if (form.controls.senhaBanco.hasError('minlength') && form.controls.senhaBanco.touched) {
-              <mat-error>Senha deve ter no mínimo 4 caracteres.</mat-error>
-            }
-            @if (isEdit) {
-              <mat-hint>Deixe em branco para manter a senha atual.</mat-hint>
-            }
-          </mat-form-field>
-
-          @if (errorMessage) {
-            <p class="error-message">{{ errorMessage }}</p>
-          }
-
-          <div class="form-actions">
-            <a mat-button routerLink="/empresas">Cancelar</a>
-            <button mat-flat-button color="primary" type="submit" [disabled]="loading">
-              @if (loading) {
-                <mat-spinner diameter="20"></mat-spinner>
-              } @else {
-                Salvar
-              }
-            </button>
-          </div>
-        </form>
-      }
-    </mat-card-content>
-  </mat-card>
-</div>
+<div class="empresa-form-page">
+  <mat-card class="empresa-form-card">
+    <mat-card-header>
+      <mat-card-title>{{ title() }}</mat-card-title>
+    </mat-card-header>
+
+    <mat-card-content>
+      @if (loadingData()) {
+        <div class="loading-container">
+          <mat-spinner diameter="40"></mat-spinner>
+        </div>
+      } @else {
+        <form [formGroup]="form" (ngSubmit)="submit()">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Razão Social</mat-label>
+            <input matInput type="text" formControlName="razaoSocial">
+            @if (form.controls.razaoSocial.hasError('required') && form.controls.razaoSocial.touched) {
+              <mat-error>Razão Social é obrigatória.</mat-error>
+            }
+            @if (!isEdit() && tenantSchemaPreview()) {
+              <mat-hint>Schema do banco: {{ tenantSchemaPreview() }}</mat-hint>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Domínio</mat-label>
+            <input matInput type="text" formControlName="dominio" placeholder="empresa1">
+            @if (form.controls.dominio.hasError('required') && form.controls.dominio.touched) {
+              <mat-error>Domínio é obrigatório.</mat-error>
+            }
+            @if (form.controls.dominio.hasError('pattern') && form.controls.dominio.touched) {
+              <mat-error>Use apenas letras minúsculas, números e hífen.</mat-error>
+            }
+            <mat-hint>Usado no subdomínio de acesso (ex.: empresa1.seudominio.com)</mat-hint>
+          </mat-form-field>
+
+          @if (errorMessage()) {
+            <p class="error-message">{{ errorMessage() }}</p>
+          }
+
+          <div class="form-actions">
+            <a mat-button routerLink="/empresas">Cancelar</a>
+            <button mat-flat-button color="primary" type="submit" [disabled]="loading()">
+              @if (loading()) {
+                <mat-spinner diameter="20"></mat-spinner>
+              } @else {
+                Salvar
+              }
+            </button>
+          </div>
+        </form>
+      }
+    </mat-card-content>
+  </mat-card>
+</div>

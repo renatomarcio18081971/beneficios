@@ -63,9 +63,6 @@ describe('EmpresaService', () => {
     const payload = {
       razaoSocial: 'Nova Empresa LTDA',
       dominio: 'novaempresa',
-      nomeBanco: 'db_nova',
-      usuarioBanco: 'user_db',
-      senhaBanco: 'senha_db',
     };
 
     service.create(payload).subscribe((result) => {
@@ -83,9 +80,6 @@ describe('EmpresaService', () => {
     const payload = {
       razaoSocial: 'Empresa Atualizada LTDA',
       dominio: 'empresa1',
-      nomeBanco: 'db_empresa1',
-      usuarioBanco: 'user_db',
-      senhaBanco: '',
     };
 
     service.update(id, payload).subscribe();

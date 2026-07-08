@@ -5,6 +5,7 @@ using Beneficios.Application.Services;
 using Beneficios.Domain.Interfaces;
 using Beneficios.Infrastructure.Configurations;
 using Beneficios.Infrastructure.Repositories;
+using Beneficios.Infrastructure.Tenancy;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -77,6 +78,7 @@ builder.Services.AddAutoMapper(typeof(UsuarioProfile));
 
 builder.Services.AddScoped<ITenantCatalogRepository, TenantCatalogRepository>();
 builder.Services.AddScoped<ITenantResolver, TenantResolver>();
+builder.Services.AddScoped<ITenantProvisioner, TenantProvisioner>();
 
 builder.Services.AddScoped<IDbConnection>(sp =>
 {

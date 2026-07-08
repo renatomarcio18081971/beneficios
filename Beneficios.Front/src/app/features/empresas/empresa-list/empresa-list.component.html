@@ -78,7 +78,7 @@
                 <h3>{{ empresa.razaoSocial }}</h3>
                 <p>{{ empresa.dominio }}</p>
                 <p class="empresa-card-date">
-                  Inclusão: {{ empresa.dataInclusao | date: 'dd/MM/yyyy' }}
+                  Inclusão: {{ empresa.dataInclusao | date: dataInclusaoFormat }}
                 </p>
               </mat-card-content>
 
@@ -110,7 +110,7 @@
             <ng-container matColumnDef="dataInclusao">
               <th mat-header-cell *matHeaderCellDef>Data inclusão</th>
               <td mat-cell *matCellDef="let empresa">
-                {{ empresa.dataInclusao | date: 'dd/MM/yyyy' }}
+                {{ empresa.dataInclusao | date: dataInclusaoFormat }}
               </td>
             </ng-container>
 

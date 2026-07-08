@@ -9,17 +9,11 @@ export interface Empresa {
 export interface EmpresaSalvarRequest {
   razaoSocial: string;
   dominio: string;
-  nomeBanco: string;
-  usuarioBanco: string;
-  senhaBanco: string;
 }
 
 export interface EmpresaAtualizarRequest {
   razaoSocial: string;
   dominio: string;
-  nomeBanco: string;
-  usuarioBanco: string;
-  senhaBanco: string;
 }
 
 export interface EmpresaCreateResponse {

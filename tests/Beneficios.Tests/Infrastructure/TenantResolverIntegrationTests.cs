@@ -1,6 +1,6 @@
 using Beneficios.Application.Services;
+using Beneficios.Domain;
 using Beneficios.Domain.Models;
-using Beneficios.Domain.ValueObjects;
 using Beneficios.Infrastructure.Repositories;
 using Microsoft.Extensions.Configuration;
 using Npgsql;
@@ -12,37 +12,38 @@ namespace Beneficios.Tests.Infrastructure;
 public class TenantResolverIntegrationTests(PostgresFixture fixture)
 {
     [SkippableFact]
-    public async Task ResolveConnectionStringAsync_DeveRetornarConexaoAbertaParaTenantCadastrado()
+    public async Task ResolveAsync_DeveRetornarConexaoAbertaParaTenantCadastrado()
     {
         await PostgresTestHelper.PrepareAsync(fixture);
 
-        var catalogConnectionString = fixture.CatalogConnectionString!;
-        var catalogBuilder = new NpgsqlConnectionStringBuilder(catalogConnectionString);
-
+        const string razaoSocial = "Tenant Integração LTDA";
         var empresaRepository = new EmpresaRepository(fixture.Connection!);
         await empresaRepository.SalvarAsync(new EmpresaSalvarParams
         {
             Id = Guid.NewGuid(),
-            RazaoSocial = "Tenant Integração LTDA",
+            RazaoSocial = razaoSocial,
             Dominio = "empresatest",
-            NomeBanco = Criptografia.Encrypt(catalogBuilder.Database ?? "postgres"),
-            UsuarioBanco = Criptografia.Encrypt(catalogBuilder.Username ?? "postgres"),
-            SenhaBanco = Criptografia.Encrypt(catalogBuilder.Password ?? string.Empty),
         });
+
+        await PostgresFixture.ProvisionTenantSchemaAsync(fixture.Connection!, razaoSocial);
 
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["ConnectionStrings:DefaultConnection"] = catalogConnectionString,
+                ["ConnectionStrings:DefaultConnection"] = fixture.CatalogConnectionString,
             })
             .Build();
 
         var tenantResolver = new TenantResolver(new TenantCatalogRepository(configuration), configuration);
-        var tenantConnectionString = await tenantResolver.ResolveConnectionStringAsync("empresatest");
+        var resolution = await tenantResolver.ResolveAsync("empresatest");
 
-        Assert.NotNull(tenantConnectionString);
+        Assert.NotNull(resolution);
+        Assert.Equal("tenant_tenant_integra__o_ltda", resolution!.Schema);
 
-        await using var tenantConnection = new NpgsqlConnection(tenantConnectionString);
+        var builder = new NpgsqlConnectionStringBuilder(resolution.ConnectionString);
+        Assert.Equal("tenant_tenant_integra__o_ltda,beneficios", builder.SearchPath);
+
+        await using var tenantConnection = new NpgsqlConnection(resolution.ConnectionString);
         await tenantConnection.OpenAsync();
         Assert.Equal(System.Data.ConnectionState.Open, tenantConnection.State);
     }

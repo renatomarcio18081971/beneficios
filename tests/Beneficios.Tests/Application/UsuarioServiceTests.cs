@@ -3,6 +3,7 @@ using Beneficios.Application.DTOs;
 using Beneficios.Application.Interfaces;
 using Beneficios.Application.Mappings;
 using Beneficios.Application.Services;
+using Beneficios.Domain;
 using Beneficios.Domain.Enums;
 using Beneficios.Domain.Interfaces;
 using Beneficios.Domain.Models;
@@ -48,6 +49,11 @@ public class UsuarioServiceTests
         var id = Guid.NewGuid();
         var dto = new UsuarioAtualizarDto("Joao Silva", "joao@example.com", Guid.NewGuid());
 
+        _repositoryMock.Setup(x => x.ObterUmAsync(id)).ReturnsAsync(new UsuarioQueryResult
+        {
+            Id = id,
+            Email = "joao@example.com",
+        });
         _repositoryMock.Setup(x => x.AtualizarAsync(It.IsAny<UsuarioAtualizarParams>()))
             .ReturnsAsync(true);
 
@@ -59,10 +65,33 @@ public class UsuarioServiceTests
     }
 
     [Fact]
+    public async Task AtualizarAsync_UsuarioPadrao_NaoDeveAtualizar()
+    {
+        var id = Guid.NewGuid();
+        var dto = new UsuarioAtualizarDto("Outro Nome", "outro@example.com", Guid.NewGuid());
+
+        _repositoryMock.Setup(x => x.ObterUmAsync(id)).ReturnsAsync(new UsuarioQueryResult
+        {
+            Id = id,
+            Email = TenantDefaultUser.Email,
+        });
+
+        var result = await _service.AtualizarAsync(id, dto, null);
+
+        Assert.False(result);
+        _repositoryMock.Verify(x => x.AtualizarAsync(It.IsAny<UsuarioAtualizarParams>()), Times.Never);
+    }
+
+    [Fact]
     public async Task DeleteAsync_DeveDeletarUsuarioComSucesso()
     {
         var id = Guid.NewGuid();
 
+        _repositoryMock.Setup(x => x.ObterUmAsync(id)).ReturnsAsync(new UsuarioQueryResult
+        {
+            Id = id,
+            Email = "joao@example.com",
+        });
         _repositoryMock.Setup(x => x.DeleteAsync(id))
             .ReturnsAsync(true);
 
@@ -70,6 +99,23 @@ public class UsuarioServiceTests
 
         Assert.True(result);
         _repositoryMock.Verify(x => x.DeleteAsync(id), Times.Once);
+    }
+
+    [Fact]
+    public async Task DeleteAsync_UsuarioPadrao_NaoDeveExcluir()
+    {
+        var id = Guid.NewGuid();
+
+        _repositoryMock.Setup(x => x.ObterUmAsync(id)).ReturnsAsync(new UsuarioQueryResult
+        {
+            Id = id,
+            Email = TenantDefaultUser.Email,
+        });
+
+        var result = await _service.DeleteAsync(id);
+
+        Assert.False(result);
+        _repositoryMock.Verify(x => x.DeleteAsync(It.IsAny<Guid>()), Times.Never);
     }
 
     [Fact]

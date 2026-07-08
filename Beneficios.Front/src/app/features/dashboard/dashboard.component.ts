@@ -4,11 +4,12 @@ import { MatCardModule } from '@angular/material/card';
 import { ChartConfiguration, ChartData } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
 import { DashboardMockService } from './dashboard-mock.service';
+import { DashboardSummaryCardComponent } from './dashboard-summary-card/dashboard-summary-card.component';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [MatCardModule, BaseChartDirective, CurrencyPipe],
+  imports: [MatCardModule, BaseChartDirective, CurrencyPipe, DashboardSummaryCardComponent],
   templateUrl: './dashboard.component.html',
   changeDetection: ChangeDetectionStrategy.Default,
   styleUrl: './dashboard.component.scss',
@@ -20,6 +21,9 @@ export class DashboardComponent implements AfterViewInit {
 
   private readonly transporte = this.dashboardMock.getTransporte();
   private readonly alimentacao = this.dashboardMock.getAlimentacao();
+
+  readonly combustivelResumo = this.dashboardMock.getCombustivelResumo();
+  readonly culturaResumo = this.dashboardMock.getCulturaResumo();
 
   readonly transporteTotal = this.transporte.total;
   readonly alimentacaoTotal = this.alimentacao.total;
@@ -38,14 +42,26 @@ export class DashboardComponent implements AfterViewInit {
   readonly barChartOptions: ChartConfiguration<'bar'>['options'] = {
     responsive: true,
     maintainAspectRatio: false,
+    layout: {
+      padding: { top: 2, right: 2, bottom: 0, left: 0 },
+    },
     plugins: {
       legend: { display: false },
     },
     scales: {
+      x: {
+        ticks: {
+          maxRotation: 0,
+          autoSkip: true,
+          font: { size: 10 },
+        },
+        grid: { display: false },
+      },
       y: {
         ticks: {
-          callback: (value) =>
-            Number(value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }),
+          maxTicksLimit: 4,
+          font: { size: 10 },
+          callback: (value) => this.formatAxisCurrency(Number(value)),
         },
       },
     },
@@ -64,9 +80,17 @@ export class DashboardComponent implements AfterViewInit {
   readonly pieChartOptions: ChartConfiguration<'pie'>['options'] = {
     responsive: true,
     maintainAspectRatio: false,
+    layout: {
+      padding: { top: 0, right: 0, bottom: 0, left: 0 },
+    },
     plugins: {
       legend: {
         position: 'bottom',
+        labels: {
+          boxWidth: 10,
+          padding: 6,
+          font: { size: 10 },
+        },
       },
       tooltip: {
         callbacks: {
@@ -87,6 +111,18 @@ export class DashboardComponent implements AfterViewInit {
     this.chartsVisible = false;
     queueMicrotask(() => {
       this.chartsVisible = true;
+    });
+  }
+
+  private formatAxisCurrency(value: number): string {
+    if (value >= 1_000) {
+      return `R$ ${Math.round(value / 1_000)}k`;
+    }
+
+    return value.toLocaleString('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+      maximumFractionDigits: 0,
     });
   }
 }

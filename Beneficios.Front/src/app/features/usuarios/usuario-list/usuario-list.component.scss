@@ -64,6 +64,10 @@
 
 .usuario-table {
   width: 100%;
+
+  tr.mat-mdc-row:hover {
+    background-color: rgba(21, 101, 192, 0.08);
+  }
 }
 
 .usuario-cards {
@@ -85,4 +89,17 @@
 .usuario-card-date {
   font-size: 0.875rem;
   opacity: 0.7;
+}
+
+.header-actions,
+.actions-cell {
+  .mat-icon {
+    font-family: 'Material Icons';
+    font-feature-settings: 'liga';
+    width: 24px;
+    height: 24px;
+    font-size: 24px;
+    line-height: 1;
+    overflow: hidden;
+  }
 }

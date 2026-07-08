@@ -1,5 +1,4 @@
 using Beneficios.Domain.Interfaces;
-using Beneficios.Domain.Models;
 using Beneficios.Infrastructure.Configurations;
 using Dapper;
 using Microsoft.Extensions.Configuration;
@@ -17,15 +16,12 @@ public class TenantCatalogRepository : ITenantCatalogRepository
             ?? throw new InvalidOperationException("Connection string 'DefaultConnection' não configurada.");
     }
 
-    public async Task<EmpresaTenantInfo?> ObterPorDominioAsync(
+    public async Task<string?> ObterRazaoSocialPorDominioAsync(
         string dominio,
         CancellationToken cancellationToken = default)
     {
         const string sql = """
-            SELECT
-                nome_banco AS NomeBanco,
-                usuario_banco AS UsuarioBanco,
-                senha_banco AS SenhaBanco
+            SELECT razao_social
             FROM empresas
             WHERE LOWER(dominio) = LOWER(@Dominio)
             """;
@@ -34,7 +30,7 @@ public class TenantCatalogRepository : ITenantCatalogRepository
         if (connection.State != ConnectionState.Open)
             connection.Open();
 
-        return await connection.QueryFirstOrDefaultAsync<EmpresaTenantInfo>(
+        return await connection.QueryFirstOrDefaultAsync<string>(
             new CommandDefinition(sql, new { Dominio = dominio }, cancellationToken: cancellationToken));
     }
 }
