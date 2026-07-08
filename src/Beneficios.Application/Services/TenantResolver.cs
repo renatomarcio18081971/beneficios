@@ -1,7 +1,7 @@
 using Beneficios.Application.Interfaces;
+using Beneficios.Domain;
 using Beneficios.Domain.Interfaces;
 using Beneficios.Domain.Models;
-using Beneficios.Domain.ValueObjects;
 using Microsoft.Extensions.Configuration;
 using Npgsql;
 
@@ -19,20 +19,28 @@ public class TenantResolver : ITenantResolver
             ?? throw new InvalidOperationException("Connection string 'DefaultConnection' não configurada.");
     }
 
-    public async Task<string?> ResolveConnectionStringAsync(
+    public async Task<TenantResolution?> ResolveAsync(
         string tenantSubdomain,
         CancellationToken cancellationToken = default)
     {
         var tenant = NormalizeTenant(tenantSubdomain);
 
         if (string.Equals(tenant, "admin", StringComparison.OrdinalIgnoreCase))
-            return _catalogConnectionString;
+        {
+            return new TenantResolution(
+                _catalogConnectionString,
+                TenantSchemaNames.CatalogSchema,
+                tenant);
+        }
 
-        var empresa = await _tenantCatalogRepository.ObterPorDominioAsync(tenant, cancellationToken);
-        if (empresa is null)
+        var razaoSocial = await _tenantCatalogRepository.ObterRazaoSocialPorDominioAsync(tenant, cancellationToken);
+        if (razaoSocial is null)
             return null;
 
-        return BuildTenantConnectionString(empresa);
+        var schema = TenantSchemaNames.FromRazaoSocial(razaoSocial);
+        var connectionString = BuildTenantConnectionString(razaoSocial);
+
+        return new TenantResolution(connectionString, schema, tenant);
     }
 
     public static string NormalizeTenant(string? tenantSubdomain)
@@ -43,14 +51,11 @@ public class TenantResolver : ITenantResolver
         return tenantSubdomain.Trim().ToLowerInvariant();
     }
 
-    public string BuildTenantConnectionString(EmpresaTenantInfo empresa)
+    public string BuildTenantConnectionString(string razaoSocial)
     {
         var builder = new NpgsqlConnectionStringBuilder(_catalogConnectionString)
         {
-            Database = Criptografia.Decrypt(empresa.NomeBanco),
-            Username = Criptografia.Decrypt(empresa.UsuarioBanco),
-            Password = Criptografia.Decrypt(empresa.SenhaBanco),
-            SearchPath = "beneficios",
+            SearchPath = TenantSchemaNames.GetTenantSearchPath(razaoSocial),
         };
 
         return builder.ConnectionString;

@@ -1,0 +1,57 @@
+<mat-card class="summary-card" [class]="'summary-card--' + resumo().tema">
+  <mat-card-content>
+    <header class="summary-card__header">
+      <div class="summary-card__title-group">
+        <mat-icon class="summary-card__icon" aria-hidden="true">{{ resumo().icone }}</mat-icon>
+        <h2 class="summary-card__title">{{ resumo().titulo }}</h2>
+      </div>
+
+      <div class="summary-card__due">
+        <span class="summary-card__due-label">
+          Vence em {{ resumo().diasParaVencimento }}
+          {{ resumo().diasParaVencimento === 1 ? 'dia' : 'dias' }}
+        </span>
+        <span class="summary-card__due-date">
+          {{ resumo().dataVencimento | date: "d 'de' MMM" : undefined : 'pt-BR' }}
+        </span>
+      </div>
+    </header>
+
+    <div class="summary-card__chart-area">
+      <div class="summary-card__chart-container">
+        @if (chartVisible) {
+          <canvas
+            baseChart
+            [data]="doughnutChartData()"
+            [options]="doughnutChartOptions"
+            type="doughnut"
+          ></canvas>
+        }
+
+        <div class="summary-card__chart-center" aria-hidden="true">
+          <span class="summary-card__chart-total">
+            {{ resumo().valorTotal | currency: 'BRL' : 'symbol' : '1.2-2' : 'pt-BR' }}
+          </span>
+          <span class="summary-card__chart-label">Valor total</span>
+          <span class="summary-card__chart-period">{{ resumo().periodoLabel }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="summary-card__legend">
+      @for (categoria of resumo().categorias; track categoria.label) {
+        <div class="summary-card__legend-item">
+          <span class="summary-card__legend-value" [style.color]="categoria.cor">
+            {{ categoria.valor | currency: 'BRL' : 'symbol' : '1.2-2' : 'pt-BR' }}
+          </span>
+          <span class="summary-card__legend-label">{{ categoria.label }}</span>
+        </div>
+      }
+    </div>
+
+    <footer class="summary-card__insight">
+      <mat-icon class="summary-card__insight-icon" aria-hidden="true">lightbulb</mat-icon>
+      <p class="summary-card__insight-text">{{ resumo().insight }}</p>
+    </footer>
+  </mat-card-content>
+</mat-card>

@@ -1,12 +1,25 @@
-import { Component, OnInit, inject, ChangeDetectionStrategy } from '@angular/core';
+import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
+import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { finalize } from 'rxjs';
 import { EmpresaService } from '../../../core/api/empresa.service';
+import {
+  ConfirmSaveDialogComponent,
+  ConfirmSaveDialogData,
+  CONFIRM_SAVE_DIALOG_WIDTH,
+} from '../../../shared/dialogs/confirm-save-dialog.component';
+import {
+  EmpresaDefaultUserDialogComponent,
+  EMPRESA_DEFAULT_USER_DIALOG_WIDTH,
+} from '../../../shared/dialogs/empresa-default-user-dialog.component';
+import { buildTenantSchemaName } from '../../../shared/utils/tenant-schema-name';
 
 @Component({
   selector: 'app-empresa-form',
@@ -21,7 +34,6 @@ import { EmpresaService } from '../../../core/api/empresa.service';
     MatProgressSpinnerModule,
   ],
   templateUrl: './empresa-form.component.html',
-  changeDetection: ChangeDetectionStrategy.Default,
   styleUrl: './empresa-form.component.scss',
 })
 export class EmpresaFormComponent implements OnInit {
@@ -29,82 +41,124 @@ export class EmpresaFormComponent implements OnInit {
   private readonly empresaService = inject(EmpresaService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly dialog = inject(MatDialog);
+  private readonly destroyRef = inject(DestroyRef);
 
-  loading = false;
-  loadingData = false;
-  errorMessage = '';
-  isEdit = false;
-  empresaId = '';
+  readonly loading = signal(false);
+  readonly loadingData = signal(false);
+  readonly errorMessage = signal('');
+  readonly isEdit = signal(false);
+  readonly empresaId = signal('');
 
   readonly form = this.fb.nonNullable.group({
     razaoSocial: ['', [Validators.required, Validators.minLength(2)]],
     dominio: ['', [Validators.required, Validators.pattern(/^[a-z0-9-]+$/)]],
-    nomeBanco: ['', [Validators.required]],
-    usuarioBanco: ['', [Validators.required]],
-    senhaBanco: [''],
   });
+
+  private readonly razaoSocialValue = toSignal(this.form.controls.razaoSocial.valueChanges, {
+    initialValue: this.form.controls.razaoSocial.value,
+  });
+
+  readonly tenantSchemaPreview = computed(() => buildTenantSchemaName(this.razaoSocialValue()));
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
-      this.isEdit = true;
-      this.empresaId = id;
-      this.form.controls.senhaBanco.clearValidators();
+      this.isEdit.set(true);
+      this.empresaId.set(id);
       this.loadEmpresa(id);
-      return;
     }
-
-    this.form.controls.senhaBanco.setValidators([Validators.required, Validators.minLength(4)]);
-    this.form.controls.senhaBanco.updateValueAndValidity();
   }
 
-  get title(): string {
-    return this.isEdit ? 'Editar empresa' : 'Nova empresa';
-  }
+  readonly title = computed(() =>
+    this.isEdit() ? 'Editar empresa' : 'Nova empresa',
+  );
 
   loadEmpresa(id: string): void {
-    this.loadingData = true;
-    this.empresaService.getById(id).subscribe({
-      next: (empresa) => {
-        this.form.patchValue({
-          razaoSocial: empresa.razaoSocial,
-          dominio: empresa.dominio,
-        });
-        this.loadingData = false;
-      },
-      error: () => {
-        this.loadingData = false;
-        this.errorMessage = 'Não foi possível carregar a empresa.';
-      },
-    });
+    this.loadingData.set(true);
+    this.errorMessage.set('');
+
+    this.empresaService
+      .getById(id)
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => this.loadingData.set(false)),
+      )
+      .subscribe({
+        next: (empresa) => {
+          this.form.patchValue({
+            razaoSocial: empresa.razaoSocial,
+            dominio: empresa.dominio,
+          });
+        },
+        error: () => {
+          this.errorMessage.set('Não foi possível carregar a empresa.');
+        },
+      });
   }
 
   submit(): void {
-    if (this.form.invalid || this.loading) {
+    if (this.form.invalid || this.loading()) {
       this.form.markAllAsTouched();
       return;
     }
 
-    const payload = this.form.getRawValue();
-    this.loading = true;
-    this.errorMessage = '';
+    const dialogRef = this.dialog.open<ConfirmSaveDialogComponent, ConfirmSaveDialogData, boolean>(
+      ConfirmSaveDialogComponent,
+      {
+        width: CONFIRM_SAVE_DIALOG_WIDTH,
+        maxWidth: '90vw',
+        data: {
+          nome: this.form.controls.razaoSocial.value,
+          entityLabel: 'a empresa',
+          isEdit: this.isEdit(),
+        },
+      },
+    );
 
-    if (this.isEdit) {
-      this.empresaService.update(this.empresaId, payload).subscribe({
+    dialogRef.afterClosed().subscribe((confirmed) => {
+      if (confirmed) {
+        this.persist();
+      }
+    });
+  }
+
+  private persist(): void {
+    const payload = this.form.getRawValue();
+    this.loading.set(true);
+    this.errorMessage.set('');
+
+    if (this.isEdit()) {
+      this.empresaService.update(this.empresaId(), payload).subscribe({
         next: () => void this.router.navigate(['/empresas']),
         error: () => {
-          this.loading = false;
-          this.errorMessage = 'Não foi possível atualizar a empresa.';
+          this.loading.set(false);
+          this.errorMessage.set('Não foi possível atualizar a empresa.');
         },
       });
       return;
     }
 
     this.empresaService.create(payload).subscribe({
-      next: () => void this.router.navigate(['/empresas']),
+      next: () => {
+        this.loading.set(false);
+        const dialogRef = this.dialog.open(EmpresaDefaultUserDialogComponent, {
+          width: EMPRESA_DEFAULT_USER_DIALOG_WIDTH,
+          maxWidth: '90vw',
+          disableClose: true,
+          data: {
+            dominio: payload.dominio,
+            razaoSocial: payload.razaoSocial,
+          },
+        });
+
+        dialogRef.afterClosed().subscribe(() => {
+          void this.router.navigate(['/empresas']);
+        });
+      },
       error: () => {
-        this.loading = false;
-        this.errorMessage = 'Não foi possível criar a empresa.';
+        this.loading.set(false);
+        this.errorMessage.set('Não foi possível criar a empresa.');
       },
     });
   }

@@ -10,11 +10,16 @@ namespace Beneficios.Application.Services;
 public class EmpresaService : IEmpresaService
 {
     private readonly IEmpresaRepository _empresaRepository;
+    private readonly ITenantProvisioner _tenantProvisioner;
     private readonly IMapper _mapper;
 
-    public EmpresaService(IEmpresaRepository empresaRepository, IMapper mapper)
+    public EmpresaService(
+        IEmpresaRepository empresaRepository,
+        ITenantProvisioner tenantProvisioner,
+        IMapper mapper)
     {
         _empresaRepository = empresaRepository;
+        _tenantProvisioner = tenantProvisioner;
         _mapper = mapper;
     }
 
@@ -22,7 +27,19 @@ public class EmpresaService : IEmpresaService
     {
         var empresa = _mapper.Map<Empresa>(dto);
         var salvarParams = _mapper.Map<EmpresaSalvarParams>(empresa);
+
         await _empresaRepository.SalvarAsync(salvarParams);
+
+        try
+        {
+            await _tenantProvisioner.ProvisionAsync(salvarParams.RazaoSocial, salvarParams.Id);
+        }
+        catch
+        {
+            await _empresaRepository.DeleteAsync(salvarParams.Id);
+            throw;
+        }
+
         return empresa.Id;
     }
 

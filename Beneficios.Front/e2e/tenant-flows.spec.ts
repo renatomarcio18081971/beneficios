@@ -23,6 +23,7 @@ test.describe('Fluxos críticos tenant', () => {
     await page.getByLabel('Email').fill('novo@empresa1.com');
     await page.getByLabel('Senha').fill('senha123');
     await page.getByRole('button', { name: 'Salvar' }).click();
+    await page.getByRole('button', { name: 'Sim, salvar' }).click();
     await page.waitForURL('**/usuarios');
     await expect(page.getByRole('heading', { name: 'Usuários' })).toBeVisible();
   });
@@ -52,6 +53,36 @@ test.describe('Fluxos críticos tenant', () => {
     await page.goto('/usuarios');
     await page.waitForURL('**/login');
     await expect(page.getByText('Sessão expirada. Faça login novamente.')).toBeVisible();
+  });
+
+  test('listagem carrega linhas após loading', async ({ page }) => {
+    await mockTenantLogin(page);
+    await mockUsuarioList(page, [
+      {
+        id: '11111111-1111-1111-1111-111111111111',
+        nome: 'João Silva',
+        email: 'joao@empresa1.com',
+        empresaId: tenantSession.empresaId,
+        empresaNome: 'Empresa 1',
+        dataInclusao: '2024-01-15T10:30:00',
+        dataAlteracao: null,
+      },
+    ]);
+
+    await page.addInitScript((session) => {
+      sessionStorage.setItem('beneficios_token', session.token);
+      sessionStorage.setItem('beneficios_user', JSON.stringify({
+        usuarioId: session.usuarioId,
+        nome: session.nome,
+        email: session.email,
+        perfil: session.perfil,
+        empresaId: session.empresaId,
+        empresaDominio: session.empresaDominio,
+      }));
+    }, tenantSession);
+
+    await page.goto('/usuarios');
+    await expect(page.getByText('João Silva')).toBeVisible({ timeout: 10000 });
   });
 
   test('exportar Excel na listagem de usuários', async ({ page }) => {

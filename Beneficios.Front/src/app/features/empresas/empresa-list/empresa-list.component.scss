@@ -64,6 +64,10 @@
 
 .empresa-table {
   width: 100%;
+
+  tr.mat-mdc-row:hover {
+    background-color: rgba(21, 101, 192, 0.08);
+  }
 }
 
 .empresa-cards {

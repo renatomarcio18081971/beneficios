@@ -1,5 +1,6 @@
 .shell-container {
   height: 100vh;
+  overflow: hidden;
 }
 
 .shell-sidenav {
@@ -31,6 +32,18 @@
   padding: 16px;
   background: var(--beneficios-background);
   min-height: calc(100vh - 64px);
+  max-height: calc(100vh - 64px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+mat-sidenav-content {
+  overflow-x: hidden;
+  min-width: 0;
 }
 
 .active-link {

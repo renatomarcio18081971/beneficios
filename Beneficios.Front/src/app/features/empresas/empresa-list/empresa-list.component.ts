@@ -20,7 +20,12 @@ import { ExportService } from '../../../shared/utils/export.service';
 import {
   ConfirmDeleteDialogComponent,
   ConfirmDeleteDialogData,
+  CONFIRM_DELETE_DIALOG_WIDTH,
 } from '../../../shared/dialogs/confirm-delete-dialog.component';
+import {
+  DATA_INCLUSAO_DATE_PIPE_FORMAT,
+  formatDataInclusao,
+} from '../../../shared/utils/date-format';
 
 @Component({
   selector: 'app-empresa-list',
@@ -61,6 +66,7 @@ export class EmpresaListComponent {
   private readonly destroyRef = inject(DestroyRef);
 
   readonly displayedColumns = ['razaoSocial', 'dominio', 'dataInclusao', 'acoes'];
+  readonly dataInclusaoFormat = DATA_INCLUSAO_DATE_PIPE_FORMAT;
   readonly dataSource = new MatTableDataSource<Empresa>([]);
 
   readonly loading = signal(true);
@@ -73,7 +79,7 @@ export class EmpresaListComponent {
     {
       key: 'dataInclusao',
       label: 'Data inclusão',
-      format: (value) => this.formatDate(value),
+      format: (value) => formatDataInclusao(value),
     },
   ];
 
@@ -128,7 +134,8 @@ export class EmpresaListComponent {
     const dialogRef = this.dialog.open<ConfirmDeleteDialogComponent, ConfirmDeleteDialogData, boolean>(
       ConfirmDeleteDialogComponent,
       {
-        width: '360px',
+        width: CONFIRM_DELETE_DIALOG_WIDTH,
+        maxWidth: '90vw',
         data: { nome: empresa.razaoSocial, entityLabel: 'a empresa' },
       },
     );
@@ -147,11 +154,4 @@ export class EmpresaListComponent {
     });
   }
 
-  private formatDate(value: unknown): string {
-    if (!value) {
-      return '';
-    }
-
-    return new Date(String(value)).toLocaleDateString('pt-BR');
-  }
 }

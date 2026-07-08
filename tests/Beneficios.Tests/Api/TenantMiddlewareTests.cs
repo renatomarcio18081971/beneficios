@@ -1,5 +1,6 @@
 using System.Net;
 using Beneficios.Application.Interfaces;
+using Beneficios.Domain.Models;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
@@ -13,8 +14,8 @@ public class TenantMiddlewareTests
     {
         var tenantResolverMock = new Mock<ITenantResolver>();
         tenantResolverMock
-            .Setup(resolver => resolver.ResolveConnectionStringAsync("desconhecido", It.IsAny<CancellationToken>()))
-            .ReturnsAsync((string?)null);
+            .Setup(resolver => resolver.ResolveAsync("desconhecido", It.IsAny<CancellationToken>()))
+            .ReturnsAsync((TenantResolution?)null);
 
         await using var factory = new WebApplicationFactory<Program>()
             .WithWebHostBuilder(builder =>
@@ -47,8 +48,8 @@ public class TenantMiddlewareTests
     {
         var tenantResolverMock = new Mock<ITenantResolver>();
         tenantResolverMock
-            .Setup(resolver => resolver.ResolveConnectionStringAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((string?)null);
+            .Setup(resolver => resolver.ResolveAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((TenantResolution?)null);
 
         await using var factory = new WebApplicationFactory<Program>()
             .WithWebHostBuilder(builder =>
@@ -73,7 +74,7 @@ public class TenantMiddlewareTests
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         tenantResolverMock.Verify(
-            resolver => resolver.ResolveConnectionStringAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()),
+            resolver => resolver.ResolveAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()),
             Times.Never);
     }
 }

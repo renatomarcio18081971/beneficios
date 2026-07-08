@@ -1,5 +1,4 @@
 ﻿using Beneficios.Domain.Models;
-using Beneficios.Domain.ValueObjects;
 using Beneficios.Infrastructure.Repositories;
 using Xunit;
 
@@ -21,9 +20,6 @@ public class EmpresaRepositoryTests(PostgresFixture fixture)
             Id = empresaId,
             RazaoSocial = "Empresa Teste LTDA",
             Dominio = "teste",
-            NomeBanco = Criptografia.Encrypt("dbname"),
-            UsuarioBanco = Criptografia.Encrypt("dbuser"),
-            SenhaBanco = Criptografia.Encrypt("dbpass")
         });
 
         Assert.Equal(empresaId, result);
@@ -46,18 +42,12 @@ public class EmpresaRepositoryTests(PostgresFixture fixture)
             Id = Guid.NewGuid(),
             RazaoSocial = "Beta SA",
             Dominio = "beta",
-            NomeBanco = "db1",
-            UsuarioBanco = "user1",
-            SenhaBanco = "pass1"
         });
         await repository.SalvarAsync(new EmpresaSalvarParams
         {
             Id = Guid.NewGuid(),
             RazaoSocial = "Alpha LTDA",
             Dominio = "alpha",
-            NomeBanco = "db2",
-            UsuarioBanco = "user2",
-            SenhaBanco = "pass2"
         });
 
         var empresas = await repository.ObterTodosAsync();
@@ -80,9 +70,6 @@ public class EmpresaRepositoryTests(PostgresFixture fixture)
             Id = empresaId,
             RazaoSocial = "Empresa Remover",
             Dominio = "remover",
-            NomeBanco = "db",
-            UsuarioBanco = "user",
-            SenhaBanco = "pass"
         });
 
         var deleted = await repository.DeleteAsync(empresaId);
@@ -104,9 +91,6 @@ public class EmpresaRepositoryTests(PostgresFixture fixture)
             Id = empresaId,
             RazaoSocial = "Empresa Original",
             Dominio = "original",
-            NomeBanco = "db",
-            UsuarioBanco = "user",
-            SenhaBanco = "pass"
         });
 
         var updated = await repository.AtualizarAsync(new EmpresaAtualizarParams
@@ -114,9 +98,6 @@ public class EmpresaRepositoryTests(PostgresFixture fixture)
             Id = empresaId,
             RazaoSocial = "Empresa Atualizada",
             Dominio = "atualizada",
-            NomeBanco = "db2",
-            UsuarioBanco = "user2",
-            SenhaBanco = "pass2"
         });
 
         Assert.True(updated);

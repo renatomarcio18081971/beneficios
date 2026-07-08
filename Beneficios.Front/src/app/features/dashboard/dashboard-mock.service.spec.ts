@@ -44,4 +44,53 @@ describe('DashboardMockService', () => {
       expect(somaValores).toBe(data.total);
     });
   });
+
+  describe('getCombustivelResumo', () => {
+    it('deve retornar 4 categorias com soma igual ao valor total', () => {
+      const data = service.getCombustivelResumo();
+
+      expect(data.titulo).toBe('Vale Combustível');
+      expect(data.tema).toBe('combustivel');
+      expect(data.categorias).toHaveSize(4);
+      expect(data.categorias.map((c) => c.label)).toEqual([
+        'Deslocamento',
+        'Viagens',
+        'Entregas',
+        'Outros',
+      ]);
+
+      const soma = data.categorias.reduce((acc, c) => acc + c.valor, 0);
+      expect(soma).toBe(data.valorTotal);
+    });
+
+    it('deve conter textos em português', () => {
+      const data = service.getCombustivelResumo();
+
+      expect(data.periodoLabel).toContain('Período');
+      expect(data.insight).toContain('mês passado');
+      expect(data.diasParaVencimento).toBe(6);
+    });
+  });
+
+  describe('getCulturaResumo', () => {
+    it('deve retornar 4 categorias com soma igual ao valor total', () => {
+      const data = service.getCulturaResumo();
+
+      expect(data.titulo).toBe('Vale Cultura');
+      expect(data.tema).toBe('cultura');
+      expect(data.categorias).toHaveSize(4);
+      expect(data.categorias.map((c) => c.label)).toEqual(['Cinema', 'Livros', 'Teatro', 'Outros']);
+
+      const soma = data.categorias.reduce((acc, c) => acc + c.valor, 0);
+      expect(soma).toBe(data.valorTotal);
+    });
+
+    it('deve conter textos em português', () => {
+      const data = service.getCulturaResumo();
+
+      expect(data.periodoLabel).toContain('Período');
+      expect(data.insight).toContain('mês anterior');
+      expect(data.diasParaVencimento).toBe(12);
+    });
+  });
 });

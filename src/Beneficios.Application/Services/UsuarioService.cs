@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Beneficios.Application.DTOs;
 using Beneficios.Application.Interfaces;
+using Beneficios.Domain;
 using Beneficios.Domain.Entities;
 using Beneficios.Domain.Enums;
 using Beneficios.Domain.Interfaces;
@@ -32,6 +33,13 @@ public class UsuarioService : IUsuarioService
 
     public async Task<bool> AtualizarAsync(Guid id, UsuarioAtualizarDto dto, Guid? usuarioAlteracaoId)
     {
+        var usuario = await _usuarioRepository.ObterUmAsync(id);
+        if (usuario is null)
+            return false;
+
+        if (TenantDefaultUser.IsDefaultUser(usuario.Email))
+            return false;
+
         return await _usuarioRepository.AtualizarAsync(
             _mapper.Map<UsuarioAtualizarParams>(dto) with
             {
@@ -42,6 +50,13 @@ public class UsuarioService : IUsuarioService
 
     public async Task<bool> DeleteAsync(Guid id)
     {
+        var usuario = await _usuarioRepository.ObterUmAsync(id);
+        if (usuario is null)
+            return false;
+
+        if (TenantDefaultUser.IsDefaultUser(usuario.Email))
+            return false;
+
         return await _usuarioRepository.DeleteAsync(id);
     }
 
