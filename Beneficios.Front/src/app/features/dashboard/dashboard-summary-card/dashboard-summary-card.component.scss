@@ -106,14 +106,28 @@
 .summary-card__chart-container {
   position: relative;
   width: 100%;
-  max-width: 150px;
-  height: 140px;
+  max-width: clamp(160px, 42cqi, 200px);
+  height: clamp(150px, 38cqi, 190px);
   min-width: 0;
 
   canvas {
     display: block;
     max-width: 100%;
     max-height: 100%;
+  }
+}
+
+@media (min-height: 768px) {
+  .summary-card__chart-container {
+    max-width: clamp(170px, 44cqi, 210px);
+    height: clamp(160px, 40cqi, 200px);
+  }
+}
+
+@media (min-height: 900px) {
+  .summary-card__chart-container {
+    max-width: clamp(180px, 46cqi, 220px);
+    height: clamp(170px, 42cqi, 210px);
   }
 }
 

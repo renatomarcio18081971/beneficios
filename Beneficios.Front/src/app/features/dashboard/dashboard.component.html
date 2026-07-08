@@ -2,13 +2,16 @@
   <h1>Dashboard</h1>
 
   <div class="dashboard-grid">
-    <mat-card class="dashboard-card">
-      <mat-card-header>
-        <mat-card-title>Vale Transporte</mat-card-title>
-        <mat-card-subtitle>Gasto nos últimos 6 meses</mat-card-subtitle>
-      </mat-card-header>
-
+    <mat-card class="dashboard-card dashboard-card--transporte">
       <mat-card-content>
+        <header class="dashboard-card__header">
+          <div class="dashboard-card__title-group">
+            <mat-icon class="dashboard-card__icon" aria-hidden="true">directions_bus</mat-icon>
+            <h2 class="dashboard-card__title">Vale Transporte</h2>
+          </div>
+          <span class="dashboard-card__subtitle">Gasto nos últimos 6 meses</span>
+        </header>
+
         <p class="dashboard-total">{{ transporteTotal | currency: 'BRL' : 'symbol' : '1.2-2' : 'pt-BR' }}</p>
         <div class="chart-container">
           @if (chartsVisible) {
@@ -18,13 +21,16 @@
       </mat-card-content>
     </mat-card>
 
-    <mat-card class="dashboard-card">
-      <mat-card-header>
-        <mat-card-title>Vale Alimentação</mat-card-title>
-        <mat-card-subtitle>Distribuição por categoria</mat-card-subtitle>
-      </mat-card-header>
-
+    <mat-card class="dashboard-card dashboard-card--alimentacao">
       <mat-card-content>
+        <header class="dashboard-card__header">
+          <div class="dashboard-card__title-group">
+            <mat-icon class="dashboard-card__icon" aria-hidden="true">restaurant</mat-icon>
+            <h2 class="dashboard-card__title">Vale Alimentação</h2>
+          </div>
+          <span class="dashboard-card__subtitle">Distribuição por categoria</span>
+        </header>
+
         <p class="dashboard-total">{{ alimentacaoTotal | currency: 'BRL' : 'symbol' : '1.2-2' : 'pt-BR' }}</p>
         <div class="chart-container">
           @if (chartsVisible) {
