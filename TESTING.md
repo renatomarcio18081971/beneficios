@@ -1,25 +1,25 @@
-﻿# Guia de Testes - Benef�cios API
+﻿# Guia de Testes - Benefícios API
 
-## ?? Estrutura de Testes
+## Estrutura de Testes
 
-Os testes est�o organizados em:
+Os testes estão organizados em:
 
 ```
 tests/Beneficios.Tests/
 ??? Domain/           # Testes de entidades e value objects
-??? Application/      # Testes de servi�os
+??? Application/      # Testes de serviços
 ??? Api/              # Testes de controllers
 ```
 
-## ?? Como Executar os Testes
+## Como Executar os Testes
 
 ### Via Visual Studio
 1. Abra o **Test Explorer** (Ctrl + E, T)
 2. Clique em "Run All" para executar todos os testes
 
 ### Via Visual Studio Code
-1. Instale a extens�o ".NET Core Test Explorer"
-2. Os testes aparecer�o na aba de testes
+1. Instale a extensão ".NET Core Test Explorer"
+2. Os testes aparecerão na aba de testes
 3. Clique em "Run All Tests"
 
 ### Via CLI
@@ -34,7 +34,7 @@ dotnet test
 dotnet test --logger "console;verbosity=detailed"
 ```
 
-**Executar testes espec�ficos:**
+**Executar testes específicos:**
 ```bash
 # Apenas testes do Domain
 dotnet test --filter "FullyQualifiedName~Beneficios.Tests.Domain"
@@ -46,36 +46,36 @@ dotnet test --filter "FullyQualifiedName~Beneficios.Tests.Application"
 dotnet test --filter "FullyQualifiedName~Beneficios.Tests.Api"
 ```
 
-**Executar com cobertura de c�digo:**
+**Executar com cobertura de código:**
 ```bash
 dotnet test /p:CollectCoverage=true
 ```
 
-## ?? Testes Implementados
+## Testes Implementados
 
-### Domain (Dom�nio)
+### Domain (Domínio)
 
 #### UsuarioTests
-- ? Cria��o de usu�rio com propriedades corretas
-- ? Valida��o de email
-- ? Preenchimento de data de inclus�o
+- ? Crição de usuário com propriedades corretas
+- ? Validção de email
+- ? Preenchimento de data de inclusão
 
 #### EmpresaTests
-- ? Cria��o de empresa com propriedades corretas
-- ? Valida��o de dom�nio
-- ? Preenchimento de data de inclus�o
+- ? Crição de empresa com propriedades corretas
+- ? Validção de domínio
+- ? Preenchimento de data de inclusão
 
 #### CriptografiaTests
 - ? Criptografia de texto
 - ? Descriptografia de texto
 - ? Reversibilidade (encrypt/decrypt)
 
-### Application (Aplica��o)
+### Application (Aplicção)
 
 #### UsuarioServiceTests
-- ? Criar usu�rio com sucesso
-- ? Atualizar usu�rio com sucesso
-- ? Deletar usu�rio com sucesso
+- ? Criar usuário com sucesso
+- ? Atualizar usuário com sucesso
+- ? Deletar usuário com sucesso
 
 #### EmpresaServiceTests
 - ? Criar empresa com sucesso
@@ -83,28 +83,28 @@ dotnet test /p:CollectCoverage=true
 - ? Deletar empresa com sucesso
 
 #### TokenServiceTests
-- ? Gerar token v�lido
+- ? Gerar token válido
 - ? Validar token correto
-- ? Retornar null para token inv�lido
+- ? Retornar null para token inválido
 - ? Retornar null para token vazio
 
 ### API (Controllers)
 
 #### UsuariosControllerTests
-- ? Retornar lista de usu�rios
-- ? Buscar usu�rio por ID
-- ? Retornar 404 quando usu�rio n�o existe
-- ? Deletar usu�rio com sucesso
-- ? Retornar 404 ao deletar usu�rio inexistente
+- ? Retornar lista de usuários
+- ? Buscar usuário por ID
+- ? Retornar 404 quando usuário não existe
+- ? Deletar usuário com sucesso
+- ? Retornar 404 ao deletar usuário inexistente
 
 #### EmpresasControllerTests
 - ? Retornar lista de empresas
 - ? Buscar empresa por ID
-- ? Retornar 404 quando empresa n�o existe
+- ? Retornar 404 quando empresa não existe
 - ? Deletar empresa com sucesso
 - ? Retornar 404 ao deletar empresa inexistente
 
-## ?? Exemplo de Sa�da
+## Exemplo de Saída
 
 ```
 Test run for C:\Projetos\dotnet\Beneficios\tests\Beneficios.Tests\bin\Debug\net9.0\Beneficios.Tests.dll (.NETCoreApp,Version=v9.0)
@@ -116,9 +116,9 @@ A total of 1 test files matched the specified pattern.
 Passed!  - Failed:     0, Passed:    19, Skipped:     0, Total:    19, Duration: 500 ms
 ```
 
-## ?? Adicionar Novos Testes
+## Adicionar Novos Testes
 
-### Estrutura b�sica de um teste
+### Estrutura básica de um teste
 
 ```csharp
 using Xunit;
@@ -142,7 +142,7 @@ public class MinhaClasseTests
 }
 ```
 
-### Com Moq (Mock de depend�ncias)
+### Com Moq (Mock de dependências)
 
 ```csharp
 using Moq;
@@ -178,23 +178,23 @@ public class MeuServiceTests
 }
 ```
 
-## ?? Bibliotecas Utilizadas
+## Bibliotecas Utilizadas
 
 - **xUnit**: Framework de testes
 - **Moq**: Biblioteca para criar mocks
-- **FluentAssertions**: Asser��es mais leg�veis (opcional)
+- **FluentAssertions**: Asserções mais legíveis (opcional)
 
-## ?? Boas Pr�ticas
+## Boas Práticas
 
 1. **Nomenclatura**: Use `MetodoTestado_CondicaoTestada_ResultadoEsperado`
 2. **AAA Pattern**: Arrange, Act, Assert
 3. **Um assert por teste**: Cada teste deve verificar apenas uma coisa
-4. **Testes independentes**: N�o devem depender da ordem de execu��o
-5. **Mock apenas depend�ncias externas**: Banco de dados, APIs externas, etc.
+4. **Testes independentes**: Não devem depender da ordem de execução
+5. **Mock apenas dependências externas**: Banco de dados, APIs externas, etc.
 
-## ?? Cobertura de C�digo
+## Cobertura de Código
 
-Para gerar relat�rio de cobertura de c�digo:
+Para gerar relatório de cobertura de código:
 
 ```bash
 dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
@@ -207,17 +207,17 @@ dotnet tool install -g dotnet-reportgenerator-globaltool
 reportgenerator -reports:coverage.opencover.xml -targetdir:coveragereport
 ```
 
-## ? Meta de Cobertura
+## Meta de Cobertura
 
 - **Domain**: > 90%
 - **Application**: > 80%
 - **API**: > 70%
 
-## ?? Debug de Testes
+## Debug de Testes
 
 ### Visual Studio
 1. Coloque um breakpoint no teste
-2. Clique com bot�o direito no teste
+2. Clique com botão direito no teste
 3. Selecione "Debug Test"
 
 ### VS Code
@@ -225,7 +225,7 @@ reportgenerator -reports:coverage.opencover.xml -targetdir:coveragereport
 2. Coloque breakpoints
 3. Execute em modo debug
 
-## ?? Refer�ncias
+## Referências
 
 - [xUnit Documentation](https://xunit.net/)
 - [Moq Documentation](https://github.com/moq/moq4)

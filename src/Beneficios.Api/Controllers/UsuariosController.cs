@@ -26,14 +26,14 @@ public class UsuariosController : ControllerBase
     {
         try
         {
-            _logger.LogInformation("Criando novo usu�rio: {Email}", dto.Email);
+            _logger.LogInformation("Criando novo usuário: {Email}", dto.Email);
             var id = await _usuarioService.SalvarAsync(dto);
             return CreatedAtAction(nameof(GetById), new { id }, new { id });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao criar usu�rio: {Email}", dto.Email);
-            return StatusCode(500, new { message = "Erro ao criar usu�rio" });
+            _logger.LogError(ex, "Erro ao criar usuário: {Email}", dto.Email);
+            return StatusCode(500, new { message = "Erro ao criar usuário" });
         }
     }
 
@@ -44,18 +44,18 @@ public class UsuariosController : ControllerBase
         try
         {
             var usuarioAlteracaoId = GetUsuarioIdFromToken();
-            _logger.LogInformation("Atualizando usu�rio: {Id}", id);
+            _logger.LogInformation("Atualizando usuário: {Id}", id);
 
             var success = await _usuarioService.AtualizarAsync(id, dto, usuarioAlteracaoId);
             if (!success)
-                return NotFound(new { message = "Usu�rio n�o encontrado" });
+                return NotFound(new { message = "Usuário não encontrado" });
 
             return NoContent();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao atualizar usu�rio: {Id}", id);
-            return StatusCode(500, new { message = "Erro ao atualizar usu�rio" });
+            _logger.LogError(ex, "Erro ao atualizar usuário: {Id}", id);
+            return StatusCode(500, new { message = "Erro ao atualizar usuário" });
         }
     }
 
@@ -67,14 +67,14 @@ public class UsuariosController : ControllerBase
         {
             var usuario = await _usuarioService.ObterUmAsync(id);
             if (usuario == null)
-                return NotFound(new { message = "Usu�rio n�o encontrado" });
+                return NotFound(new { message = "Usuário não encontrado" });
 
             return Ok(usuario);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao buscar usu�rio: {Id}", id);
-            return StatusCode(500, new { message = "Erro ao buscar usu�rio" });
+            _logger.LogError(ex, "Erro ao buscar usuário: {Id}", id);
+            return StatusCode(500, new { message = "Erro ao buscar usuário" });
         }
     }
 
@@ -89,8 +89,8 @@ public class UsuariosController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao buscar usu�rios");
-            return StatusCode(500, new { message = "Erro ao buscar usu�rios" });
+            _logger.LogError(ex, "Erro ao buscar usuários");
+            return StatusCode(500, new { message = "Erro ao buscar usuários" });
         }
     }
 
@@ -100,17 +100,17 @@ public class UsuariosController : ControllerBase
     {
         try
         {
-            _logger.LogInformation("Deletando usu�rio: {Id}", id);
+            _logger.LogInformation("Deletando usuário: {Id}", id);
             var success = await _usuarioService.DeleteAsync(id);
             if (!success)
-                return NotFound(new { message = "Usu�rio n�o encontrado" });
+                return NotFound(new { message = "Usuário não encontrado" });
 
             return NoContent();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao deletar usu�rio: {Id}", id);
-            return StatusCode(500, new { message = "Erro ao deletar usu�rio" });
+            _logger.LogError(ex, "Erro ao deletar usuário: {Id}", id);
+            return StatusCode(500, new { message = "Erro ao deletar usuário" });
         }
     }
 

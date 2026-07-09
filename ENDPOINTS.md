@@ -1,4 +1,4 @@
-﻿# Documenta��o de Endpoints - Benef�cios API
+﻿# Documentção de Endpoints - Benefícios API
 
 ## Base URL
 ```
@@ -7,23 +7,23 @@ ou
 https://localhost:8081
 ```
 
-## Autentica��o
+## Autenticção
 
-Todos os endpoints, exceto o de login, requerem autentica��o via JWT Bearer Token.
+Todos os endpoints, exceto o de login, requerem autenticção via JWT Bearer Token.
 
-**Header obrigat�rio:**
+**Header obrigatório:**
 ```
 Authorization: Bearer {seu-token-jwt}
 ```
 
 ---
 
-## ?? Login
+## Login
 
 ### POST /api/usuarios/login
-Realiza o login do usu�rio e retorna o token JWT.
+Realiza o login do usuário e retorna o token JWT.
 
-**Corpo da requisi��o:**
+**Corpo da requisção:**
 ```json
 {
   "email": "admin@exemplo.com",
@@ -44,23 +44,23 @@ Realiza o login do usu�rio e retorna o token JWT.
 **Resposta de erro (401):**
 ```json
 {
-  "message": "Email ou senha inv�lidos"
+  "message": "Email ou senha inválidos"
 }
 ```
 
 ---
 
-## ?? Usu�rios
+## Usuários
 
 ### POST /api/usuarios
-Cria um novo usu�rio.
+Cria um novo usuário.
 
-**Requer autentica��o:** ?
+**Requer autenticção:** ?
 
-**Corpo da requisi��o:**
+**Corpo da requisção:**
 ```json
 {
-  "nome": "Jo�o Silva",
+  "nome": "João Silva",
   "senha": "senha123",
   "email": "joao@exemplo.com",
   "empresaId": "11111111-1111-1111-1111-111111111111"
@@ -77,40 +77,40 @@ Cria um novo usu�rio.
 ---
 
 ### PUT /api/usuarios/{id}
-Atualiza um usu�rio existente.
+Atualiza um usuário existente.
 
-**Requer autentica��o:** ?
+**Requer autenticção:** ?
 
-**Par�metros de URL:**
-- `id` (guid): ID do usu�rio
+**Parâmetros de URL:**
+- `id` (guid): ID do usuário
 
-**Corpo da requisi��o:**
+**Corpo da requisção:**
 ```json
 {
-  "nome": "Jo�o Silva Atualizado",
+  "nome": "João Silva Atualizado",
   "email": "joao.novo@exemplo.com",
   "empresaId": "11111111-1111-1111-1111-111111111111"
 }
 ```
 
-**Resposta de sucesso (204):** Sem conte�do
+**Resposta de sucesso (204):** Sem conteúdo
 
 **Resposta de erro (404):**
 ```json
 {
-  "message": "Usu�rio n�o encontrado"
+  "message": "Usuário não encontrado"
 }
 ```
 
 ---
 
 ### GET /api/usuarios/{id}
-Busca um usu�rio por ID.
+Busca um usuário por ID.
 
-**Requer autentica��o:** ?
+**Requer autenticção:** ?
 
-**Par�metros de URL:**
-- `id` (guid): ID do usu�rio
+**Parâmetros de URL:**
+- `id` (guid): ID do usuário
 
 **Resposta de sucesso (200):**
 ```json
@@ -128,16 +128,16 @@ Busca um usu�rio por ID.
 **Resposta de erro (404):**
 ```json
 {
-  "message": "Usu�rio n�o encontrado"
+  "message": "Usuário não encontrado"
 }
 ```
 
 ---
 
 ### GET /api/usuarios
-Lista todos os usu�rios.
+Lista todos os usuários.
 
-**Requer autentica��o:** ?
+**Requer autenticção:** ?
 
 **Resposta de sucesso (200):**
 ```json
@@ -153,7 +153,7 @@ Lista todos os usu�rios.
   },
   {
     "id": "88888888-8888-8888-8888-888888888888",
-    "nome": "Usu�rio Teste",
+    "nome": "Usuário Teste",
     "email": "teste@exemplo.com",
     "empresaId": "11111111-1111-1111-1111-111111111111",
     "empresaNome": "Empresa Exemplo LTDA",
@@ -166,32 +166,32 @@ Lista todos os usu�rios.
 ---
 
 ### DELETE /api/usuarios/{id}
-Deleta um usu�rio.
+Deleta um usuário.
 
-**Requer autentica��o:** ?
+**Requer autenticção:** ?
 
-**Par�metros de URL:**
-- `id` (guid): ID do usu�rio
+**Parâmetros de URL:**
+- `id` (guid): ID do usuário
 
-**Resposta de sucesso (204):** Sem conte�do
+**Resposta de sucesso (204):** Sem conteúdo
 
 **Resposta de erro (404):**
 ```json
 {
-  "message": "Usu�rio n�o encontrado"
+  "message": "Usuário não encontrado"
 }
 ```
 
 ---
 
-## ?? Empresas
+## Empresas
 
 ### POST /api/empresas
 Cria uma nova empresa.
 
-**Requer autentica��o:** ?
+**Requer autenticção:** ?
 
-**Corpo da requisi��o:**
+**Corpo da requisção:**
 ```json
 {
   "razaoSocial": "Minha Empresa LTDA",
@@ -214,12 +214,12 @@ Cria uma nova empresa.
 ### PUT /api/empresas/{id}
 Atualiza uma empresa existente.
 
-**Requer autentica��o:** ?
+**Requer autenticção:** ?
 
-**Par�metros de URL:**
+**Parâmetros de URL:**
 - `id` (guid): ID da empresa
 
-**Corpo da requisi��o:**
+**Corpo da requisção:**
 ```json
 {
   "razaoSocial": "Minha Empresa LTDA - Atualizada",
@@ -230,12 +230,12 @@ Atualiza uma empresa existente.
 }
 ```
 
-**Resposta de sucesso (204):** Sem conte�do
+**Resposta de sucesso (204):** Sem conteúdo
 
 **Resposta de erro (404):**
 ```json
 {
-  "message": "Empresa n�o encontrada"
+  "message": "Empresa não encontrada"
 }
 ```
 
@@ -244,9 +244,9 @@ Atualiza uma empresa existente.
 ### GET /api/empresas/{id}
 Busca uma empresa por ID.
 
-**Requer autentica��o:** ?
+**Requer autenticção:** ?
 
-**Par�metros de URL:**
+**Parâmetros de URL:**
 - `id` (guid): ID da empresa
 
 **Resposta de sucesso (200):**
@@ -263,7 +263,7 @@ Busca uma empresa por ID.
 **Resposta de erro (404):**
 ```json
 {
-  "message": "Empresa n�o encontrada"
+  "message": "Empresa não encontrada"
 }
 ```
 
@@ -272,7 +272,7 @@ Busca uma empresa por ID.
 ### GET /api/empresas
 Lista todas as empresas.
 
-**Requer autentica��o:** ?
+**Requer autenticção:** ?
 
 **Resposta de sucesso (200):**
 ```json
@@ -299,28 +299,28 @@ Lista todas as empresas.
 ### DELETE /api/empresas/{id}
 Deleta uma empresa.
 
-**Requer autentica��o:** ?
+**Requer autenticção:** ?
 
-**Par�metros de URL:**
+**Parâmetros de URL:**
 - `id` (guid): ID da empresa
 
-**Resposta de sucesso (204):** Sem conte�do
+**Resposta de sucesso (204):** Sem conteúdo
 
 **Resposta de erro (404):**
 ```json
 {
-  "message": "Empresa n�o encontrada"
+  "message": "Empresa não encontrada"
 }
 ```
 
 ---
 
-## ?? Health Check
+## Health Check
 
 ### GET /health
 Verifica o status da API.
 
-**Requer autentica��o:** ?
+**Requer autenticção:** ?
 
 **Resposta de sucesso (200):**
 ```
@@ -329,30 +329,30 @@ Healthy
 
 ---
 
-## ?? C�digos de Status HTTP
+## Códigos de Status HTTP
 
-| C�digo | Descri��o |
+| Código | Descrição |
 |--------|-----------|
-| 200 | OK - Requisi��o bem-sucedida |
+| 200 | OK - Requisção bem-sucedida |
 | 201 | Created - Recurso criado com sucesso |
-| 204 | No Content - Opera��o bem-sucedida sem retorno |
-| 400 | Bad Request - Dados inv�lidos |
-| 401 | Unauthorized - N�o autenticado ou token inv�lido |
-| 404 | Not Found - Recurso n�o encontrado |
+| 204 | No Content - Operção bem-sucedida sem retorno |
+| 400 | Bad Request - Dados inválidos |
+| 401 | Unauthorized - Não autenticado ou token inválido |
+| 404 | Not Found - Recurso não encontrado |
 | 500 | Internal Server Error - Erro interno do servidor |
 
 ---
 
-## ?? Observa��es de Seguran�a
+## Observções de Segurança
 
-1. **Senhas**: S�o criptografadas em Base64 (considere usar bcrypt em produ��o)
-2. **Dados de Conex�o de Banco**: Campos `nomeBanco`, `usuarioBanco` e `senhaBanco` s�o criptografados
+1. **Senhas**: São criptografadas em Base64 (considere usar bcrypt em produção)
+2. **Dados de Conexão de Banco**: Campos `nomeBanco`, `usuarioBanco` e `senhaBanco` são criptografados
 3. **Token JWT**: Expira em 8 horas
-4. **HTTPS**: Sempre use HTTPS em produ��o
+4. **HTTPS**: Sempre use HTTPS em produção
 
 ---
 
-## ?? Exemplo de Uso com cURL
+## Exemplo de Uso com cURL
 
 ### Login
 ```bash
@@ -361,7 +361,7 @@ curl -X POST http://localhost:8080/api/usuarios/login \
   -d '{"email":"admin@exemplo.com","senha":"admin123"}'
 ```
 
-### Listar Usu�rios (com token)
+### Listar Usuários (com token)
 ```bash
 curl -X GET http://localhost:8080/api/usuarios \
   -H "Authorization: Bearer {seu-token}"
