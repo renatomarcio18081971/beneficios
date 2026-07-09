@@ -1,56 +1,60 @@
-﻿version: '3.8'
-
-services:
-  postgres:
-    image: postgres:16-alpine
-    container_name: beneficios-postgres
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: beneficios
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./src/Beneficios.Infrastructure/Scripts:/docker-entrypoint-initdb.d
-    networks:
-      - beneficios-network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
+﻿services:
   api:
     build:
       context: .
       dockerfile: src/Beneficios.Api/Dockerfile
     container_name: beneficios-api
-    ports:
-      - "8080:8080"
-      - "8081:8081"
+    restart: unless-stopped
+    expose:
+      - "8080"
+    env_file:
+      - .env.docker
     environment:
-      ASPNETCORE_ENVIRONMENT: Development
-      ASPNETCORE_URLS: http://+:8080
-      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=beneficios;Username=postgres;Password=postgres"
-      JwtSettings__SecretKey: "sua-chave-secreta-super-segura-com-pelo-menos-32-caracteres"
-      JwtSettings__Issuer: "BeneficiosApi"
-      JwtSettings__Audience: "BeneficiosClient"
-    depends_on:
-      postgres:
-        condition: service_healthy
-    networks:
-      - beneficios-network
+      ASPNETCORE_ENVIRONMENT: Docker
+      ConnectionStrings__DefaultConnection: ${DEFAULT_CONNECTION}
+    volumes:
+      - api_logs:/app/logs
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
       interval: 30s
-      timeout: 10s
+      timeout: 5s
       retries: 3
-      start_period: 40s
+      start_period: 25s
+    networks:
+      - beneficios
 
-volumes:
-  postgres_data:
+  front:
+    build:
+      context: .
+      dockerfile: Beneficios.Front/Dockerfile
+    container_name: beneficios-front
+    restart: unless-stopped
+    expose:
+      - "80"
+    networks:
+      - beneficios
+
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: beneficios-nginx
+    restart: unless-stopped
+    ports:
+      - "9443:443"
+      - "9081:80"
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/certs:/etc/nginx/certs:ro
+    depends_on:
+      api:
+        condition: service_healthy
+      front:
+        condition: service_started
+    networks:
+      - beneficios
 
 networks:
-  beneficios-network:
+  beneficios:
     driver: bridge
+
+volumes:
+  api_logs:

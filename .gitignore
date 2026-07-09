@@ -219,3 +219,7 @@ Beneficios.Front/.env.sonar.local
 
 # Docker
 docker-compose.override.yml
+.env.docker
+docker/certs/*.crt
+docker/certs/*.key
+!docker/certs/.gitkeep
