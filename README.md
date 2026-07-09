@@ -1,44 +1,44 @@
-﻿# Benef�cios API
+# Benefícios API
 
-API desenvolvida em .NET 9 seguindo princ�pios de Domain-Driven Design (DDD) de forma enxuta.
+API desenvolvida em .NET 9 seguindo princípios de Domain-Driven Design (DDD) de forma enxuta.
 
-## ??? Arquitetura
+## Arquitetura
 
-A solu��o est� organizada em camadas seguindo DDD:
+A solução está organizada em camadas seguindo DDD:
 
 ```
 ?? beneficios-api
  ??? ?? src
- ?    ??? ?? Beneficios.Api           # Camada de Apresenta��o (Controllers)
- ?    ??? ?? Beneficios.Application   # Camada de Aplica��o (Services, DTOs, Mappings)
- ?    ??? ?? Beneficios.Domain        # Camada de Dom�nio (Entities, Interfaces, ValueObjects)
+ ?    ??? ?? Beneficios.Api           # Camada de Apresentação (Controllers)
+ ?    ??? ?? Beneficios.Application   # Camada de Aplicção (Services, DTOs, Mappings)
+ ?    ??? ?? Beneficios.Domain        # Camada de Domínio (Entities, Interfaces, ValueObjects)
  ?    ??? ?? Beneficios.Infrastructure # Camada de Infraestrutura (Repositories, Configurations)
  ??? ?? tests
-      ??? ?? Beneficios.Tests         # Testes Unit�rios
+      ??? ?? Beneficios.Tests         # Testes Unitários
 ```
 
-## ?? Tecnologias Utilizadas
+## Tecnologias Utilizadas
 
 - **.NET 9**
 - **PostgreSQL** - Banco de dados
 - **Dapper** - Micro ORM para alta performance
 - **AutoMapper** - Mapeamento entre objetos
-- **JWT** - Autentica��o e autoriza��o
+- **JWT** - Autenticção e autorizção
 - **Serilog** - Logs estruturados
-- **xUnit + Moq** - Testes unit�rios
-- **Docker** - Containeriza��o
+- **xUnit + Moq** - Testes unitários
+- **Docker** - Containerizção
 
-## ?? Pr�-requisitos
+## Pré-requisitos
 
 - [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
 - [Docker](https://www.docker.com/get-started)
-- [PostgreSQL](https://www.postgresql.org/download/) (caso n�o use Docker)
+- [PostgreSQL](https://www.postgresql.org/download/) (caso não use Docker)
 
-## ?? Configura��o
+## Configurção
 
 ### appsettings.json
 
-Configure a connection string do PostgreSQL e as configura��es do JWT:
+Configure a connection string do PostgreSQL e as configurções do JWT:
 
 ```json
 {
@@ -53,15 +53,15 @@ Configure a connection string do PostgreSQL e as configura��es do JWT:
 }
 ```
 
-## ?? Docker
+## Docker
 
-### Subir a aplica��o com Docker Compose
+### Subir a aplicção com Docker Compose
 
 ```bash
 docker-compose up -d
 ```
 
-Isso ir� subir:
+Isso irá subir:
 - PostgreSQL na porta 5432
 - API na porta 8080
 
@@ -71,21 +71,21 @@ Isso ir� subir:
 docker-compose up -d postgres
 ```
 
-## ??? Database
+## Database
 
-Os scripts SQL est�o em `src/Beneficios.Infrastructure/Scripts/`:
+Os scripts SQL estão em `src/Beneficios.Infrastructure/Scripts/`:
 
 1. `01_Create_Table_Empresas.sql` - Cria tabela de empresas
-2. `02_Create_Table_Usuarios.sql` - Cria tabela de usu�rios
+2. `02_Create_Table_Usuarios.sql` - Cria tabela de usuários
 
 Execute os scripts na ordem para criar o banco de dados.
 
-## ?? Como Executar Localmente
+## Como Executar Localmente
 
 ### Via Visual Studio / Visual Studio Code
 
 1. Abra a solution `beneficios-api.sln`
-2. Configure o projeto `Beneficios.Api` como projeto de inicializa��o
+2. Configure o projeto `Beneficios.Api` como projeto de inicializção
 3. Execute (F5)
 
 ### Via CLI
@@ -95,31 +95,31 @@ cd src/Beneficios.Api
 dotnet run
 ```
 
-A API estar� dispon�vel em:
+A API estár disponível em:
 - HTTP: `http://localhost:5000`
 - HTTPS: `https://localhost:5001`
 - Swagger: `http://localhost:5000/swagger`
 - Health Check: `http://localhost:5000/health`
 
-## ?? Executar Testes
+## Executar Testes
 
 ```bash
 dotnet test
 ```
 
-## ?? Endpoints
+## Endpoints
 
-### Autentica��o
+### Autenticção
 
-- **POST** `/api/usuarios/login` - Fazer login (p�blico)
+- **POST** `/api/usuarios/login` - Fazer login (público)
 
-### Usu�rios (Autenticado)
+### Usuários (Autenticado)
 
-- **POST** `/api/usuarios` - Criar usu�rio
-- **PUT** `/api/usuarios/{id}` - Atualizar usu�rio
-- **GET** `/api/usuarios/{id}` - Buscar usu�rio por ID
-- **GET** `/api/usuarios` - Listar todos os usu�rios
-- **DELETE** `/api/usuarios/{id}` - Deletar usu�rio
+- **POST** `/api/usuarios` - Criar usuário
+- **PUT** `/api/usuarios/{id}` - Atualizar usuário
+- **GET** `/api/usuarios/{id}` - Buscar usuário por ID
+- **GET** `/api/usuarios` - Listar todos os usuários
+- **DELETE** `/api/usuarios/{id}` - Deletar usuário
 
 ### Empresas (Autenticado)
 
@@ -129,21 +129,21 @@ dotnet test
 - **GET** `/api/empresas` - Listar todas as empresas
 - **DELETE** `/api/empresas/{id}` - Deletar empresa
 
-## ?? Autentica��o
+## Autenticção
 
 A API utiliza JWT Bearer Token. Para acessar endpoints protegidos:
 
-1. Fa�a login em `/api/usuarios/login`
+1. Faça login em `/api/usuarios/login`
 2. Copie o token retornado
 3. Adicione o header: `Authorization: Bearer {seu-token}`
 
-## ?? Observa��es
+## Observções
 
-- Senhas s�o criptografadas usando Base64 (considere usar bcrypt em produ��o)
-- Dados sens�veis de empresas (conex�o com banco) s�o criptografados
-- Logs s�o salvos na pasta `logs/`
-- Health check dispon�vel em `/health`
+- Senhas são criptografadas usando Base64 (considere usar bcrypt em produção)
+- Dados sensíveis de empresas (conexão com banco) são criptografados
+- Logs são salvos na pasta `logs/`
+- Health check disponível em `/health`
 
-## ?? Licen�a
+## Licença
 
-Este projeto � de c�digo aberto.
+Este projeto é de código aberto.
