@@ -83,7 +83,6 @@ __pycache__/
 local.settings.json
 
 # User-specific files
-launchSettings.json
 
 # ASP.NET Scaffolding
 ScaffoldingReadMe.txt
@@ -206,6 +205,21 @@ logs/
 .env
 .env.local
 .env.*.local
+.env.sonar.local
+Beneficios.Front/.env.sonar.local
+
+# SonarQube / SonarScanner (artefatos locais de analise)
+.sonarqube/
+.scannerwork/
+**/.scannerwork/
+
+# Relatorios de cobertura (gerados pelos testes)
+**/coverage/
+*.opencover.xml
 
 # Docker
 docker-compose.override.yml
+.env.docker
+docker/certs/*.crt
+docker/certs/*.key
+!docker/certs/.gitkeep

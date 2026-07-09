@@ -1,4 +1,4 @@
-﻿using Beneficios.Domain.Interfaces;
+using Beneficios.Domain.Interfaces;
 using Beneficios.Domain.Models;
 using Dapper;
 using System.Data;
@@ -14,35 +14,29 @@ public class EmpresaRepository : IEmpresaRepository
         _dbConnection = dbConnection;
     }
 
-    public async Task<Guid> CreateAsync(EmpresaCreateParams empresa)
+    public async Task<Guid> SalvarAsync(EmpresaSalvarParams empresa)
     {
         var sql = @"
-            INSERT INTO empresas (id, razao_social, dominio, nome_banco, usuario_banco, senha_banco, data_inclusao)
-            VALUES (@Id, @RazaoSocial, @Dominio, @NomeBanco, @UsuarioBanco, @SenhaBanco, @DataInclusao)";
+            INSERT INTO empresas (id, razao_social, dominio, data_inclusao)
+            VALUES (@Id, @RazaoSocial, @Dominio, @DataInclusao)";
 
         await _dbConnection.ExecuteAsync(sql, new
         {
             empresa.Id,
             empresa.RazaoSocial,
             empresa.Dominio,
-            empresa.NomeBanco,
-            empresa.UsuarioBanco,
-            empresa.SenhaBanco,
             DataInclusao = DateTime.UtcNow
         });
 
         return empresa.Id;
     }
 
-    public async Task<bool> UpdateAsync(EmpresaUpdateParams empresa)
+    public async Task<bool> AtualizarAsync(EmpresaAtualizarParams empresa)
     {
         var sql = @"
             UPDATE empresas
             SET razao_social = @RazaoSocial,
                 dominio = @Dominio,
-                nome_banco = @NomeBanco,
-                usuario_banco = @UsuarioBanco,
-                senha_banco = @SenhaBanco,
                 data_alteracao = @DataAlteracao,
                 usuario_alteracao_id = @UsuarioAlteracaoId
             WHERE id = @Id";
@@ -52,9 +46,6 @@ public class EmpresaRepository : IEmpresaRepository
             empresa.Id,
             empresa.RazaoSocial,
             empresa.Dominio,
-            empresa.NomeBanco,
-            empresa.UsuarioBanco,
-            empresa.SenhaBanco,
             DataAlteracao = DateTime.UtcNow,
             empresa.UsuarioAlteracaoId
         });
@@ -69,7 +60,7 @@ public class EmpresaRepository : IEmpresaRepository
         return rowsAffected > 0;
     }
 
-    public async Task<EmpresaQueryResult?> GetByIdAsync(Guid id)
+    public async Task<EmpresaQueryResult?> ObterUmAsync(Guid id)
     {
         var sql = @"
             SELECT 
@@ -84,7 +75,7 @@ public class EmpresaRepository : IEmpresaRepository
         return await _dbConnection.QueryFirstOrDefaultAsync<EmpresaQueryResult>(sql, new { Id = id });
     }
 
-    public async Task<EmpresaQueryResult[]> GetAllAsync()
+    public async Task<EmpresaQueryResult[]> ObterTodosAsync()
     {
         var sql = @"
             SELECT 

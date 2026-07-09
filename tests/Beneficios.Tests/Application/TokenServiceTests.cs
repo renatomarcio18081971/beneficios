@@ -1,41 +1,41 @@
-﻿using Beneficios.Application.Interfaces;
-using Beneficios.Application.Services;
+﻿using Beneficios.Application.Services;
+using Beneficios.Domain.Enums;
+using System.IdentityModel.Tokens.Jwt;
 using Xunit;
 
 namespace Beneficios.Tests.Application;
 
 public class TokenServiceTests
 {
-    private readonly ITokenService _tokenService;
-    private readonly string _secretKey = "sua-chave-secreta-super-segura-com-pelo-menos-32-caracteres";
-    private readonly string _issuer = "BeneficiosApi";
-    private readonly string _audience = "BeneficiosClient";
+    private const string Secret = "sua-chave-secreta-super-segura-com-pelo-menos-32-caracteres";
+    private readonly TokenService _service = new(Secret, "BeneficiosApi", "BeneficiosClient");
 
-    public TokenServiceTests()
+    [Fact]
+    public void GenerateToken_DeveIncluirClaimsPerfilEEmpresaId()
     {
-        _tokenService = new TokenService(_secretKey, _issuer, _audience);
+        var token = _service.GenerateToken(Guid.NewGuid(), "admin@test.com", UsuarioPerfil.Admin, null);
+        var jwt = new JwtSecurityTokenHandler().ReadJwtToken(token);
+
+        Assert.Equal("Admin", jwt.Claims.First(c => c.Type == "perfil").Value);
+        Assert.DoesNotContain(jwt.Claims, c => c.Type == "empresa_id");
     }
 
     [Fact]
-    public void GenerateToken_DeveGerarTokenValido()
+    public void GenerateToken_ComEmpresa_DeveIncluirEmpresaId()
     {
-        var usuarioId = Guid.NewGuid();
-        var email = "teste@example.com";
+        var empresaId = Guid.NewGuid();
+        var token = _service.GenerateToken(Guid.NewGuid(), "u@test.com", UsuarioPerfil.Empresa, empresaId);
+        var jwt = new JwtSecurityTokenHandler().ReadJwtToken(token);
 
-        var token = _tokenService.GenerateToken(usuarioId, email);
-
-        Assert.NotNull(token);
-        Assert.NotEmpty(token);
+        Assert.Equal(empresaId.ToString(), jwt.Claims.First(c => c.Type == "empresa_id").Value);
     }
 
     [Fact]
     public void ValidateToken_DeveValidarTokenCorreto()
     {
         var usuarioId = Guid.NewGuid();
-        var email = "teste@example.com";
-
-        var token = _tokenService.GenerateToken(usuarioId, email);
-        var validatedUserId = _tokenService.ValidateToken(token);
+        var token = _service.GenerateToken(usuarioId, "teste@example.com", UsuarioPerfil.Empresa, Guid.NewGuid());
+        var validatedUserId = _service.ValidateToken(token);
 
         Assert.NotNull(validatedUserId);
         Assert.Equal(usuarioId, validatedUserId);
@@ -44,9 +44,7 @@ public class TokenServiceTests
     [Fact]
     public void ValidateToken_DeveRetornarNullParaTokenInvalido()
     {
-        var tokenInvalido = "token-invalido-123";
-
-        var result = _tokenService.ValidateToken(tokenInvalido);
+        var result = _service.ValidateToken("token-invalido-123");
 
         Assert.Null(result);
     }
@@ -54,7 +52,7 @@ public class TokenServiceTests
     [Fact]
     public void ValidateToken_DeveRetornarNullParaTokenVazio()
     {
-        var result = _tokenService.ValidateToken(string.Empty);
+        var result = _service.ValidateToken(string.Empty);
 
         Assert.Null(result);
     }

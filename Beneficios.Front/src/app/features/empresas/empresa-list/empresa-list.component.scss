@@ -1,0 +1,105 @@
+.empresa-list-page {
+  padding: 16px;
+}
+
+.empresa-list-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.empresa-list-header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 500;
+}
+
+.header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  padding: 48px 0;
+}
+
+.list-content {
+  position: relative;
+}
+
+.list-content.is-loading .table-container,
+.list-content.is-loading .empresa-cards {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.loading-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.error-message {
+  color: #c62828;
+}
+
+.empty-message {
+  color: var(--beneficios-text);
+  opacity: 0.7;
+}
+
+.table-container {
+  overflow-x: auto;
+}
+
+.empresa-table {
+  width: 100%;
+
+  tr.mat-mdc-row:hover {
+    background-color: rgba(21, 101, 192, 0.08);
+  }
+}
+
+.empresa-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.empresa-card h3 {
+  margin: 0 0 8px;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.empresa-card p {
+  margin: 0 0 4px;
+}
+
+.empresa-card-date {
+  font-size: 0.875rem;
+  opacity: 0.7;
+}
+
+.header-actions,
+.actions-cell {
+  .mat-icon {
+    font-family: 'Material Icons';
+    font-feature-settings: 'liga';
+    width: 24px;
+    height: 24px;
+    font-size: 24px;
+    line-height: 1;
+    overflow: hidden;
+  }
+}

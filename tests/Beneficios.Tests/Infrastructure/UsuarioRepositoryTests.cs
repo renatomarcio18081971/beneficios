@@ -1,44 +1,61 @@
-﻿using Beneficios.Domain.Models;
+using Beneficios.Domain.Models;
 using Beneficios.Domain.ValueObjects;
 using Beneficios.Infrastructure.Repositories;
 using Xunit;
 
 namespace Beneficios.Tests.Infrastructure;
 
-public class UsuarioRepositoryTests(PostgresFixture fixture) : IClassFixture<PostgresFixture>
+[Collection("Postgres")]
+public class UsuarioRepositoryTests(PostgresFixture fixture)
 {
+    private const string TenantRazaoSocial = "Empresa Teste";
+
     [SkippableFact]
-    public async Task CreateAsync_DeveInserirUsuarioNoBanco()
+    public async Task SalvarAsync_DeveInserirUsuarioNoBanco()
     {
-        Skip.If(!fixture.Disponivel, "PostgreSQL indisponivel para testes de repositorio.");
+        await PostgresTestHelper.PrepareAsync(fixture);
 
         var empresaId = await SeedEmpresaAsync();
-        var repository = new UsuarioRepository(fixture.Connection!);
+        await using var tenantConnection = await fixture.CreateTenantConnectionAsync(TenantRazaoSocial);
+        var repository = new UsuarioRepository(tenantConnection);
         var usuarioId = Guid.NewGuid();
 
-        var result = await repository.CreateAsync(new UsuarioCreateParams(
-            usuarioId, "João Silva", Criptografia.Encrypt("senha123"), "joao@example.com", empresaId));
+        var result = await repository.SalvarAsync(new UsuarioSalvarParams
+        {
+            Id = usuarioId,
+            Nome = "Joao Silva",
+            Senha = Criptografia.Encrypt("senha123"),
+            Email = "joao@example.com",
+            EmpresaId = empresaId
+        });
 
         Assert.Equal(usuarioId, result);
 
-        var usuario = await repository.GetByIdAsync(usuarioId);
+        var usuario = await repository.ObterUmAsync(usuarioId);
         Assert.NotNull(usuario);
-        Assert.Equal("João Silva", usuario.Nome);
+        Assert.Equal("Joao Silva", usuario.Nome);
         Assert.Equal("joao@example.com", usuario.Email);
     }
 
     [SkippableFact]
     public async Task GetByEmailAsync_DeveRetornarUsuarioParaLogin()
     {
-        Skip.If(!fixture.Disponivel, "PostgreSQL indisponivel para testes de repositorio.");
+        await PostgresTestHelper.PrepareAsync(fixture);
 
         var empresaId = await SeedEmpresaAsync();
-        var repository = new UsuarioRepository(fixture.Connection!);
+        await using var tenantConnection = await fixture.CreateTenantConnectionAsync(TenantRazaoSocial);
+        var repository = new UsuarioRepository(tenantConnection);
         var usuarioId = Guid.NewGuid();
         var senhaCriptografada = Criptografia.Encrypt("admin123");
 
-        await repository.CreateAsync(new UsuarioCreateParams(
-            usuarioId, "Admin", senhaCriptografada, "admin@example.com", empresaId));
+        await repository.SalvarAsync(new UsuarioSalvarParams
+        {
+            Id = usuarioId,
+            Nome = "Admin",
+            Senha = senhaCriptografada,
+            Email = "admin@example.com",
+            EmpresaId = empresaId
+        });
 
         var usuario = await repository.GetByEmailAsync("admin@example.com");
 
@@ -50,14 +67,21 @@ public class UsuarioRepositoryTests(PostgresFixture fixture) : IClassFixture<Pos
     [SkippableFact]
     public async Task UpdateTokenAsync_DevePersistirTokenGeradoNoLogin()
     {
-        Skip.If(!fixture.Disponivel, "PostgreSQL indisponivel para testes de repositorio.");
+        await PostgresTestHelper.PrepareAsync(fixture);
 
         var empresaId = await SeedEmpresaAsync();
-        var repository = new UsuarioRepository(fixture.Connection!);
+        await using var tenantConnection = await fixture.CreateTenantConnectionAsync(TenantRazaoSocial);
+        var repository = new UsuarioRepository(tenantConnection);
         var usuarioId = Guid.NewGuid();
 
-        await repository.CreateAsync(new UsuarioCreateParams(
-            usuarioId, "Admin", Criptografia.Encrypt("admin123"), "admin@example.com", empresaId));
+        await repository.SalvarAsync(new UsuarioSalvarParams
+        {
+            Id = usuarioId,
+            Nome = "Admin",
+            Senha = Criptografia.Encrypt("admin123"),
+            Email = "admin@example.com",
+            EmpresaId = empresaId
+        });
 
         var token = "jwt-token-exemplo";
         var updated = await repository.UpdateTokenAsync(usuarioId, token);
@@ -69,13 +93,110 @@ public class UsuarioRepositoryTests(PostgresFixture fixture) : IClassFixture<Pos
         Assert.Equal(token, usuario.Token);
     }
 
+    [SkippableFact]
+    public async Task AtualizarAsync_DeveAtualizarUsuarioExistente()
+    {
+        await PostgresTestHelper.PrepareAsync(fixture);
+
+        var empresaId = await SeedEmpresaAsync();
+        await using var tenantConnection = await fixture.CreateTenantConnectionAsync(TenantRazaoSocial);
+        var repository = new UsuarioRepository(tenantConnection);
+        var usuarioId = Guid.NewGuid();
+
+        await repository.SalvarAsync(new UsuarioSalvarParams
+        {
+            Id = usuarioId,
+            Nome = "Joao",
+            Senha = Criptografia.Encrypt("senha123"),
+            Email = "joao@example.com",
+            EmpresaId = empresaId
+        });
+
+        var updated = await repository.AtualizarAsync(new UsuarioAtualizarParams
+        {
+            Id = usuarioId,
+            Nome = "Joao Silva",
+            Email = "joao.silva@example.com",
+            EmpresaId = empresaId
+        });
+
+        Assert.True(updated);
+
+        var usuario = await repository.ObterUmAsync(usuarioId);
+        Assert.NotNull(usuario);
+        Assert.Equal("Joao Silva", usuario!.Nome);
+        Assert.Equal("joao.silva@example.com", usuario.Email);
+    }
+
+    [SkippableFact]
+    public async Task DeleteAsync_DeveRemoverUsuarioExistente()
+    {
+        await PostgresTestHelper.PrepareAsync(fixture);
+
+        var empresaId = await SeedEmpresaAsync();
+        await using var tenantConnection = await fixture.CreateTenantConnectionAsync(TenantRazaoSocial);
+        var repository = new UsuarioRepository(tenantConnection);
+        var usuarioId = Guid.NewGuid();
+
+        await repository.SalvarAsync(new UsuarioSalvarParams
+        {
+            Id = usuarioId,
+            Nome = "Remover",
+            Senha = Criptografia.Encrypt("senha123"),
+            Email = "remover@example.com",
+            EmpresaId = empresaId
+        });
+
+        var deleted = await repository.DeleteAsync(usuarioId);
+
+        Assert.True(deleted);
+        Assert.Null(await repository.ObterUmAsync(usuarioId));
+    }
+
+    [SkippableFact]
+    public async Task ObterTodosAsync_DeveRetornarUsuariosOrdenados()
+    {
+        await PostgresTestHelper.PrepareAsync(fixture);
+
+        var empresaId = await SeedEmpresaAsync();
+        await using var tenantConnection = await fixture.CreateTenantConnectionAsync(TenantRazaoSocial);
+        var repository = new UsuarioRepository(tenantConnection);
+
+        await repository.SalvarAsync(new UsuarioSalvarParams
+        {
+            Id = Guid.NewGuid(),
+            Nome = "Zeca",
+            Senha = Criptografia.Encrypt("senha123"),
+            Email = "zeca@example.com",
+            EmpresaId = empresaId
+        });
+        await repository.SalvarAsync(new UsuarioSalvarParams
+        {
+            Id = Guid.NewGuid(),
+            Nome = "Ana",
+            Senha = Criptografia.Encrypt("senha123"),
+            Email = "ana@example.com",
+            EmpresaId = empresaId
+        });
+
+        var usuarios = await repository.ObterTodosAsync();
+
+        Assert.Equal(2, usuarios.Length);
+        Assert.Equal("Ana", usuarios[0].Nome);
+        Assert.Equal("Zeca", usuarios[1].Nome);
+    }
+
     private async Task<Guid> SeedEmpresaAsync()
     {
         var empresaRepository = new EmpresaRepository(fixture.Connection!);
         var empresaId = Guid.NewGuid();
 
-        await empresaRepository.CreateAsync(new EmpresaCreateParams(
-            empresaId, "Empresa Teste", "teste", "db", "user", "pass"));
+        await empresaRepository.SalvarAsync(new EmpresaSalvarParams
+        {
+            Id = empresaId,
+            RazaoSocial = TenantRazaoSocial,
+            Dominio = "teste",
+        });
 
         return empresaId;
     }

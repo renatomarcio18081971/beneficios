@@ -1,4 +1,6 @@
-﻿namespace Beneficios.Application.DTOs;
+﻿using Beneficios.Domain.Enums;
+
+namespace Beneficios.Application.DTOs;
 
 public class LoginResponseDto
 {
@@ -6,4 +8,7 @@ public class LoginResponseDto
     public Guid UsuarioId { get; set; }
     public string Nome { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
+    public UsuarioPerfil Perfil { get; set; }
+    public Guid? EmpresaId { get; set; }
+    public string EmpresaDominio { get; set; } = string.Empty;
 }

@@ -1,0 +1,236 @@
+.summary-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  max-width: 100%;
+  width: 100%;
+  box-sizing: border-box;
+  container-type: inline-size;
+  overflow: hidden;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+  mat-card-content {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
+    padding: 14px;
+    box-sizing: border-box;
+  }
+
+  &--combustivel {
+    --card-accent: #43a047;
+    --card-insight-bg: #e8f5e9;
+    --card-due-color: #2e7d32;
+  }
+
+  &--cultura {
+    --card-accent: #7e57c2;
+    --card-insight-bg: #ede7f6;
+    --card-due-color: #5e35b1;
+  }
+}
+
+.summary-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+}
+
+.summary-card__title-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.summary-card__icon {
+  flex-shrink: 0;
+  color: var(--card-accent);
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+.summary-card__title {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  color: var(--beneficios-text);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.summary-card__due {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 45%;
+  text-align: right;
+}
+
+.summary-card__due-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--card-due-color);
+  line-height: 1.2;
+}
+
+.summary-card__due-date {
+  font-size: 0.625rem;
+  color: #78909c;
+  text-transform: capitalize;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.summary-card__chart-area {
+  display: flex;
+  justify-content: center;
+  min-width: 0;
+}
+
+.summary-card__chart-container {
+  position: relative;
+  width: 100%;
+  max-width: clamp(160px, 42cqi, 200px);
+  height: clamp(150px, 38cqi, 190px);
+  min-width: 0;
+
+  canvas {
+    display: block;
+    max-width: 100%;
+    max-height: 100%;
+  }
+}
+
+@media (min-height: 768px) {
+  .summary-card__chart-container {
+    max-width: clamp(170px, 44cqi, 210px);
+    height: clamp(160px, 40cqi, 200px);
+  }
+}
+
+@media (min-height: 900px) {
+  .summary-card__chart-container {
+    max-width: clamp(180px, 46cqi, 220px);
+    height: clamp(170px, 42cqi, 210px);
+  }
+}
+
+.summary-card__chart-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  text-align: center;
+  padding: 0 12px;
+}
+
+.summary-card__chart-total {
+  font-size: clamp(0.75rem, 3.5cqi, 1rem);
+  font-weight: 700;
+  color: var(--beneficios-text);
+  line-height: 1.15;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.summary-card__chart-label {
+  margin-top: 2px;
+  font-size: 0.625rem;
+  color: #78909c;
+}
+
+.summary-card__chart-period {
+  margin-top: 2px;
+  font-size: 0.5625rem;
+  color: #90a4ae;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.summary-card__legend {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 10px;
+  min-width: 0;
+}
+
+@container (min-width: 420px) {
+  .summary-card__legend {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.summary-card__legend-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.summary-card__legend-value {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.summary-card__legend-label {
+  font-size: 0.625rem;
+  color: #546e7a;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.summary-card__insight {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background-color: var(--card-insight-bg);
+  min-width: 0;
+}
+
+.summary-card__insight-icon {
+  flex-shrink: 0;
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: var(--card-accent);
+}
+
+.summary-card__insight-text {
+  margin: 0;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: #455a64;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}

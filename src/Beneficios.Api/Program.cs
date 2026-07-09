@@ -1,17 +1,25 @@
-﻿using Beneficios.Application.Interfaces;
+﻿using Beneficios.Api.DependencyInjection;
+using Beneficios.Api.Middleware;
+using Beneficios.Application.Interfaces;
 using Beneficios.Application.Mappings;
 using Beneficios.Application.Services;
 using Beneficios.Domain.Interfaces;
 using Beneficios.Infrastructure.Configurations;
 using Beneficios.Infrastructure.Repositories;
+using Beneficios.Infrastructure.Tenancy;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
 using Serilog;
 using System.Data;
 using System.Text;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
+
+if (builder.Environment.IsDevelopment())
+{
+    builder.WebHost.UseUrls("http://localhost:5000");
+}
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
@@ -20,52 +28,29 @@ Log.Logger = new LoggerConfiguration()
 
 builder.Host.UseSerilog();
 
-builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
-{
-    c.SwaggerDoc("v1", new OpenApiInfo
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
     {
-        Title = "Benefícios API",
-        Version = "v1",
-        Description = "API para gerenciamento de benefícios seguindo DDD",
-        Contact = new OpenApiContact
-        {
-            Name = "Benefícios API",
-            Email = "contato@beneficios.com"
-        }
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
 
-    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-    {
-        Description = "JWT Authorization header usando o esquema Bearer. Exemplo: \"Authorization: Bearer {token}\"",
-        Name = "Authorization",
-        In = ParameterLocation.Header,
-        Type = SecuritySchemeType.ApiKey,
-        Scheme = "Bearer"
-    });
+builder.Services.AddApiSwagger();
+builder.Services.AddApiForwardedHeaders();
+builder.Services.AddApiCors(builder.Configuration);
 
-    c.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
-        {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
-            },
-            Array.Empty<string>()
-        }
-    });
-});
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddAutoMapper(typeof(UsuarioProfile));
 
-builder.Services.AddAutoMapper(typeof(MappingProfile));
+builder.Services.AddScoped<ITenantCatalogRepository, TenantCatalogRepository>();
+builder.Services.AddScoped<ITenantResolver, TenantResolver>();
+builder.Services.AddScoped<ITenantProvisioner, TenantProvisioner>();
 
 builder.Services.AddScoped<IDbConnection>(sp =>
 {
-    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    var httpContextAccessor = sp.GetRequiredService<IHttpContextAccessor>();
+    var configuration = sp.GetRequiredService<IConfiguration>();
+    var connectionString = httpContextAccessor.HttpContext?.Items[TenantContextKeys.ConnectionString] as string
+        ?? configuration.GetConnectionString("DefaultConnection")
         ?? throw new InvalidOperationException("Connection string 'DefaultConnection' não configurada.");
     return DatabaseConfiguration.CreateConnection(connectionString);
 });
@@ -115,23 +100,26 @@ builder.Services.AddAuthentication(options =>
 });
 
 builder.Services.AddAuthorization();
-
 builder.Services.AddHealthChecks();
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
+app.UseApiForwardedHeaders();
+
+if (!app.Environment.IsDevelopment() && !string.Equals(app.Environment.EnvironmentName, "Docker", StringComparison.OrdinalIgnoreCase))
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseHttpsRedirection();
 }
 
-app.UseHttpsRedirection();
-
+app.UseCors(CorsServiceExtensions.PolicyName);
+app.UseMiddleware<TenantMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseApiSwagger();
 
 app.MapControllers();
 app.MapHealthChecks("/health");
 
 app.Run();
+
+public partial class Program { }

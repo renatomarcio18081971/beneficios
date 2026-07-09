@@ -1,0 +1,50 @@
+<div class="dashboard-page">
+  <h1>Dashboard</h1>
+
+  <div class="dashboard-grid">
+    <mat-card class="dashboard-card dashboard-card--transporte">
+      <mat-card-content>
+        <header class="dashboard-card__header">
+          <div class="dashboard-card__title-group">
+            <mat-icon class="dashboard-card__icon" aria-hidden="true">directions_bus</mat-icon>
+            <h2 class="dashboard-card__title">Vale Transporte</h2>
+          </div>
+          <span class="dashboard-card__subtitle">Gasto nos últimos 6 meses</span>
+        </header>
+
+        <p class="dashboard-total">{{ transporteTotal | currency: 'BRL' : 'symbol' : '1.2-2' : 'pt-BR' }}</p>
+        <div class="chart-container">
+          @if (chartsVisible) {
+            <canvas baseChart [data]="barChartData" [options]="barChartOptions" type="bar"></canvas>
+          }
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="dashboard-card dashboard-card--alimentacao">
+      <mat-card-content>
+        <header class="dashboard-card__header">
+          <div class="dashboard-card__title-group">
+            <mat-icon class="dashboard-card__icon" aria-hidden="true">restaurant</mat-icon>
+            <h2 class="dashboard-card__title">Vale Alimentação</h2>
+          </div>
+          <span class="dashboard-card__subtitle">Distribuição por categoria</span>
+        </header>
+
+        <p class="dashboard-total">{{ alimentacaoTotal | currency: 'BRL' : 'symbol' : '1.2-2' : 'pt-BR' }}</p>
+        <div class="chart-container">
+          @if (chartsVisible) {
+            <canvas baseChart [data]="pieChartData" [options]="pieChartOptions" type="pie"></canvas>
+          }
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <section class="dashboard-summary-section" aria-label="Resumo de benefícios">
+    <div class="dashboard-summary-grid">
+      <app-dashboard-summary-card [resumo]="combustivelResumo" />
+      <app-dashboard-summary-card [resumo]="culturaResumo" />
+    </div>
+  </section>
+</div>
