@@ -51,7 +51,8 @@ public class TenantMiddleware
 
     private static bool ShouldBypass(PathString path)
     {
-        return path.StartsWithSegments("/health", StringComparison.OrdinalIgnoreCase);
+        return path.StartsWithSegments("/health", StringComparison.OrdinalIgnoreCase)
+            || path.StartsWithSegments("/swagger", StringComparison.OrdinalIgnoreCase);
     }
 
     private static string ExtractSubdomain(string host)
