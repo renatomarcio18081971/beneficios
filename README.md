@@ -1,4 +1,4 @@
-﻿# Benefícios API
+# Benefícios API
 
 API desenvolvida em .NET 9 seguindo princípios de Domain-Driven Design (DDD) de forma enxuta.
 
@@ -147,4 +147,6 @@ A API utiliza JWT Bearer Token. Para acessar endpoints protegidos:
 
 ## Licença
 
+
 Este projeto é de código aberto.
+=======
