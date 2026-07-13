@@ -7,14 +7,15 @@ API desenvolvida em .NET 9 seguindo princípios de Domain-Driven Design (DDD) de
 A solução está organizada em camadas seguindo DDD:
 
 ```
-?? beneficios-api
- ??? ?? src
- ?    ??? ?? Beneficios.Api           # Camada de Apresentação (Controllers)
- ?    ??? ?? Beneficios.Application   # Camada de Aplicção (Services, DTOs, Mappings)
- ?    ??? ?? Beneficios.Domain        # Camada de Domínio (Entities, Interfaces, ValueObjects)
- ?    ??? ?? Beneficios.Infrastructure # Camada de Infraestrutura (Repositories, Configurations)
- ??? ?? tests
-      ??? ?? Beneficios.Tests         # Testes Unitários
+beneficios-api
+├── src
+│   ├── Beneficios.Api             # Camada de Apresentação (Controllers)
+│   ├── Beneficios.Application     # Camada de Aplicação (Services, DTOs, Mappings)
+│   ├── Beneficios.Domain          # Camada de Domínio (Entities, Interfaces, ValueObjects)
+│   └── Beneficios.Infrastructure  # Camada de Infraestrutura (Repositories, Configurations)
+└── tests
+    └── Beneficios.Tests           # Testes Unitários
+
 ```
 
 ## Tecnologias Utilizadas
