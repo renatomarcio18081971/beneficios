@@ -9,10 +9,6 @@ import { provideRouter, withRouterConfig } from '@angular/router';
 import { MAT_ICON_DEFAULT_OPTIONS } from '@angular/material/icon';
 import { MatPaginatorIntl } from '@angular/material/paginator';
 
-import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
-
-
-
 import { routes } from './app.routes';
 
 import { authInterceptor } from './core/auth/auth.interceptor';
@@ -39,8 +35,6 @@ export const appConfig: ApplicationConfig = {
     provideAnimationsAsync(),
 
     provideHttpClient(withXhr(), withInterceptors([authInterceptor, httpErrorInterceptor])),
-
-    provideCharts(withDefaultRegisterables()),
 
     { provide: LOCALE_ID, useValue: 'pt-BR' },
 

@@ -4,7 +4,7 @@
   overflow: hidden;
 }
 
-.login-page {
+.auth-page {
   height: 100vh;
   max-height: 100vh;
   overflow: hidden;
@@ -13,7 +13,7 @@
   background: var(--beneficios-background);
 }
 
-.login-top-bar {
+.auth-top-bar {
   display: flex;
   align-items: center;
   width: 100%;
@@ -24,59 +24,79 @@
   box-shadow: 0 1px 3px rgba(21, 101, 192, 0.08);
 }
 
-.login-brand-icon {
+.auth-brand-icon {
   height: 72px;
   width: 72px;
   object-fit: contain;
 }
 
-.login-content {
+.auth-content {
   flex: 1;
   min-height: 0;
   display: flex;
   justify-content: center;
   align-items: flex-start;
   padding: 64px 16px 16px;
-  overflow: hidden;
+  overflow: auto;
 }
 
-.login-card {
+.auth-card {
   width: 100%;
   max-width: 420px;
 }
 
-.login-card mat-card-header {
-  display: block;
-  text-align: center;
-  padding-bottom: 0;
+.auth-card mat-card-content {
+  padding-top: 8px;
 }
 
-.login-card mat-card-title {
-  display: block;
-  width: 100%;
-  text-align: center;
+.auth-card-header {
   margin-bottom: 24px;
 }
 
-.login-card mat-card-subtitle {
-  display: block;
-  text-align: center;
-  margin-bottom: 32px;
+.auth-card-title {
+  margin: 0 0 8px;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--beneficios-text);
 }
 
-.login-card mat-card-content {
-  padding-top: 8px;
+.auth-card-subtitle {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #78909c;
+  line-height: 1.4;
+}
+
+.field-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--beneficios-text);
 }
 
 .full-width {
   width: 100%;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
 }
 
 .error-message {
   color: #c62828;
   margin: 0 0 12px;
   font-size: 0.875rem;
+}
+
+.back-link {
+  display: block;
+  margin-top: 24px;
+  text-align: center;
+  color: var(--beneficios-text);
+  text-decoration: none;
+  font-size: 0.875rem;
+
+  &:hover {
+    text-decoration: underline;
+  }
 }
 
 .forgot-password-link {
@@ -90,4 +110,10 @@
   &:hover {
     text-decoration: underline;
   }
+}
+
+.codigo-input {
+  text-align: center;
+  letter-spacing: 0.35em;
+  font-size: 1.125rem;
 }

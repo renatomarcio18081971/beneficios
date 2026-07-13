@@ -12,6 +12,18 @@ export const routes: Routes = [
     loadComponent: () => import('./features/auth/login/login.component').then((m) => m.LoginComponent),
   },
   {
+    path: 'recuperar-senha',
+    canActivate: [guestGuard],
+    loadComponent: () =>
+      import('./features/auth/recuperar-senha/recuperar-senha.component').then((m) => m.RecuperarSenhaComponent),
+  },
+  {
+    path: 'redefinir-senha',
+    canActivate: [guestGuard],
+    loadComponent: () =>
+      import('./features/auth/redefinir-senha/redefinir-senha.component').then((m) => m.RedefinirSenhaComponent),
+  },
+  {
     path: '',
     component: ShellComponent,
     canActivate: [authGuard],

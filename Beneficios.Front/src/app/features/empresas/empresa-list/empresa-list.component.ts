@@ -121,13 +121,13 @@ export class EmpresaListComponent {
   exportExcel(): void {
     const subdomain = this.tenantService.getSubdomain();
     const filename = this.exportService.buildFilename('empresas', subdomain, 'xlsx');
-    this.exportService.exportToExcel(this.dataSource.data, this.exportColumns, filename);
+    void this.exportService.exportToExcel(this.dataSource.data, this.exportColumns, filename);
   }
 
   exportPdf(): void {
     const subdomain = this.tenantService.getSubdomain();
     const filename = this.exportService.buildFilename('empresas', subdomain, 'pdf');
-    this.exportService.exportToPdf(this.dataSource.data, this.exportColumns, filename, 'Empresas');
+    void this.exportService.exportToPdf(this.dataSource.data, this.exportColumns, filename, 'Empresas');
   }
 
   confirmDelete(empresa: Empresa): void {

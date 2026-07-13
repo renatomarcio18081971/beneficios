@@ -4,7 +4,11 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 import { catchError, throwError } from 'rxjs';
 
-const LOGIN_PATH = '/usuarios/login';
+const PASSWORD_RESET_PATHS = [
+  '/usuarios/login',
+  '/usuarios/solicitarAlteracaoSenha',
+  '/usuarios/alterarSenha',
+];
 
 export const httpErrorMessages: Record<number, string> = {
   401: 'Sessão expirada. Faça login novamente.',
@@ -42,5 +46,5 @@ export function shouldHandle(error: HttpErrorResponse, requestUrl: string): bool
     return false;
   }
 
-  return !requestUrl.includes(LOGIN_PATH);
+  return !PASSWORD_RESET_PATHS.some((path) => requestUrl.includes(path));
 }

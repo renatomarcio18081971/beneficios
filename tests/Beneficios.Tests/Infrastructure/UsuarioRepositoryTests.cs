@@ -186,6 +186,65 @@ public class UsuarioRepositoryTests(PostgresFixture fixture)
         Assert.Equal("Zeca", usuarios[1].Nome);
     }
 
+    [SkippableFact]
+    public async Task UpdateCodigoAlterarSenhaAsync_DevePersistirCodigo()
+    {
+        await PostgresTestHelper.PrepareAsync(fixture);
+
+        var empresaId = await SeedEmpresaAsync();
+        await using var tenantConnection = await fixture.CreateTenantConnectionAsync(TenantRazaoSocial);
+        var repository = new UsuarioRepository(tenantConnection);
+        var usuarioId = Guid.NewGuid();
+
+        await repository.SalvarAsync(new UsuarioSalvarParams
+        {
+            Id = usuarioId,
+            Nome = "Joao",
+            Senha = Criptografia.Encrypt("senha123"),
+            Email = "joao@example.com",
+            EmpresaId = empresaId
+        });
+
+        var updated = await repository.UpdateCodigoAlterarSenhaAsync(usuarioId, "123456");
+
+        Assert.True(updated);
+
+        var usuario = await repository.GetByCodigoAlterarSenhaAsync("123456");
+        Assert.NotNull(usuario);
+        Assert.Equal(usuarioId, usuario!.Id);
+    }
+
+    [SkippableFact]
+    public async Task AtualizarSenhaAsync_DeveAtualizarSenhaELimparCodigo()
+    {
+        await PostgresTestHelper.PrepareAsync(fixture);
+
+        var empresaId = await SeedEmpresaAsync();
+        await using var tenantConnection = await fixture.CreateTenantConnectionAsync(TenantRazaoSocial);
+        var repository = new UsuarioRepository(tenantConnection);
+        var usuarioId = Guid.NewGuid();
+        var novaSenhaCriptografada = Criptografia.Encrypt("novaSenha456");
+
+        await repository.SalvarAsync(new UsuarioSalvarParams
+        {
+            Id = usuarioId,
+            Nome = "Joao",
+            Senha = Criptografia.Encrypt("senha123"),
+            Email = "joao@example.com",
+            EmpresaId = empresaId
+        });
+        await repository.UpdateCodigoAlterarSenhaAsync(usuarioId, "654321");
+
+        var updated = await repository.AtualizarSenhaAsync(usuarioId, novaSenhaCriptografada);
+
+        Assert.True(updated);
+
+        var usuario = await repository.GetByEmailAsync("joao@example.com");
+        Assert.NotNull(usuario);
+        Assert.Equal(novaSenhaCriptografada, usuario!.Senha);
+        Assert.Null(await repository.GetByCodigoAlterarSenhaAsync("654321"));
+    }
+
     private async Task<Guid> SeedEmpresaAsync()
     {
         var empresaRepository = new EmpresaRepository(fixture.Connection!);

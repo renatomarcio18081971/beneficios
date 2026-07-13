@@ -8,10 +8,9 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AuthService } from '../../../core/auth/auth.service';
-import { TenantService } from '../../../core/tenant/tenant.service';
 
 @Component({
-  selector: 'app-login',
+  selector: 'app-recuperar-senha',
   standalone: true,
   imports: [
     ReactiveFormsModule,
@@ -22,14 +21,13 @@ import { TenantService } from '../../../core/tenant/tenant.service';
     MatButtonModule,
     MatProgressSpinnerModule,
   ],
-  templateUrl: './login.component.html',
+  templateUrl: './recuperar-senha.component.html',
   changeDetection: ChangeDetectionStrategy.Default,
-  styleUrl: './login.component.scss',
+  styleUrl: './recuperar-senha.component.scss',
 })
-export class LoginComponent {
+export class RecuperarSenhaComponent {
   private readonly fb = inject(FormBuilder);
   private readonly authService = inject(AuthService);
-  private readonly tenantService = inject(TenantService);
   private readonly router = inject(Router);
 
   loading = false;
@@ -37,12 +35,7 @@ export class LoginComponent {
 
   readonly form = this.fb.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
-    senha: ['', [Validators.required, Validators.minLength(6)]],
   });
-
-  get title(): string {
-    return this.tenantService.isAdminMode() ? 'Acesso Admin' : 'Acesso Empresa';
-  }
 
   submit(): void {
     if (this.form.invalid || this.loading) {
@@ -52,20 +45,24 @@ export class LoginComponent {
 
     this.loading = true;
     this.errorMessage = '';
-    const { email, senha } = this.form.getRawValue();
+    const { email } = this.form.getRawValue();
 
-    this.authService.login(email, senha).subscribe({
+    this.authService.solicitarAlteracaoSenha(email).subscribe({
       next: () => {
         this.loading = false;
-        const target = this.tenantService.isAdminMode() ? '/empresas' : '/dashboard';
-        void this.router.navigate([target]);
+        void this.router.navigate(['/redefinir-senha'], { state: { email } });
       },
       error: (error: HttpErrorResponse) => {
         this.loading = false;
+        if (error.status === 404) {
+          this.errorMessage = 'E-mail não localizado !';
+          return;
+        }
+
         this.errorMessage =
           error.status === 0
-            ? 'Não foi possível conectar à API. Verifique se o backend está rodando em http://localhost:5000.'
-            : 'Email ou senha inválidos.';
+            ? 'Não foi possível conectar à API. Verifique se o backend está em execução.'
+            : 'Não foi possível solicitar a alteração de senha.';
       },
     });
   }

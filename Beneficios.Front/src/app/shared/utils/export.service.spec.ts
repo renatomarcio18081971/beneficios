@@ -52,8 +52,10 @@ describe('ExportService', () => {
   });
 
   describe('exportToExcel', () => {
-    it('deve gerar planilha sem erro com dados válidos', () => {
-      expect(() => service.exportToExcel(rows, columns, 'usuarios-admin-2026-07-06.xlsx')).not.toThrow();
+    it('deve gerar planilha sem erro com dados válidos', async () => {
+      await expectAsync(
+        service.exportToExcel(rows, columns, 'usuarios-admin-2026-07-06.xlsx'),
+      ).toBeResolved();
     });
   });
 

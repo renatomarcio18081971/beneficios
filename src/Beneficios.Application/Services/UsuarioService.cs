@@ -12,15 +12,24 @@ namespace Beneficios.Application.Services;
 
 public class UsuarioService : IUsuarioService
 {
+    private const string MensagemRedefinicaoSenha =
+        "Olá, você solicitou redefinição de senha. Informe este código quando solicitado.";
+
     private readonly IUsuarioRepository _usuarioRepository;
     private readonly IMapper _mapper;
     private readonly ITokenService _tokenService;
+    private readonly IEmailService _emailService;
 
-    public UsuarioService(IUsuarioRepository usuarioRepository, IMapper mapper, ITokenService tokenService)
+    public UsuarioService(
+        IUsuarioRepository usuarioRepository,
+        IMapper mapper,
+        ITokenService tokenService,
+        IEmailService emailService)
     {
         _usuarioRepository = usuarioRepository;
         _mapper = mapper;
         _tokenService = tokenService;
+        _emailService = emailService;
     }
 
     public async Task<Guid> SalvarAsync(UsuarioSalvarDto dto)
@@ -98,6 +107,37 @@ public class UsuarioService : IUsuarioService
             response.EmpresaId = null;
 
         return response;
+    }
+
+    public async Task<bool> EmailExisteAsync(string email, string tenantSubdomain)
+    {
+        var usuario = await _usuarioRepository.GetByEmailAsync(email);
+        return usuario is not null && ValidateTenantAccess(usuario, tenantSubdomain);
+    }
+
+    public async Task SolicitarAlteracaoSenhaAsync(SolicitarAlteracaoSenhaDto dto, string tenantSubdomain)
+    {
+        var usuario = await _usuarioRepository.GetByEmailAsync(dto.Email);
+        if (usuario is null || !ValidateTenantAccess(usuario, tenantSubdomain))
+            return;
+
+        var codigo = Random.Shared.Next(100000, 1_000_000).ToString();
+        await _usuarioRepository.UpdateCodigoAlterarSenhaAsync(usuario.Id, codigo);
+        var mensagem = $"{MensagemRedefinicaoSenha} {codigo}";
+        await _emailService.EnviarAsync(dto.Email, "Redefinição de senha", mensagem);
+    }
+
+    public async Task<bool> AlterarSenhaAsync(AlterarSenhaDto dto, string tenantSubdomain)
+    {
+        if (dto.NovaSenha != dto.ConfirmarNovaSenha)
+            return false;
+
+        var usuario = await _usuarioRepository.GetByCodigoAlterarSenhaAsync(dto.Codigo);
+        if (usuario is null || !ValidateTenantAccess(usuario, tenantSubdomain))
+            return false;
+
+        var senhaCriptografada = Criptografia.Encrypt(dto.NovaSenha);
+        return await _usuarioRepository.AtualizarSenhaAsync(usuario.Id, senhaCriptografada);
     }
 
     private static bool ValidateTenantAccess(UsuarioAuthResult usuario, string tenantSubdomain)

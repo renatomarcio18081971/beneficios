@@ -120,10 +120,66 @@ public class UsuarioRepository : IUsuarioRepository
         return await _dbConnection.QueryFirstOrDefaultAsync<UsuarioAuthResult>(sql, new { Email = email });
     }
 
+    public async Task<UsuarioAuthResult?> GetByCodigoAlterarSenhaAsync(string codigo)
+    {
+        var sql = @"
+            SELECT 
+                u.id AS Id,
+                u.nome AS Nome,
+                u.email AS Email,
+                u.senha AS Senha,
+                u.empresa_id AS EmpresaId,
+                u.perfil AS Perfil,
+                e.dominio AS EmpresaDominio,
+                u.token AS Token
+            FROM usuarios u
+            LEFT JOIN empresas e ON u.empresa_id = e.id
+            WHERE u.codigo_alterar_senha = @Codigo";
+
+        return await _dbConnection.QueryFirstOrDefaultAsync<UsuarioAuthResult>(sql, new { Codigo = codigo });
+    }
+
     public async Task<bool> UpdateTokenAsync(Guid id, string token)
     {
         var sql = "UPDATE usuarios SET token = @Token WHERE id = @Id";
         var rowsAffected = await _dbConnection.ExecuteAsync(sql, new { Id = id, Token = token });
+        return rowsAffected > 0;
+    }
+
+    public async Task<bool> UpdateCodigoAlterarSenhaAsync(Guid id, string codigo)
+    {
+        var sql = @"
+            UPDATE usuarios
+            SET codigo_alterar_senha = @Codigo,
+                data_alteracao = @DataAlteracao
+            WHERE id = @Id";
+
+        var rowsAffected = await _dbConnection.ExecuteAsync(sql, new
+        {
+            Id = id,
+            Codigo = codigo,
+            DataAlteracao = DateTime.UtcNow
+        });
+
+        return rowsAffected > 0;
+    }
+
+    public async Task<bool> AtualizarSenhaAsync(Guid id, string senhaCriptografada)
+    {
+        var sql = @"
+            UPDATE usuarios
+            SET senha = @Senha,
+                codigo_alterar_senha = NULL,
+                data_alteracao = @DataAlteracao
+            WHERE id = @Id";
+
+        var rowsAffected = await _dbConnection.ExecuteAsync(sql, new
+        {
+            Id = id,
+            Senha = senhaCriptografada,
+            DataAlteracao = DateTime.UtcNow
+        });
+
         return rowsAffected > 0;
     }
 }

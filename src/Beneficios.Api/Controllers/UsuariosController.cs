@@ -37,6 +37,51 @@ public class UsuariosController : ControllerBase
         }
     }
 
+    [HttpPut("solicitarAlteracaoSenha")]
+    [AllowAnonymous]
+    public async Task<IActionResult> SolicitarAlteracaoSenha([FromBody] SolicitarAlteracaoSenhaDto dto)
+    {
+        try
+        {
+            var tenant = Request.Headers["X-Tenant"].FirstOrDefault()
+                ?? ExtractSubdomain(Request.Host.Host);
+            _logger.LogInformation("Solicitação de alteração de senha: {Email} (tenant {Tenant})", dto.Email, tenant);
+
+            if (!await _usuarioService.EmailExisteAsync(dto.Email, tenant))
+                return NotFound(new { message = "E-mail não localizado !" });
+
+            await _usuarioService.SolicitarAlteracaoSenhaAsync(dto, tenant);
+            return Ok();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erro ao solicitar alteração de senha: {Email}", dto.Email);
+            return StatusCode(500, new { message = "Erro ao solicitar alteração de senha" });
+        }
+    }
+
+    [HttpPut("alterarSenha")]
+    [AllowAnonymous]
+    public async Task<IActionResult> AlterarSenha([FromBody] AlterarSenhaDto dto)
+    {
+        try
+        {
+            var tenant = Request.Headers["X-Tenant"].FirstOrDefault()
+                ?? ExtractSubdomain(Request.Host.Host);
+            _logger.LogInformation("Alteração de senha solicitada (tenant {Tenant})", tenant);
+            var success = await _usuarioService.AlterarSenhaAsync(dto, tenant);
+            if (!success)
+                return BadRequest(new { message = "Código inválido." });
+
+            return Ok();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erro ao alterar senha");
+            return StatusCode(500, new { message = "Erro ao alterar senha" });
+        }
+    }
+
     [HttpPut("{id}")]
     [Authorize]
     public async Task<IActionResult> Update(Guid id, [FromBody] UsuarioAtualizarDto dto)

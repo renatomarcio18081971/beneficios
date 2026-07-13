@@ -262,4 +262,61 @@ public class UsuariosControllerTests
         Assert.Equal("jwt-token", Assert.IsType<LoginResponseDto>(okResult.Value).Token);
         _serviceMock.Verify(x => x.LoginAsync(loginDto, "empresa1"), Times.Once);
     }
+
+    [Fact]
+    public async Task SolicitarAlteracaoSenha_DeveRetornarNotFoundQuandoEmailNaoExiste()
+    {
+        var dto = new SolicitarAlteracaoSenhaDto("inexistente@example.com");
+
+        _serviceMock.Setup(x => x.EmailExisteAsync(dto.Email, "empresa1")).ReturnsAsync(false);
+        ControllerTestHelper.SetRequestHost(_controller, "localhost:5000", "empresa1");
+
+        var result = await _controller.SolicitarAlteracaoSenha(dto);
+
+        Assert.IsType<NotFoundObjectResult>(result);
+        _serviceMock.Verify(x => x.SolicitarAlteracaoSenhaAsync(dto, It.IsAny<string>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task SolicitarAlteracaoSenha_DeveRetornarOkQuandoEmailExiste()
+    {
+        var dto = new SolicitarAlteracaoSenhaDto("joao@example.com");
+
+        _serviceMock.Setup(x => x.EmailExisteAsync(dto.Email, "empresa1")).ReturnsAsync(true);
+        _serviceMock.Setup(x => x.SolicitarAlteracaoSenhaAsync(dto, "empresa1")).Returns(Task.CompletedTask);
+        ControllerTestHelper.SetRequestHost(_controller, "localhost:5000", "empresa1");
+
+        var result = await _controller.SolicitarAlteracaoSenha(dto);
+
+        Assert.IsType<OkResult>(result);
+        _serviceMock.Verify(x => x.SolicitarAlteracaoSenhaAsync(dto, "empresa1"), Times.Once);
+    }
+
+    [Fact]
+    public async Task AlterarSenha_DeveRetornarOk()
+    {
+        var dto = new AlterarSenhaDto("123456", "novaSenha123", "novaSenha123");
+
+        _serviceMock.Setup(x => x.AlterarSenhaAsync(dto, "empresa1")).ReturnsAsync(true);
+        ControllerTestHelper.SetRequestHost(_controller, "localhost:5000", "empresa1");
+
+        var result = await _controller.AlterarSenha(dto);
+
+        Assert.IsType<OkResult>(result);
+        _serviceMock.Verify(x => x.AlterarSenhaAsync(dto, "empresa1"), Times.Once);
+    }
+
+    [Fact]
+    public async Task AlterarSenha_DeveRetornarBadRequestQuandoCodigoInvalido()
+    {
+        var dto = new AlterarSenhaDto("999999", "novaSenha123", "novaSenha123");
+
+        _serviceMock.Setup(x => x.AlterarSenhaAsync(dto, "empresa1")).ReturnsAsync(false);
+        ControllerTestHelper.SetRequestHost(_controller, "localhost:5000", "empresa1");
+
+        var result = await _controller.AlterarSenha(dto);
+
+        var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+        Assert.NotNull(badRequest.Value);
+    }
 }
