@@ -1,46 +1,46 @@
-﻿# Estrutura do Projeto - Benef�cios API
+﻿# Estrutura do Projeto - Benefícios API
 
-## ?? Estrutura de Diret�rios Completa
+## Estrutura de Diretórios Completa
 
 ```
 C:\Projetos\dotnet\Beneficios\
 ?
 ??? ?? beneficios-api.sln                      # Solution principal
 ??? ?? .gitignore                              # Arquivos ignorados pelo Git
-??? ?? README.md                               # Documenta��o principal
-??? ?? ENDPOINTS.md                            # Documenta��o de endpoints
+??? ?? README.md                               # Documentção principal
+??? ?? ENDPOINTS.md                            # Documentção de endpoints
 ??? ?? EXAMPLES.md                             # Exemplos de uso
 ??? ?? TESTING.md                              # Guia de testes
 ??? ?? DEPLOY.md                               # Guia de deploy
-??? ?? docker-compose.yml                      # Configura��o Docker
+??? ?? docker-compose.yml                      # Configurção Docker
 ?
 ??? ?? src/
 ?   ?
-?   ??? ?? Beneficios.Api/                     # Camada de Apresenta��o
+?   ??? ?? Beneficios.Api/                     # Camada de Apresentação
 ?   ?   ??? ?? Controllers/
-?   ?   ?   ??? UsuariosController.cs          # Controller de usu�rios (POST, PUT, GET, DELETE, LOGIN)
+?   ?   ?   ??? UsuariosController.cs          # Controller de usuários (POST, PUT, GET, DELETE, LOGIN)
 ?   ?   ?   ??? EmpresasController.cs          # Controller de empresas (POST, PUT, GET, DELETE)
 ?   ?   ?
 ?   ?   ??? ?? Properties/
-?   ?   ?   ??? launchSettings.json            # Configura��es de execu��o
+?   ?   ?   ??? launchSettings.json            # Configurções de execução
 ?   ?   ?
-?   ?   ??? Program.cs                         # Configura��o da aplica��o
-?   ?   ??? appsettings.json                   # Configura��es de produ��o
-?   ?   ??? appsettings.Development.json       # Configura��es de desenvolvimento
+?   ?   ??? Program.cs                         # Configurção da aplicção
+?   ?   ??? appsettings.json                   # Configurções de produção
+?   ?   ??? appsettings.Development.json       # Configurções de desenvolvimento
 ?   ?   ??? Dockerfile                         # Imagem Docker da API
 ?   ?   ??? docker-compose.override.yml        # Sobrescritas Docker
 ?   ?   ??? Beneficios.Api.csproj             # Projeto da API
 ?   ?
-?   ??? ?? Beneficios.Application/             # Camada de Aplica��o
+?   ??? ?? Beneficios.Application/             # Camada de Aplicção
 ?   ?   ??? ?? Services/
-?   ?   ?   ??? UsuarioService.cs              # L�gica de neg�cio de usu�rios
-?   ?   ?   ??? EmpresaService.cs              # L�gica de neg�cio de empresas
-?   ?   ?   ??? TokenService.cs                # Gera��o e valida��o de JWT
+?   ?   ?   ??? UsuarioService.cs              # Lógica de negócio de usuários
+?   ?   ?   ??? EmpresaService.cs              # Lógica de negócio de empresas
+?   ?   ?   ??? TokenService.cs                # Gerção e validção de JWT
 ?   ?   ?
 ?   ?   ??? ?? DTOs/
-?   ?   ?   ??? UsuarioCreateDto.cs            # DTO para criar usu�rio
-?   ?   ?   ??? UsuarioUpdateDto.cs            # DTO para atualizar usu�rio
-?   ?   ?   ??? UsuarioDto.cs                  # DTO de retorno de usu�rio
+?   ?   ?   ??? UsuarioCreateDto.cs            # DTO para criar usuário
+?   ?   ?   ??? UsuarioUpdateDto.cs            # DTO para atualizar usuário
+?   ?   ?   ??? UsuarioDto.cs                  # DTO de retorno de usuário
 ?   ?   ?   ??? LoginDto.cs                    # DTO de login
 ?   ?   ?   ??? LoginResponseDto.cs            # DTO de resposta de login
 ?   ?   ?   ??? EmpresaCreateDto.cs            # DTO para criar empresa
@@ -48,23 +48,23 @@ C:\Projetos\dotnet\Beneficios\
 ?   ?   ?   ??? EmpresaDto.cs                  # DTO de retorno de empresa
 ?   ?   ?
 ?   ?   ??? ?? Interfaces/
-?   ?   ?   ??? IUsuarioService.cs             # Interface do servi�o de usu�rios
-?   ?   ?   ??? IEmpresaService.cs             # Interface do servi�o de empresas
-?   ?   ?   ??? ITokenService.cs               # Interface do servi�o de token
+?   ?   ?   ??? IUsuarioService.cs             # Interface do serviço de usuários
+?   ?   ?   ??? IEmpresaService.cs             # Interface do serviço de empresas
+?   ?   ?   ??? ITokenService.cs               # Interface do serviço de token
 ?   ?   ?
 ?   ?   ??? ?? Mappings/
 ?   ?   ?   ??? MappingProfile.cs              # Perfis do AutoMapper
 ?   ?   ?
 ?   ?   ??? Beneficios.Application.csproj      # Projeto da Application
 ?   ?
-?   ??? ?? Beneficios.Domain/                  # Camada de Dom�nio
+?   ??? ?? Beneficios.Domain/                  # Camada de Domínio
 ?   ?   ??? ?? Entities/
-?   ?   ?   ??? Usuario.cs                     # Entidade de usu�rio
+?   ?   ?   ??? Usuario.cs                     # Entidade de usuário
 ?   ?   ?   ??? Empresa.cs                     # Entidade de empresa
 ?   ?   ?
 ?   ?   ??? ?? Interfaces/
-?   ?   ?   ??? IUsuarioRepository.cs          # Interface do reposit�rio de usu�rios
-?   ?   ?   ??? IEmpresaRepository.cs          # Interface do reposit�rio de empresas
+?   ?   ?   ??? IUsuarioRepository.cs          # Interface do repositório de usuários
+?   ?   ?   ??? IEmpresaRepository.cs          # Interface do repositório de empresas
 ?   ?   ?
 ?   ?   ??? ?? ValueObjects/
 ?   ?   ?   ??? Criptografia.cs                # Objeto de valor para criptografia
@@ -73,16 +73,16 @@ C:\Projetos\dotnet\Beneficios\
 ?   ?
 ?   ??? ?? Beneficios.Infrastructure/          # Camada de Infraestrutura
 ?       ??? ?? Repositories/
-?       ?   ??? UsuarioRepository.cs           # Implementa��o do reposit�rio de usu�rios (Dapper)
-?       ?   ??? EmpresaRepository.cs           # Implementa��o do reposit�rio de empresas (Dapper)
+?       ?   ??? UsuarioRepository.cs           # Implementção do repositório de usuários (Dapper)
+?       ?   ??? EmpresaRepository.cs           # Implementção do repositório de empresas (Dapper)
 ?       ?
 ?       ??? ?? Configurations/
-?       ?   ??? DatabaseConfiguration.cs       # Configura��o de conex�o com banco
+?       ?   ??? DatabaseConfiguration.cs       # Configurção de conexão com banco
 ?       ?
 ?       ??? ?? Scripts/
-?       ?   ??? 00_Init_Database.sql           # Script de inicializa��o completa
-?       ?   ??? 01_Create_Table_Empresas.sql   # Script de cria��o da tabela empresas
-?       ?   ??? 02_Create_Table_Usuarios.sql   # Script de cria��o da tabela usuarios
+?       ?   ??? 00_Init_Database.sql           # Script de inicializção completa
+?       ?   ??? 01_Create_Table_Empresas.sql   # Script de crição da tabela empresas
+?       ?   ??? 02_Create_Table_Usuarios.sql   # Script de crição da tabela usuarios
 ?       ?   ??? 03_Insert_Sample_Data.sql      # Script com dados de exemplo
 ?       ?
 ?       ??? Beneficios.Infrastructure.csproj   # Projeto da Infrastructure
@@ -90,17 +90,17 @@ C:\Projetos\dotnet\Beneficios\
 ??? ?? tests/
     ??? ?? Beneficios.Tests/                   # Projeto de Testes
         ??? ?? Domain/
-        ?   ??? UsuarioTests.cs                # Testes da entidade usu�rio
+        ?   ??? UsuarioTests.cs                # Testes da entidade usuário
         ?   ??? EmpresaTests.cs                # Testes da entidade empresa
         ?   ??? CriptografiaTests.cs           # Testes de criptografia
         ?
         ??? ?? Application/
-        ?   ??? UsuarioServiceTests.cs         # Testes do servi�o de usu�rios
-        ?   ??? EmpresaServiceTests.cs         # Testes do servi�o de empresas
-        ?   ??? TokenServiceTests.cs           # Testes do servi�o de token
+        ?   ??? UsuarioServiceTests.cs         # Testes do serviço de usuários
+        ?   ??? EmpresaServiceTests.cs         # Testes do serviço de empresas
+        ?   ??? TokenServiceTests.cs           # Testes do serviço de token
         ?
         ??? ?? Api/
-        ?   ??? UsuariosControllerTests.cs     # Testes da controller de usu�rios
+        ?   ??? UsuariosControllerTests.cs     # Testes da controller de usuários
         ?   ??? EmpresasControllerTests.cs     # Testes da controller de empresas
         ?
         ??? Beneficios.Tests.csproj            # Projeto de testes
@@ -108,7 +108,7 @@ C:\Projetos\dotnet\Beneficios\
 
 ---
 
-## ?? Pacotes NuGet Utilizados
+## Pacotes NuGet Utilizados
 
 ### Beneficios.Api
 - `AutoMapper.Extensions.Microsoft.DependencyInjection` 12.0.1
@@ -136,66 +136,66 @@ C:\Projetos\dotnet\Beneficios\
 
 ---
 
-## ??? Estrutura do Banco de Dados
+## Estrutura do Banco de Dados
 
 ### Tabela: empresas
 
-| Coluna               | Tipo          | Descri��o                          |
+| Coluna               | Tipo          | Descrição                          |
 |----------------------|---------------|------------------------------------|
-| id                   | UUID          | Chave prim�ria                     |
-| razao_social         | VARCHAR(50)   | Raz�o social da empresa            |
-| dominio              | VARCHAR(20)   | Dom�nio/slug da empresa            |
+| id                   | UUID          | Chave primária                     |
+| razao_social         | VARCHAR(50)   | Razão social da empresa            |
+| dominio              | VARCHAR(20)   | Domínio/slug da empresa            |
 | nome_banco           | VARCHAR(256)  | Nome do banco (criptografado)      |
-| usuario_banco        | VARCHAR(256)  | Usu�rio do banco (criptografado)   |
+| usuario_banco        | VARCHAR(256)  | Usuário do banco (criptografado)   |
 | senha_banco          | VARCHAR(256)  | Senha do banco (criptografada)     |
-| data_inclusao        | TIMESTAMP     | Data de cria��o                    |
-| data_alteracao       | TIMESTAMP     | Data da �ltima altera��o (nullable)|
-| usuario_alteracao_id | UUID          | ID do usu�rio que alterou (nullable)|
+| data_inclusao        | TIMESTAMP     | Data de crição                    |
+| data_alteracao       | TIMESTAMP     | Data da última alterção (nullable)|
+| usuario_alteracao_id | UUID          | ID do usuário que alterou (nullable)|
 
 ### Tabela: usuarios
 
-| Coluna               | Tipo          | Descri��o                          |
+| Coluna               | Tipo          | Descrição                          |
 |----------------------|---------------|------------------------------------|
-| id                   | UUID          | Chave prim�ria                     |
-| nome                 | VARCHAR(50)   | Nome do usu�rio                    |
+| id                   | UUID          | Chave primária                     |
+| nome                 | VARCHAR(50)   | Nome do usuário                    |
 | senha                | VARCHAR(256)  | Senha (criptografada)              |
-| email                | VARCHAR(256)  | Email (�nico)                      |
+| email                | VARCHAR(256)  | Email (único)                      |
 | empresa_id           | UUID          | FK para empresas                   |
 | token                | TEXT          | Token JWT atual                    |
-| data_inclusao        | TIMESTAMP     | Data de cria��o                    |
-| data_alteracao       | TIMESTAMP     | Data da �ltima altera��o (nullable)|
-| usuario_alteracao_id | UUID          | ID do usu�rio que alterou (nullable)|
+| data_inclusao        | TIMESTAMP     | Data de crição                    |
+| data_alteracao       | TIMESTAMP     | Data da última alterção (nullable)|
+| usuario_alteracao_id | UUID          | ID do usuário que alterou (nullable)|
 
 **Relacionamentos:**
 - `usuarios.empresa_id` ? `empresas.id` (FK com CASCADE)
 
 ---
 
-## ??? Arquitetura DDD
+## Arquitetura DDD
 
-### Domain (N�cleo)
-- **Entities**: Objetos com identidade �nica (Usuario, Empresa)
+### Domain (Núcleo)
+- **Entities**: Objetos com identidade única (Usuario, Empresa)
 - **Value Objects**: Objetos sem identidade (Criptografia)
-- **Interfaces**: Contratos dos reposit�rios
+- **Interfaces**: Contratos dos repositórios
 
 ### Application (Casos de Uso)
-- **Services**: Orquestra��o da l�gica de neg�cio
-- **DTOs**: Objetos de transfer�ncia de dados
-- **Interfaces**: Contratos dos servi�os
+- **Services**: Orquestrção da lógica de negócio
+- **DTOs**: Objetos de transferência de dados
+- **Interfaces**: Contratos dos serviços
 - **Mappings**: Mapeamento entre entidades e DTOs
 
-### Infrastructure (Detalhes T�cnicos)
-- **Repositories**: Implementa��o de acesso a dados com Dapper
-- **Configurations**: Configura��es de banco de dados
-- **Scripts**: Scripts SQL de cria��o de tabelas
+### Infrastructure (Detalhes Técnicos)
+- **Repositories**: Implementção de acesso a dados com Dapper
+- **Configurations**: Configurções de banco de dados
+- **Scripts**: Scripts SQL de crição de tabelas
 
 ### API (Interface)
 - **Controllers**: Endpoints HTTP
-- **Program.cs**: Configura��o de DI, middleware, etc.
+- **Program.cs**: Configurção de DI, middleware, etc.
 
 ---
 
-## ?? Fluxo de Requisi��o
+## Fluxo de Requisção
 
 ```
 1. Cliente HTTP
@@ -224,53 +224,53 @@ C:\Projetos\dotnet\Beneficios\
 
 ---
 
-## ?? Seguran�a Implementada
+## Segurança Implementada
 
-1. **Autentica��o JWT**
+1. **Autenticção JWT**
    - Token gerado no login
-   - Expira��o de 8 horas
-   - Valida��o em todos os endpoints (exceto login)
+   - Expirção de 8 horas
+   - Validção em todos os endpoints (exceto login)
 
 2. **Criptografia**
-   - Senhas de usu�rios (Base64)
-   - Dados de conex�o de banco (Base64)
-   - ?? **Nota**: Para produ��o, usar bcrypt/Argon2
+   - Senhas de usuários (Base64)
+   - Dados de conexão de banco (Base64)
+   - ?? **Nota**: Para produção, usar bcrypt/Argon2
 
 3. **CORS**
-   - Configur�vel no Program.cs
+   - Configurável no Program.cs
 
 4. **HTTPS**
-   - Recomendado para produ��o
+   - Recomendado para produção
 
 ---
 
-## ?? Observabilidade
+## Observabilidade
 
 ### Logs (Serilog)
 - Console
 - Arquivo: `logs/beneficios-YYYYMMDD.txt`
-- Rotation: Di�ria
+- Rotation: Diária
 
 ### Health Check
 - Endpoint: `/health`
 - Usado pelo Docker
 
-### M�tricas
-- Pronto para integra��o com Prometheus/Grafana
+### Métricas
+- Pronto para integrção com Prometheus/Grafana
 
 ---
 
-## ?? Docker
+## Docker
 
 ### Containers
 1. **postgres**: PostgreSQL 16 Alpine
 2. **api**: .NET 9 API
 
 ### Volumes
-- `postgres_data`: Persist�ncia do banco de dados
+- `postgres_data`: Persistência do banco de dados
 
 ### Networks
-- `beneficios-network`: Comunica��o entre containers
+- `beneficios-network`: Comunicção entre containers
 
 ### Portas
 - PostgreSQL: 5432
@@ -278,88 +278,88 @@ C:\Projetos\dotnet\Beneficios\
 
 ---
 
-## ? Checklist de Funcionalidades
+## Checklist de Funcionalidades
 
 ### Implementado ?
 
 - [x] Estrutura DDD enxuta
-- [x] CRUD completo de Usu�rios
+- [x] CRUD completo de Usuários
 - [x] CRUD completo de Empresas
-- [x] Autentica��o JWT
+- [x] Autenticção JWT
 - [x] Logs com Serilog
 - [x] Health Check
 - [x] AutoMapper
 - [x] Dapper para performance
 - [x] PostgreSQL
 - [x] Docker e Docker Compose
-- [x] Testes unit�rios (Domain, Application, API)
+- [x] Testes unitários (Domain, Application, API)
 - [x] Swagger/OpenAPI
 - [x] Scripts SQL
-- [x] Documenta��o completa
+- [x] Documentção completa
 
-### Sugest�es para Evolu��o ??
+### Sugestões para Evolução ??
 
 - [ ] Refresh Token
-- [ ] Pagina��o nas listagens
-- [ ] Filtros e ordena��o
-- [ ] Valida��es com FluentValidation
+- [ ] Paginção nas listagens
+- [ ] Filtros e ordenção
+- [ ] Validções com FluentValidation
 - [ ] Cache com Redis
 - [ ] Rate limiting
 - [ ] CQRS com MediatR
 - [ ] Event sourcing
-- [ ] Notifica��es (SignalR)
+- [ ] Notificções (SignalR)
 - [ ] Multi-tenancy
 - [ ] Auditoria completa
 - [ ] Soft delete
 - [ ] Versionamento de API
-- [ ] Internacionaliza��o (i18n)
-- [ ] Testes de integra��o
+- [ ] Internacionalizção (i18n)
+- [ ] Testes de integrção
 - [ ] Performance tests
 
 ---
 
-## ?? Documenta��o Dispon�vel
+## Documentção Disponível
 
-1. **README.md** - Vis�o geral e quick start
-2. **ENDPOINTS.md** - Documenta��o completa de todos os endpoints
-3. **EXAMPLES.md** - Exemplos pr�ticos de uso
+1. **README.md** - Visão geral e quick start
+2. **ENDPOINTS.md** - Documentção completa de todos os endpoints
+3. **EXAMPLES.md** - Exemplos práticos de uso
 4. **TESTING.md** - Guia de testes
 5. **DEPLOY.md** - Guia de deploy (Docker, Azure, K8s, VM)
-6. **Swagger** - Documenta��o interativa (http://localhost:5000/swagger)
+6. **Swagger** - Documentção interativa (http://localhost:5000/swagger)
 
 ---
 
-## ?? Conceitos DDD Aplicados
+## Conceitos DDD Aplicados
 
 ### Camadas
-? Separa��o clara de responsabilidades
+? Separção clara de responsabilidades
 
 ### Entities
-? Usuario e Empresa com identidade �nica (Guid)
+? Usuario e Empresa com identidade única (Guid)
 
 ### Value Objects
 ? Criptografia (comportamento sem identidade)
 
 ### Repositories
-? Interfaces no Domain, implementa��o na Infrastructure
+? Interfaces no Domain, implementção na Infrastructure
 
 ### Services
-? L�gica de neg�cio na Application
+? Lógica de negócio na Application
 
 ### DTOs
-? Separa��o entre modelos de dom�nio e API
+? Separção entre modelos de domínio e API
 
 ### Dependency Injection
-? Todas as depend�ncias injetadas
+? Todas as dependências injetadas
 
 ### Aggregate Roots
-? Empresa como raiz do agregado (Usu�rio pertence a Empresa)
+? Empresa como raiz do agregado (Usuário pertence a Empresa)
 
 ---
 
-## ?? Boas Pr�ticas Seguidas
+## Boas Práticas Seguidas
 
-1. ? C�digo limpo e leg�vel
+1. ? Código limpo e legível
 2. ? SOLID principles
 3. ? DRY (Don't Repeat Yourself)
 4. ? Separation of Concerns
@@ -367,27 +367,27 @@ C:\Projetos\dotnet\Beneficios\
 6. ? Interface Segregation
 7. ? Single Responsibility
 8. ? Testabilidade
-9. ? Documenta��o
+9. ? Documentção
 10. ? Versionamento (Git ready)
 
 ---
 
-## ?? Para Estudar e Entender
+## Para Estudar e Entender
 
 ### Iniciante
 1. Estrutura de pastas e camadas
 2. Controllers e endpoints
 3. DTOs e mapeamento
-4. Autentica��o JWT b�sica
+4. Autenticção JWT básica
 
-### Intermedi�rio
-1. Padr�o Repository
+### Intermediário
+1. Padrão Repository
 2. Dependency Injection
 3. AutoMapper
 4. Dapper vs Entity Framework
 5. Docker Compose
 
-### Avan�ado
+### Avançado
 1. DDD completo
 2. CQRS e Event Sourcing
 3. Microservices
@@ -396,4 +396,4 @@ C:\Projetos\dotnet\Beneficios\
 
 ---
 
-Este projeto serve como base s�lida para evolu��o e aprendizado cont�nuo de arquitetura de software em .NET! ??
+Este projeto serve como base sólida para evolução e aprendizado contínuo de arquitetura de software em .NET! ??

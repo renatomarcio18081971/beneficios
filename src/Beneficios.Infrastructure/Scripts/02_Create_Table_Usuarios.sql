@@ -6,6 +6,7 @@
     perfil VARCHAR(20) NOT NULL DEFAULT 'Admin',
     empresa_id UUID NULL,
     token TEXT NULL,
+    codigo_alterar_senha VARCHAR(20) NULL,
     data_inclusao TIMESTAMP NOT NULL DEFAULT NOW(),
     data_alteracao TIMESTAMP NULL,
     usuario_alteracao_id UUID NULL,

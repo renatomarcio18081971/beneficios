@@ -130,13 +130,13 @@ export class UsuarioListComponent {
   exportExcel(): void {
     const subdomain = this.tenantService.getSubdomain();
     const filename = this.exportService.buildFilename('usuarios', subdomain, 'xlsx');
-    this.exportService.exportToExcel(this.dataSource.data, this.exportColumns, filename);
+    void this.exportService.exportToExcel(this.dataSource.data, this.exportColumns, filename);
   }
 
   exportPdf(): void {
     const subdomain = this.tenantService.getSubdomain();
     const filename = this.exportService.buildFilename('usuarios', subdomain, 'pdf');
-    this.exportService.exportToPdf(this.dataSource.data, this.exportColumns, filename, 'Usuários');
+    void this.exportService.exportToPdf(this.dataSource.data, this.exportColumns, filename, 'Usuários');
   }
 
   confirmDelete(usuario: Usuario): void {

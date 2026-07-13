@@ -147,4 +147,6 @@ A API utiliza JWT Bearer Token. Para acessar endpoints protegidos:
 
 ## Licença
 
+
 Este projeto é de código aberto.
+=======

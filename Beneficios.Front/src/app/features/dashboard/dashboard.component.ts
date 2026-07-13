@@ -3,7 +3,7 @@ import { AfterViewInit, ChangeDetectionStrategy, Component, inject } from '@angu
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { ChartConfiguration, ChartData } from 'chart.js';
-import { BaseChartDirective } from 'ng2-charts';
+import { BaseChartDirective, provideCharts, withDefaultRegisterables } from 'ng2-charts';
 import { DashboardMockService } from './dashboard-mock.service';
 import { DashboardSummaryCardComponent } from './dashboard-summary-card/dashboard-summary-card.component';
 
@@ -11,6 +11,7 @@ import { DashboardSummaryCardComponent } from './dashboard-summary-card/dashboar
   selector: 'app-dashboard',
   standalone: true,
   imports: [MatCardModule, MatIconModule, BaseChartDirective, CurrencyPipe, DashboardSummaryCardComponent],
+  providers: [provideCharts(withDefaultRegisterables())],
   templateUrl: './dashboard.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './dashboard.component.scss',

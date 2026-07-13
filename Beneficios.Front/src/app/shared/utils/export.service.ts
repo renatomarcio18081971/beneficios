@@ -1,7 +1,4 @@
 import { Injectable } from '@angular/core';
-import { jsPDF } from 'jspdf';
-import autoTable from 'jspdf-autotable';
-import * as XLSX from 'xlsx';
 import { ExportColumn } from './export.models';
 
 @Injectable({ providedIn: 'root' })
@@ -42,7 +39,8 @@ export class ExportService {
     return `${entity}-${subdomain}-${datePart}.${extension}`;
   }
 
-  exportToExcel<T extends object>(rows: T[], columns: ExportColumn[], filename: string): void {
+  async exportToExcel<T extends object>(rows: T[], columns: ExportColumn[], filename: string): Promise<void> {
+    const XLSX = await import('xlsx');
     const worksheet = XLSX.utils.json_to_sheet(
       this.buildSheetData(rows as Record<string, unknown>[], columns),
     );
@@ -51,12 +49,17 @@ export class ExportService {
     XLSX.writeFile(workbook, filename);
   }
 
-  exportToPdf<T extends object>(
+  async exportToPdf<T extends object>(
     rows: T[],
     columns: ExportColumn[],
     filename: string,
     title: string,
-  ): void {
+  ): Promise<void> {
+    const [{ jsPDF }, { default: autoTable }] = await Promise.all([
+      import('jspdf'),
+      import('jspdf-autotable'),
+    ]);
+
     const doc = new jsPDF();
     const tableData = this.buildPdfTableData(rows as Record<string, unknown>[], columns);
 

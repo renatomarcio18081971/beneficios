@@ -1,0 +1,119 @@
+:host {
+  display: block;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.auth-page {
+  height: 100vh;
+  max-height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: var(--beneficios-background);
+}
+
+.auth-top-bar {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  flex-shrink: 0;
+  min-height: 96px;
+  padding: 16px 32px;
+  background: linear-gradient(to right, #e3f2fd 0%, #ffffff 100%);
+  box-shadow: 0 1px 3px rgba(21, 101, 192, 0.08);
+}
+
+.auth-brand-icon {
+  height: 72px;
+  width: 72px;
+  object-fit: contain;
+}
+
+.auth-content {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 64px 16px 16px;
+  overflow: auto;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+}
+
+.auth-card mat-card-content {
+  padding-top: 8px;
+}
+
+.auth-card-header {
+  margin-bottom: 24px;
+}
+
+.auth-card-title {
+  margin: 0 0 8px;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--beneficios-text);
+}
+
+.auth-card-subtitle {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #78909c;
+  line-height: 1.4;
+}
+
+.field-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--beneficios-text);
+}
+
+.full-width {
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.error-message {
+  color: #c62828;
+  margin: 0 0 12px;
+  font-size: 0.875rem;
+}
+
+.back-link {
+  display: block;
+  margin-top: 24px;
+  text-align: center;
+  color: var(--beneficios-text);
+  text-decoration: none;
+  font-size: 0.875rem;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.forgot-password-link {
+  display: block;
+  text-align: left;
+  margin: 4px 0 16px;
+  color: var(--beneficios-primary);
+  text-decoration: none;
+  font-size: 0.875rem;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.codigo-input {
+  text-align: center;
+  letter-spacing: 0.35em;
+  font-size: 1.125rem;
+}

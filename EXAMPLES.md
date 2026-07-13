@@ -1,8 +1,8 @@
-﻿# Exemplos de Uso - Benef�cios API
+﻿# Exemplos de Uso - Benefícios API
 
-Este documento cont�m exemplos pr�ticos de como usar a API.
+Este documento contém exemplos práticos de como usar a API.
 
-## ?? Base URL
+## Base URL
 
 ```
 http://localhost:8080
@@ -10,11 +10,11 @@ http://localhost:8080
 
 ---
 
-## ?? Fluxo Completo de Uso
+## Fluxo Completo de Uso
 
 ### 1?? Criar uma Empresa
 
-**Requisi��o:**
+**Requisção:**
 ```http
 POST /api/empresas
 Content-Type: application/json
@@ -38,9 +38,9 @@ Authorization: Bearer {seu-token}
 
 ---
 
-### 2?? Criar um Usu�rio
+### 2?? Criar um Usuário
 
-**Requisi��o:**
+**Requisção:**
 ```http
 POST /api/usuarios
 Content-Type: application/json
@@ -65,7 +65,7 @@ Authorization: Bearer {seu-token}
 
 ### 3?? Fazer Login
 
-**Requisi��o:**
+**Requisção:**
 ```http
 POST /api/usuarios/login
 Content-Type: application/json
@@ -88,9 +88,9 @@ Content-Type: application/json
 
 ---
 
-### 4?? Buscar Usu�rio por ID
+### 4?? Buscar Usuário por ID
 
-**Requisi��o:**
+**Requisção:**
 ```http
 GET /api/usuarios/b2c3d4e5-f6a7-8901-bcde-f12345678901
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
@@ -111,9 +111,9 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
 ---
 
-### 5?? Listar Todos os Usu�rios
+### 5?? Listar Todos os Usuários
 
-**Requisi��o:**
+**Requisção:**
 ```http
 GET /api/usuarios
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
@@ -133,7 +133,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
   },
   {
     "id": "c3d4e5f6-a7b8-9012-cdef-123456789012",
-    "nome": "Jo�o Santos",
+    "nome": "João Santos",
     "email": "joao@techsolutions.com",
     "empresaId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
     "empresaNome": "Tech Solutions LTDA",
@@ -145,9 +145,9 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
 ---
 
-### 6?? Atualizar Usu�rio
+### 6?? Atualizar Usuário
 
-**Requisi��o:**
+**Requisção:**
 ```http
 PUT /api/usuarios/b2c3d4e5-f6a7-8901-bcde-f12345678901
 Content-Type: application/json
@@ -167,9 +167,9 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
 ---
 
-### 7?? Deletar Usu�rio
+### 7?? Deletar Usuário
 
-**Requisi��o:**
+**Requisção:**
 ```http
 DELETE /api/usuarios/b2c3d4e5-f6a7-8901-bcde-f12345678901
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
@@ -184,7 +184,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
 ### 8?? Buscar Empresa por ID
 
-**Requisi��o:**
+**Requisção:**
 ```http
 GET /api/empresas/a1b2c3d4-e5f6-7890-abcd-ef1234567890
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
@@ -205,7 +205,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
 ### 9?? Listar Todas as Empresas
 
-**Requisi��o:**
+**Requisção:**
 ```http
 GET /api/empresas
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
@@ -233,9 +233,9 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
 ---
 
-### ?? Atualizar Empresa
+### Atualizar Empresa
 
-**Requisi��o:**
+**Requisção:**
 ```http
 PUT /api/empresas/a1b2c3d4-e5f6-7890-abcd-ef1234567890
 Content-Type: application/json
@@ -259,7 +259,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
 ### 1??1?? Deletar Empresa
 
-**Requisi��o:**
+**Requisção:**
 ```http
 DELETE /api/empresas/a1b2c3d4-e5f6-7890-abcd-ef1234567890
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
@@ -274,7 +274,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
 ### 1??2?? Health Check
 
-**Requisi��o:**
+**Requisção:**
 ```http
 GET /health
 ```
@@ -286,7 +286,7 @@ Healthy
 
 ---
 
-## ?? Testando com cURL
+## Testando com cURL
 
 ### Login
 ```bash
@@ -314,7 +314,7 @@ curl -X POST http://localhost:8080/api/empresas \
   }'
 ```
 
-### Listar Usu�rios
+### Listar Usuários
 ```bash
 TOKEN="seu-token-aqui"
 
@@ -324,7 +324,7 @@ curl -X GET http://localhost:8080/api/usuarios \
 
 ---
 
-## ?? Testando com PowerShell
+## Testando com PowerShell
 
 ### Login
 ```powershell
@@ -365,7 +365,7 @@ $response = Invoke-RestMethod -Uri "http://localhost:8080/api/empresas" `
 Write-Host "ID da Empresa: $($response.id)"
 ```
 
-### Listar Usu�rios
+### Listar Usuários
 ```powershell
 $headers = @{
     "Authorization" = "Bearer $token"
@@ -380,22 +380,22 @@ $usuarios | Format-Table -Property id, nome, email, empresaNome
 
 ---
 
-## ?? Testando com Postman
+## Testando com Postman
 
 ### 1. Importar Collection
 
-Crie uma collection no Postman com as seguintes vari�veis:
+Crie uma collection no Postman com as seguintes variáveis:
 
 - `baseUrl`: `http://localhost:8080`
-- `token`: (ser� preenchido ap�s login)
+- `token`: (será preenchido após login)
 
-### 2. Configurar Autentica��o
+### 2. Configurar Autenticção
 
 Para todos os endpoints (exceto login):
 
-1. V� em **Authorization**
+1. Vá em **Authorization**
 2. Selecione **Bearer Token**
-3. Use a vari�vel `{{token}}`
+3. Use a variável `{{token}}`
 
 ### 3. Script de Login
 
@@ -411,7 +411,7 @@ if (pm.response.code === 200) {
 
 ---
 
-## ?? Exemplos de Erros Comuns
+## Exemplos de Erros Comuns
 
 ### 401 Unauthorized
 ```json
@@ -422,61 +422,61 @@ if (pm.response.code === 200) {
 }
 ```
 
-**Solu��o:** Verifique se o token JWT est� correto e n�o expirou.
+**Solução:** Verifique se o token JWT está correto e não expirou.
 
 ---
 
 ### 404 Not Found
 ```json
 {
-  "message": "Usu�rio n�o encontrado"
+  "message": "Usuário não encontrado"
 }
 ```
 
-**Solu��o:** Verifique se o ID existe no banco de dados.
+**Solução:** Verifique se o ID existe no banco de dados.
 
 ---
 
 ### 500 Internal Server Error
 ```json
 {
-  "message": "Erro ao criar usu�rio"
+  "message": "Erro ao criar usuário"
 }
 ```
 
-**Solu��o:** Verifique os logs da aplica��o para mais detalhes.
+**Solução:** Verifique os logs da aplicção para mais detalhes.
 
 ---
 
-## ?? Cen�rios de Teste
+## Cenários de Teste
 
-### Cen�rio 1: Onboarding de Nova Empresa
+### Cenário 1: Onboarding de Nova Empresa
 
 1. Criar empresa
-2. Criar usu�rio admin da empresa
-3. Login com o novo usu�rio
-4. Criar mais usu�rios
+2. Criar usuário admin da empresa
+3. Login com o novo usuário
+4. Criar mais usuários
 
-### Cen�rio 2: Gest�o de Usu�rios
+### Cenário 2: Gestão de Usuários
 
 1. Login
-2. Listar todos os usu�rios
-3. Buscar usu�rio espec�fico
-4. Atualizar dados do usu�rio
-5. Deletar usu�rio
+2. Listar todos os usuários
+3. Buscar usuário específico
+4. Atualizar dados do usuário
+5. Deletar usuário
 
-### Cen�rio 3: Autentica��o e Autoriza��o
+### Cenário 3: Autenticção e Autorizção
 
 1. Tentar acessar endpoint sem token (deve falhar)
 2. Fazer login
 3. Usar token para acessar endpoints
-4. Aguardar expira��o do token (8 horas)
+4. Aguardar expirção do token (8 horas)
 5. Tentar usar token expirado (deve falhar)
 6. Fazer novo login
 
 ---
 
-## ?? Integra��o com Frontend
+## Integrção com Frontend
 
 ### Exemplo com JavaScript (Fetch API)
 
@@ -496,7 +496,7 @@ async function login(email, senha) {
     return data;
 }
 
-// Listar Usu�rios
+// Listar Usuários
 async function getUsuarios() {
     const token = localStorage.getItem('token');
 
@@ -529,17 +529,17 @@ async function createEmpresa(empresa) {
 
 ---
 
-## ?? Boas Pr�ticas
+## Boas Práticas
 
-1. **Sempre use HTTPS em produ��o**
+1. **Sempre use HTTPS em produção**
 2. **Armazene o token de forma segura** (HttpOnly cookies no frontend)
 3. **Implemente refresh token** para melhor UX
 4. **Valide os dados no frontend** antes de enviar
 5. **Trate erros adequadamente**
 6. **Use interceptors** para adicionar token automaticamente
 7. **Implemente logout** limpando o token
-8. **N�o armazene senhas** em texto plano no c�digo
+8. **Não armazene senhas** em texto plano no código
 
 ---
 
-Para mais informa��es, consulte a [Documenta��o de Endpoints](ENDPOINTS.md).
+Para mais informções, consulte a [Documentção de Endpoints](ENDPOINTS.md).

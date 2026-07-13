@@ -19,5 +19,11 @@ export interface UserSession {
   empresaDominio: string;
 }
 
+export interface AlterarSenhaRequest {
+  codigo: string;
+  novaSenha: string;
+  confirmarNovaSenha: string;
+}
+
 export const TOKEN_KEY = 'beneficios_token';
 export const USER_KEY = 'beneficios_user';

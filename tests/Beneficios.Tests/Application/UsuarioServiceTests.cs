@@ -17,6 +17,7 @@ public class UsuarioServiceTests
 {
     private readonly Mock<IUsuarioRepository> _repositoryMock;
     private readonly Mock<ITokenService> _tokenServiceMock;
+    private readonly Mock<IEmailService> _emailServiceMock;
     private readonly IMapper _mapper;
     private readonly UsuarioService _service;
 
@@ -24,8 +25,13 @@ public class UsuarioServiceTests
     {
         _repositoryMock = new Mock<IUsuarioRepository>();
         _tokenServiceMock = new Mock<ITokenService>();
+        _emailServiceMock = new Mock<IEmailService>();
         _mapper = new MapperConfiguration(cfg => cfg.AddProfile<UsuarioProfile>()).CreateMapper();
-        _service = new UsuarioService(_repositoryMock.Object, _mapper, _tokenServiceMock.Object);
+        _service = new UsuarioService(
+            _repositoryMock.Object,
+            _mapper,
+            _tokenServiceMock.Object,
+            _emailServiceMock.Object);
     }
 
     [Fact]
@@ -285,5 +291,179 @@ public class UsuarioServiceTests
 
         Assert.Null(result);
         _tokenServiceMock.Verify(x => x.GenerateToken(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<UsuarioPerfil>(), It.IsAny<Guid?>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task EmailExisteAsync_DeveRetornarTrueQuandoUsuarioExisteNoTenant()
+    {
+        _repositoryMock.Setup(x => x.GetByEmailAsync("admin@example.com"))
+            .ReturnsAsync(new UsuarioAuthResult { Email = "admin@example.com", Perfil = UsuarioPerfil.Admin });
+
+        var result = await _service.EmailExisteAsync("admin@example.com", "admin");
+
+        Assert.True(result);
+    }
+
+    [Fact]
+    public async Task EmailExisteAsync_DeveRetornarFalseQuandoUsuarioDeOutroTenant()
+    {
+        _repositoryMock.Setup(x => x.GetByEmailAsync("joao@example.com"))
+            .ReturnsAsync(new UsuarioAuthResult
+            {
+                Email = "joao@example.com",
+                Perfil = UsuarioPerfil.Empresa,
+                EmpresaDominio = "empresa1",
+            });
+
+        var result = await _service.EmailExisteAsync("joao@example.com", "empresa2");
+
+        Assert.False(result);
+    }
+
+    [Fact]
+    public async Task EmailExisteAsync_DeveRetornarFalseQuandoUsuarioNaoExiste()
+    {
+        _repositoryMock.Setup(x => x.GetByEmailAsync("inexistente@example.com"))
+            .ReturnsAsync((UsuarioAuthResult?)null);
+
+        var result = await _service.EmailExisteAsync("inexistente@example.com", "admin");
+
+        Assert.False(result);
+    }
+
+    [Fact]
+    public async Task SolicitarAlteracaoSenhaAsync_DeveEnviarEmailQuandoUsuarioPertenceAoTenant()
+    {
+        var dto = new SolicitarAlteracaoSenhaDto("joao@example.com");
+        var usuarioId = Guid.NewGuid();
+        _repositoryMock.Setup(x => x.GetByEmailAsync(dto.Email))
+            .ReturnsAsync(new UsuarioAuthResult
+            {
+                Id = usuarioId,
+                Email = dto.Email,
+                Perfil = UsuarioPerfil.Empresa,
+                EmpresaDominio = "empresa1",
+            });
+        _repositoryMock.Setup(x => x.UpdateCodigoAlterarSenhaAsync(usuarioId, It.IsAny<string>()))
+            .ReturnsAsync(true);
+
+        await _service.SolicitarAlteracaoSenhaAsync(dto, "empresa1");
+
+        _repositoryMock.Verify(
+            x => x.UpdateCodigoAlterarSenhaAsync(
+                usuarioId,
+                It.Is<string>(c => c.Length == 6 && c.All(char.IsDigit))),
+            Times.Once);
+        _emailServiceMock.Verify(
+            x => x.EnviarAsync(
+                dto.Email,
+                "Redefinição de senha",
+                It.Is<string>(m => m.Contains("Olá, você solicitou redefinição de senha. Informe este código quando solicitado."))),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task SolicitarAlteracaoSenhaAsync_NaoDeveEnviarEmailQuandoUsuarioDeOutroTenant()
+    {
+        var dto = new SolicitarAlteracaoSenhaDto("joao@example.com");
+        _repositoryMock.Setup(x => x.GetByEmailAsync(dto.Email))
+            .ReturnsAsync(new UsuarioAuthResult
+            {
+                Email = dto.Email,
+                Perfil = UsuarioPerfil.Empresa,
+                EmpresaDominio = "empresa1",
+            });
+
+        await _service.SolicitarAlteracaoSenhaAsync(dto, "empresa2");
+
+        _emailServiceMock.Verify(
+            x => x.EnviarAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()),
+            Times.Never);
+        _repositoryMock.Verify(
+            x => x.UpdateCodigoAlterarSenhaAsync(It.IsAny<Guid>(), It.IsAny<string>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task SolicitarAlteracaoSenhaAsync_NaoDeveEnviarEmailQuandoUsuarioNaoExiste()
+    {
+        var dto = new SolicitarAlteracaoSenhaDto("inexistente@example.com");
+        _repositoryMock.Setup(x => x.GetByEmailAsync(dto.Email))
+            .ReturnsAsync((UsuarioAuthResult?)null);
+
+        await _service.SolicitarAlteracaoSenhaAsync(dto, "empresa1");
+
+        _emailServiceMock.Verify(
+            x => x.EnviarAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()),
+            Times.Never);
+        _repositoryMock.Verify(
+            x => x.UpdateCodigoAlterarSenhaAsync(It.IsAny<Guid>(), It.IsAny<string>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task AlterarSenhaAsync_DeveRetornarTrueQuandoCodigoValido()
+    {
+        var usuarioId = Guid.NewGuid();
+        var dto = new AlterarSenhaDto("123456", "novaSenha123", "novaSenha123");
+        _repositoryMock.Setup(x => x.GetByCodigoAlterarSenhaAsync(dto.Codigo))
+            .ReturnsAsync(new UsuarioAuthResult
+            {
+                Id = usuarioId,
+                Perfil = UsuarioPerfil.Admin,
+            });
+        _repositoryMock.Setup(x => x.AtualizarSenhaAsync(usuarioId, It.IsAny<string>()))
+            .ReturnsAsync(true);
+
+        var result = await _service.AlterarSenhaAsync(dto, "admin");
+
+        Assert.True(result);
+        _repositoryMock.Verify(
+            x => x.AtualizarSenhaAsync(
+                usuarioId,
+                It.Is<string>(s => s == Criptografia.Encrypt("novaSenha123"))),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task AlterarSenhaAsync_DeveRetornarFalseQuandoCodigoInexistente()
+    {
+        var dto = new AlterarSenhaDto("999999", "novaSenha123", "novaSenha123");
+        _repositoryMock.Setup(x => x.GetByCodigoAlterarSenhaAsync(dto.Codigo))
+            .ReturnsAsync((UsuarioAuthResult?)null);
+
+        var result = await _service.AlterarSenhaAsync(dto, "admin");
+
+        Assert.False(result);
+        _repositoryMock.Verify(x => x.AtualizarSenhaAsync(It.IsAny<Guid>(), It.IsAny<string>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task AlterarSenhaAsync_DeveRetornarFalseQuandoSenhasNaoCoincidem()
+    {
+        var dto = new AlterarSenhaDto("123456", "novaSenha123", "outraSenha");
+
+        var result = await _service.AlterarSenhaAsync(dto, "admin");
+
+        Assert.False(result);
+        _repositoryMock.Verify(x => x.GetByCodigoAlterarSenhaAsync(It.IsAny<string>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task AlterarSenhaAsync_DeveRetornarFalseQuandoUsuarioDeOutroTenant()
+    {
+        var dto = new AlterarSenhaDto("123456", "novaSenha123", "novaSenha123");
+        _repositoryMock.Setup(x => x.GetByCodigoAlterarSenhaAsync(dto.Codigo))
+            .ReturnsAsync(new UsuarioAuthResult
+            {
+                Id = Guid.NewGuid(),
+                Perfil = UsuarioPerfil.Empresa,
+                EmpresaDominio = "empresa1",
+            });
+
+        var result = await _service.AlterarSenhaAsync(dto, "empresa2");
+
+        Assert.False(result);
+        _repositoryMock.Verify(x => x.AtualizarSenhaAsync(It.IsAny<Guid>(), It.IsAny<string>()), Times.Never);
     }
 }

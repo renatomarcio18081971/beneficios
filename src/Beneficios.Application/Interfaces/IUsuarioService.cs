@@ -10,4 +10,7 @@ public interface IUsuarioService
     Task<UsuarioDto?> ObterUmAsync(Guid id);
     Task<UsuarioDto[]> ObterTodosAsync();
     Task<LoginResponseDto?> LoginAsync(LoginDto loginDto, string tenantSubdomain);
+    Task<bool> EmailExisteAsync(string email, string tenantSubdomain);
+    Task SolicitarAlteracaoSenhaAsync(SolicitarAlteracaoSenhaDto dto, string tenantSubdomain);
+    Task<bool> AlterarSenhaAsync(AlterarSenhaDto dto, string tenantSubdomain);
 }

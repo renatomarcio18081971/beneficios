@@ -28,7 +28,9 @@ public static class CorsServiceExtensions
                     policy.SetIsOriginAllowed(origin =>
                         origin.Contains("localhost:4200", StringComparison.OrdinalIgnoreCase)
                         || origin.EndsWith(".minhaempresa.com.br", StringComparison.OrdinalIgnoreCase)
-                        || origin.EndsWith(".beneficios.servidor", StringComparison.OrdinalIgnoreCase));
+                        || origin.EndsWith(".beneficios.tresonze.servidor", StringComparison.OrdinalIgnoreCase)
+                        || origin.Equals("https://beneficios.tresonze.servidor", StringComparison.OrdinalIgnoreCase)
+                        || origin.Equals("http://beneficios.tresonze.servidor", StringComparison.OrdinalIgnoreCase));
                 }
 
                 policy

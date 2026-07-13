@@ -1,0 +1,93 @@
+<div class="auth-page">
+  <header class="auth-top-bar">
+    <img src="/images/login-brand.png" alt="" class="auth-brand-icon" />
+  </header>
+
+  <main class="auth-content">
+    <mat-card class="auth-card">
+      <mat-card-content>
+        <div class="auth-card-header">
+          <h1 class="auth-card-title">Redefinir senha</h1>
+          <p class="auth-card-subtitle">
+            Informe o código recebido por e-mail e cadastre uma nova senha.
+          </p>
+        </div>
+
+        <form [formGroup]="form" (ngSubmit)="submit()">
+          <label class="field-label" for="codigo">Código de verificação</label>
+          <mat-form-field appearance="outline" class="full-width">
+            <input
+              id="codigo"
+              matInput
+              type="text"
+              formControlName="codigo"
+              class="codigo-input"
+              placeholder="0 0 0 0 0 0"
+              maxlength="6"
+              inputmode="numeric"
+              autocomplete="one-time-code"
+            >
+          </mat-form-field>
+
+          <label class="field-label" for="novaSenha">Nova senha</label>
+          <mat-form-field appearance="outline" class="full-width">
+            <input
+              id="novaSenha"
+              matInput
+              [type]="hideNovaSenha() ? 'password' : 'text'"
+              formControlName="novaSenha"
+              autocomplete="new-password"
+            >
+            <button
+              mat-icon-button
+              matSuffix
+              type="button"
+              (click)="toggleNovaSenha()"
+              [attr.aria-label]="hideNovaSenha() ? 'Exibir senha' : 'Ocultar senha'"
+            >
+              <mat-icon>{{ hideNovaSenha() ? 'visibility' : 'visibility_off' }}</mat-icon>
+            </button>
+          </mat-form-field>
+
+          <label class="field-label" for="confirmarNovaSenha">Confirmar nova senha</label>
+          <mat-form-field appearance="outline" class="full-width">
+            <input
+              id="confirmarNovaSenha"
+              matInput
+              [type]="hideConfirmarSenha() ? 'password' : 'text'"
+              formControlName="confirmarNovaSenha"
+              autocomplete="new-password"
+            >
+            <button
+              mat-icon-button
+              matSuffix
+              type="button"
+              (click)="toggleConfirmarSenha()"
+              [attr.aria-label]="hideConfirmarSenha() ? 'Exibir senha' : 'Ocultar senha'"
+            >
+              <mat-icon>{{ hideConfirmarSenha() ? 'visibility' : 'visibility_off' }}</mat-icon>
+            </button>
+          </mat-form-field>
+
+          @if (form.hasError('senhasDiferentes') && form.get('confirmarNovaSenha')?.touched) {
+            <p class="error-message">As senhas não conferem.</p>
+          }
+
+          @if (errorMessage) {
+            <p class="error-message">{{ errorMessage }}</p>
+          }
+
+          <button mat-flat-button color="primary" class="full-width" type="submit" [disabled]="loading">
+            @if (loading) {
+              <mat-spinner diameter="20"></mat-spinner>
+            } @else {
+              Redefinir
+            }
+          </button>
+        </form>
+
+        <a routerLink="/login" class="back-link">Voltar ao login</a>
+      </mat-card-content>
+    </mat-card>
+  </main>
+</div>
