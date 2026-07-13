@@ -1,18 +1,21 @@
 param(
     [string]$ServerIp = "192.168.18.70",
-    [string]$BaseDomain = "beneficios.servidor"
+    [string]$BaseDomain = "tresonze.servidor",
+    [string]$BeneficiosDomain = "beneficios.tresonze.servidor"
 )
 
 $ErrorActionPreference = "Stop"
 
 $root = Split-Path -Parent $PSScriptRoot
-$certsDir = Join-Path $root "docker\certs"
+$certsDir = Join-Path $root "docker\gateway\certs"
 
 New-Item -ItemType Directory -Force -Path $certsDir | Out-Null
 
-Write-Host "Gerando certificado autoassinado para $ServerIp / *.$BaseDomain em $certsDir ..."
+Write-Host "Gerando certificado autoassinado em $certsDir ..."
+Write-Host "  $BaseDomain, *.$BaseDomain"
+Write-Host "  $BeneficiosDomain, *.$BeneficiosDomain"
 
-$subjectAltName = "subjectAltName=IP:${ServerIp},DNS:localhost,DNS:host.docker.internal,DNS:${BaseDomain},DNS:*.${BaseDomain}"
+$subjectAltName = "subjectAltName=IP:${ServerIp},DNS:localhost,DNS:host.docker.internal,DNS:${BaseDomain},DNS:*.${BaseDomain},DNS:${BeneficiosDomain},DNS:*.${BeneficiosDomain}"
 
 if (Get-Command docker -ErrorAction SilentlyContinue) {
     docker run --rm `
@@ -31,18 +34,25 @@ elseif (Get-Command openssl -ErrorAction SilentlyContinue) {
         -addext $subjectAltName
 }
 else {
-    throw "Instale Docker ou OpenSSL para gerar os certificados em docker/certs."
+    throw "Instale Docker ou OpenSSL para gerar os certificados em docker/gateway/certs."
 }
 
 Write-Host ""
 Write-Host "Certificados criados:"
-Write-Host "  docker/certs/server.crt"
-Write-Host "  docker/certs/server.key"
+Write-Host "  docker/gateway/certs/server.crt"
+Write-Host "  docker/gateway/certs/server.key"
 Write-Host ""
-Write-Host "Configure no hosts (ou DNS interno):"
-Write-Host "  ${ServerIp}  admin.${BaseDomain}"
-Write-Host "  ${ServerIp}  empresa1.${BaseDomain}"
+Write-Host "Configure no DNS interno:"
+Write-Host "  *.${BaseDomain}           A  ${ServerIp}"
+Write-Host "  ${BeneficiosDomain}       A  ${ServerIp}"
+Write-Host "  *.${BeneficiosDomain}     A  ${ServerIp}"
 Write-Host ""
-Write-Host "Front HTTPS:  https://admin.${BaseDomain}:9443/"
-Write-Host "Swagger:      https://admin.${BaseDomain}:9443/swagger/index.html"
-Write-Host "HTTP (301):   http://${ServerIp}:9081/"
+Write-Host "Registrar Ponto API:  https://registrar-ponto-api.${BaseDomain}/swagger"
+Write-Host "Beneficios API:         https://beneficios-api.${BaseDomain}/swagger"
+Write-Host "Beneficios admin:       https://${BeneficiosDomain}/"
+Write-Host "Beneficios tenant:      https://exemplo.${BeneficiosDomain}/"
+Write-Host ""
+Write-Host "Subida (na ordem):"
+Write-Host "  docker compose -f docker-compose.gateway.yml up -d"
+Write-Host "  docker compose up -d --build"
+Write-Host "  (em registrar-ponto) docker compose up -d --build"

@@ -1,40 +1,40 @@
-﻿# ?? Benef�cios API - Solution Completa Criada!
+﻿# Benefícios API - Solution Completa Criada!
 
-## ? O que foi criado
+## O que foi criado
 
-Parab�ns! A solution **beneficios-api** foi criada com sucesso seguindo os princ�pios de **Domain-Driven Design (DDD)** de forma enxuta e organizada.
+Parabéns! A solution **beneficios-api** foi criada com sucesso seguindo os princípios de **Domain-Driven Design (DDD)** de forma enxuta e organizada.
 
 ---
 
-## ?? Projetos Criados
+## Projetos Criados
 
 ### 1. **Beneficios.Api** (.NET 9 Web API)
-Camada de apresenta��o com controllers REST
+Camada de apresentção com controllers REST
 
 ### 2. **Beneficios.Application** (.NET 9 Class Library)
-Camada de aplica��o com services, DTOs e mappings
+Camada de aplicção com services, DTOs e mappings
 
 ### 3. **Beneficios.Domain** (.NET 9 Class Library)
-Camada de dom�nio com entities, interfaces e value objects
+Camada de domínio com entities, interfaces e value objects
 
 ### 4. **Beneficios.Infrastructure** (.NET 9 Class Library)
-Camada de infraestrutura com repositories e configura��es
+Camada de infraestrutura com repositories e configurções
 
 ### 5. **Beneficios.Tests** (.NET 9 Test Project)
-Projeto de testes unit�rios com xUnit
+Projeto de testes unitários com xUnit
 
 ---
 
-## ?? Funcionalidades Implementadas
+## Funcionalidades Implementadas
 
-### ? Controllers Completas
+### Controllers Completas
 
 #### **UsuariosController**
-- ? POST `/api/usuarios` - Criar usu�rio
-- ? PUT `/api/usuarios/{id}` - Atualizar usu�rio
+- ? POST `/api/usuarios` - Criar usuário
+- ? PUT `/api/usuarios/{id}` - Atualizar usuário
 - ? GET `/api/usuarios/{id}` - Buscar por ID
 - ? GET `/api/usuarios` - Listar todos
-- ? DELETE `/api/usuarios/{id}` - Deletar usu�rio
+- ? DELETE `/api/usuarios/{id}` - Deletar usuário
 - ? POST `/api/usuarios/login` - Login (gera JWT)
 
 #### **EmpresasController**
@@ -44,7 +44,7 @@ Projeto de testes unit�rios com xUnit
 - ? GET `/api/empresas` - Listar todas
 - ? DELETE `/api/empresas/{id}` - Deletar empresa
 
-### ? Banco de Dados (PostgreSQL)
+### Banco de Dados (PostgreSQL)
 
 #### Tabela **empresas**
 ```sql
@@ -72,23 +72,23 @@ Projeto de testes unit�rios com xUnit
 - usuario_alteracao_id (UUID, nullable)
 ```
 
-### ? Recursos T�cnicos
+### Recursos Técnicos
 
-- ?? **JWT Authentication** - Autentica��o segura com token
+- ?? **JWT Authentication** - Autenticção segura com token
 - ?? **Serilog** - Logs estruturados (console + arquivo)
-- ?? **Swagger/OpenAPI** - Documenta��o interativa
+- ?? **Swagger/OpenAPI** - Documentção interativa
 - ?? **Health Check** - Endpoint `/health`
-- ??? **AutoMapper** - Mapeamento autom�tico entre objetos
-- ? **Dapper** - ORM perform�tico para PostgreSQL
-- ?? **Docker** - Containeriza��o completa
-- ?? **Testes Unit�rios** - 19 testes implementados
-- ?? **Scripts SQL** - Cria��o de tabelas e dados de exemplo
+- ??? **AutoMapper** - Mapeamento automático entre objetos
+- ? **Dapper** - ORM performático para PostgreSQL
+- ?? **Docker** - Containerizção completa
+- ?? **Testes Unitários** - 19 testes implementados
+- ?? **Scripts SQL** - Crição de tabelas e dados de exemplo
 
 ---
 
-## ?? Como Come�ar
+## Como Começar
 
-### ?? Op��o 1: Docker (Recomendado)
+### Opção 1: Docker (Recomendado)
 
 ```bash
 # Na raiz do projeto
@@ -99,14 +99,14 @@ docker-compose up -d
 # Health: http://localhost:8080/health
 ```
 
-### ?? Op��o 2: Visual Studio
+### Opção 2: Visual Studio
 
 1. Abra `beneficios-api.sln`
-2. Configure `Beneficios.Api` como projeto de inicializa��o
+2. Configure `Beneficios.Api` como projeto de inicializção
 3. Pressione F5
 4. Acesse: http://localhost:5000/swagger
 
-### ?? Op��o 3: CLI
+### Opção 3: CLI
 
 ```bash
 cd src/Beneficios.Api
@@ -115,7 +115,7 @@ dotnet run
 
 ---
 
-## ?? Estrutura de Pastas
+## Estrutura de Pastas
 
 ```
 C:\Projetos\dotnet\Beneficios\
@@ -172,11 +172,11 @@ C:\Projetos\dotnet\Beneficios\
 
 ---
 
-## ?? Pr�ximos Passos
+## Próximos Passos
 
 ### 1?? **Criar o Banco de Dados**
 
-#### Com Docker (autom�tico):
+#### Com Docker (automático):
 ```bash
 docker-compose up -d postgres
 ```
@@ -200,7 +200,7 @@ curl -X POST http://localhost:8080/api/usuarios/login \
   -H "Content-Type: application/json" \
   -d '{"email":"admin@exemplo.com","senha":"admin123"}'
 
-# Use o token retornado nos pr�ximos requests
+# Use o token retornado nos próximos requests
 ```
 
 ### 3?? **Executar Testes**
@@ -209,94 +209,94 @@ curl -X POST http://localhost:8080/api/usuarios/login \
 dotnet test
 ```
 
-### 4?? **Explorar a Documenta��o**
+### 4?? **Explorar a Documentção**
 
-- ?? **README.md** - Vis�o geral
+- ?? **README.md** - Visão geral
 - ?? **ENDPOINTS.md** - Todos os endpoints
-- ?? **EXAMPLES.md** - Exemplos pr�ticos
+- ?? **EXAMPLES.md** - Exemplos práticos
 - ?? **TESTING.md** - Como testar
 - ?? **DEPLOY.md** - Como fazer deploy
 - ?? **STRUCTURE.md** - Estrutura completa
 
 ---
 
-## ?? Credenciais de Teste
+## Credenciais de Teste
 
-Ap�s executar o script `03_Insert_Sample_Data.sql`:
+Após executar o script `03_Insert_Sample_Data.sql`:
 
-### Usu�rio 1
+### Usuário 1
 - **Email:** admin@exemplo.com
 - **Senha:** admin123
 
-### Usu�rio 2
+### Usuário 2
 - **Email:** teste@exemplo.com
 - **Senha:** teste123
 
 ---
 
-## ?? Regras Implementadas
+## Regras Implementadas
 
-### ? Todas as regras solicitadas foram seguidas:
+### Todas as regras solicitadas foram seguidas:
 
 1. ? **UTF-8 with signature** - Todos os arquivos
-2. ? **M�todos limpos** - M�x 4 par�metros, acima disso usa DTO
-3. ? **Par�metros camelCase** - Seguido em todos os m�todos
-4. ? **Performance** - Array[] para listas sem altera��o
-5. ? **Classes** - `get; set;` (n�o `init`)
+2. ? **Métodos limpos** - Máx 4 parâmetros, acima disso usa DTO
+3. ? **Parâmetros camelCase** - Seguido em todos os métodos
+4. ? **Performance** - Array[] para listas sem alterção
+5. ? **Classes** - `get; set;` (não `init`)
 6. ? **Records** - Apenas para DTOs
-7. ? **Sem c�digo comentado** - C�digo limpo
+7. ? **Sem código comentado** - Código limpo
 8. ? **Docker** - Dockerfile + docker-compose.yml
 9. ? **PostgreSQL** - Container configurado
 10. ? **Testes** - 19 testes implementados
 11. ? **AutoMapper** - Configurado e funcionando
-12. ? **Dapper** - Repositories perform�ticos
-13. ? **JWT** - Autentica��o implementada
+12. ? **Dapper** - Repositories performáticos
+13. ? **JWT** - Autenticção implementada
 14. ? **Serilog** - Logs estruturados
 15. ? **Health Check** - `/health` endpoint
-16. ? **Controllers** - Usu�rios e Empresas completas
-17. ? **Scripts SQL** - Cria��o de tabelas
+16. ? **Controllers** - Usuários e Empresas completas
+17. ? **Scripts SQL** - Crição de tabelas
 18. ? **.gitignore** - Arquivo completo
 
 ---
 
-## ?? Diferenciais Implementados
+## Diferenciais Implementados
 
-Al�m do solicitado, tamb�m foi criado:
+Além do solicitado, também foi criado:
 
 - ? **Swagger configurado** com JWT
-- ? **Documenta��o completa** (6 arquivos .md)
+- ? **Documentção completa** (6 arquivos .md)
 - ? **Scripts de dados de exemplo**
 - ? **Testes organizados** por camada
 - ? **launchSettings.json** otimizado
-- ? **CORS pronto** para configura��o
-- ? **Logs em arquivo** com rotation di�ria
+- ? **CORS pronto** para configurção
+- ? **Logs em arquivo** com rotation diária
 - ? **Health check** para Docker
 - ? **Network isolada** no Docker
 - ? **Persistent volume** para PostgreSQL
 
 ---
 
-## ?? Observa��es Importantes
+## Observções Importantes
 
-### Seguran�a
-A criptografia atual usa **Base64** (conforme solicitado). Para **produ��o**, recomenda-se:
+### Segurança
+A criptografia atual usa **Base64** (conforme solicitado). Para **produção**, recomenda-se:
 - Usar **bcrypt** ou **Argon2** para senhas
 - Implementar **HTTPS**
 - Usar **Azure Key Vault** ou similar para secrets
 
 ### Banco de Dados
-- O PostgreSQL est� configurado na porta padr�o **5432**
-- A connection string est� em `appsettings.json`
-- Os dados s�o persistidos no volume Docker `postgres_data`
+- O PostgreSQL está configurado na porta padrão **5432**
+- A connection string está em `appsettings.json`
+- Os dados são persistidos no volume Docker `postgres_data`
 
 ### JWT
 - Token expira em **8 horas**
-- Secret key deve ser alterada em produ��o
+- Secret key deve ser alterada em produção
 - Considere implementar **refresh token**
 
 ---
 
-## ?? Comandos �teis
+## Comandos úteis
 
 ### Docker
 
@@ -320,7 +320,7 @@ docker-compose up -d --build api
 ### .NET
 
 ```bash
-# Restaurar depend�ncias
+# Restaurar dependências
 dotnet restore
 
 # Build
@@ -352,7 +352,7 @@ docker exec -i beneficios-postgres psql -U postgres beneficios < backup.sql
 
 ---
 
-## ?? Customiza��o
+## Customizção
 
 ### Alterar Porta da API
 
@@ -391,7 +391,7 @@ app.UseCors("AllowAll");
 
 ---
 
-## ? Checklist de Verifica��o
+## Checklist de Verificção
 
 - [x] Solution compila sem erros
 - [x] Todos os testes passam
@@ -399,54 +399,54 @@ app.UseCors("AllowAll");
 - [x] Health check responde
 - [x] Swagger abre corretamente
 - [x] Login funciona
-- [x] CRUD de usu�rios funciona
+- [x] CRUD de usuários funciona
 - [x] CRUD de empresas funciona
 - [x] JWT valida corretamente
-- [x] Logs s�o gerados
-- [x] Scripts SQL est�o corretos
+- [x] Logs são gerados
+- [x] Scripts SQL estão corretos
 - [x] .gitignore configurado
 
 ---
 
-## ?? Conclus�o
+## Conclusão
 
-Sua API est� **100% funcional** e pronta para:
+Sua API está **100% funcional** e pronta para:
 
 1. ? Desenvolvimento local
 2. ? Testes automatizados
 3. ? Deploy em Docker
 4. ? Deploy em cloud (Azure, AWS, etc.)
-5. ? Integra��o com frontend
-6. ? Evolu��o e manuten��o
+5. ? Integrção com frontend
+6. ? Evolução e manutenção
 
 ---
 
-## ?? Documenta��o Completa
+## Documentção Completa
 
-1. **README.md** - Voc� est� aqui! ??
-2. **ENDPOINTS.md** - Documenta��o de todos os endpoints
-3. **EXAMPLES.md** - Exemplos pr�ticos de uso (cURL, PowerShell, JavaScript)
+1. **README.md** - Você está aqui! ??
+2. **ENDPOINTS.md** - Documentção de todos os endpoints
+3. **EXAMPLES.md** - Exemplos práticos de uso (cURL, PowerShell, JavaScript)
 4. **TESTING.md** - Guia completo de testes
 5. **DEPLOY.md** - Deploy (Docker, Azure, Kubernetes, VM)
 6. **STRUCTURE.md** - Estrutura completa e conceitos DDD
 
 ---
 
-## ?? Bom Desenvolvimento!
+## Bom Desenvolvimento!
 
-A estrutura est� pronta para evoluir. Algumas sugest�es:
+A estrutura está pronta para evoluir. Algumas sugestões:
 
 - Implementar refresh token
-- Adicionar pagina��o
-- Implementar filtros avan�ados
-- Adicionar valida��es com FluentValidation
+- Adicionar paginção
+- Implementar filtros avançados
+- Adicionar validções com FluentValidation
 - Implementar cache com Redis
 - Adicionar rate limiting
 - Evoluir para CQRS com MediatR
-- Implementar eventos de dom�nio
-- Adicionar testes de integra��o
+- Implementar eventos de domínio
+- Adicionar testes de integrção
 - Configurar CI/CD
 
-**D�vidas?** Consulte a documenta��o ou explore o c�digo!
+**Dúvidas?** Consulte a documentção ou explore o código!
 
 ?? **Happy Coding!** ??

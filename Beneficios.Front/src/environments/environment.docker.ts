@@ -1,5 +1,5 @@
 export const environment = {
   production: true,
-  apiUrl: '/api',
-  baseDomain: 'beneficios.servidor',
+  apiUrl: 'https://beneficios-api.tresonze.servidor/api',
+  baseDomain: 'beneficios.tresonze.servidor',
 };

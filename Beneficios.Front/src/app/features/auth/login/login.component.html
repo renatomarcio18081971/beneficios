@@ -22,6 +22,8 @@
             <input matInput type="password" formControlName="senha" autocomplete="current-password">
           </mat-form-field>
 
+          <a routerLink="/recuperar-senha" class="forgot-password-link">Esqueci minha senha</a>
+
           @if (errorMessage) {
             <p class="error-message">{{ errorMessage }}</p>
           }

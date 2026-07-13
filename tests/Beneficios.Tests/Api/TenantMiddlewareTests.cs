@@ -77,4 +77,39 @@ public class TenantMiddlewareTests
             resolver => resolver.ResolveAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()),
             Times.Never);
     }
+
+    [Fact]
+    public async Task Swagger_DeveIgnorarResolucaoDeTenant()
+    {
+        var tenantResolverMock = new Mock<ITenantResolver>();
+        tenantResolverMock
+            .Setup(resolver => resolver.ResolveAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((TenantResolution?)null);
+
+        await using var factory = new WebApplicationFactory<Program>()
+            .WithWebHostBuilder(builder =>
+            {
+                builder.UseSetting(
+                    "ConnectionStrings:DefaultConnection",
+                    "Host=localhost;Port=5432;Database=beneficios_test;Username=postgres;Password=postgres");
+
+                builder.ConfigureServices(services =>
+                {
+                    var descriptor = services.SingleOrDefault(
+                        service => service.ServiceType == typeof(ITenantResolver));
+                    if (descriptor is not null)
+                        services.Remove(descriptor);
+
+                    services.AddSingleton(tenantResolverMock.Object);
+                });
+            });
+
+        var client = factory.CreateClient();
+        var response = await client.GetAsync("/swagger/index.html");
+
+        Assert.NotEqual(HttpStatusCode.NotFound, response.StatusCode);
+        tenantResolverMock.Verify(
+            resolver => resolver.ResolveAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
 }

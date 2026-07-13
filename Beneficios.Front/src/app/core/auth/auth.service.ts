@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { TenantService } from '../tenant/tenant.service';
-import { LoginResponse, TOKEN_KEY, USER_KEY, UserSession } from './auth.models';
+import { LoginResponse, TOKEN_KEY, USER_KEY, UserSession, AlterarSenhaRequest } from './auth.models';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -30,6 +30,24 @@ export class AuthService {
           sessionStorage.setItem(USER_KEY, JSON.stringify(session));
         }),
       );
+  }
+
+  solicitarAlteracaoSenha(email: string): Observable<void> {
+    const subdomain = this.tenantService.getSubdomain();
+    return this.http.put<void>(
+      `${environment.apiUrl}/usuarios/solicitarAlteracaoSenha`,
+      { email },
+      { headers: { 'X-Tenant': subdomain } },
+    );
+  }
+
+  alterarSenha(request: AlterarSenhaRequest): Observable<void> {
+    const subdomain = this.tenantService.getSubdomain();
+    return this.http.put<void>(
+      `${environment.apiUrl}/usuarios/alterarSenha`,
+      request,
+      { headers: { 'X-Tenant': subdomain } },
+    );
   }
 
   logout(): void {

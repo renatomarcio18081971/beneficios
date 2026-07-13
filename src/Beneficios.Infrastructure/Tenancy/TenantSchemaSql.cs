@@ -23,6 +23,7 @@ public static class TenantSchemaSql
                 perfil VARCHAR(20) NOT NULL DEFAULT 'Empresa',
                 empresa_id UUID NOT NULL,
                 token TEXT NULL,
+                codigo_alterar_senha VARCHAR(20) NULL,
                 data_inclusao TIMESTAMP NOT NULL DEFAULT NOW(),
                 data_alteracao TIMESTAMP NULL,
                 usuario_alteracao_id UUID NULL,

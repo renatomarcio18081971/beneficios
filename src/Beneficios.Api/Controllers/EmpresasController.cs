@@ -1,4 +1,4 @@
-using Beneficios.Application.DTOs;
+﻿using Beneficios.Application.DTOs;
 using Beneficios.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -47,7 +47,7 @@ public class EmpresasController : ControllerBase
 
             var success = await _empresaService.AtualizarAsync(id, dto, usuarioAlteracaoId);
             if (!success)
-                return NotFound(new { message = "Empresa n�o encontrada" });
+                return NotFound(new { message = "Empresa não encontrada" });
 
             return NoContent();
         }
@@ -65,7 +65,7 @@ public class EmpresasController : ControllerBase
         {
             var empresa = await _empresaService.ObterUmAsync(id);
             if (empresa == null)
-                return NotFound(new { message = "Empresa n�o encontrada" });
+                return NotFound(new { message = "Empresa não encontrada" });
 
             return Ok(empresa);
         }
@@ -99,7 +99,7 @@ public class EmpresasController : ControllerBase
             _logger.LogInformation("Deletando empresa: {Id}", id);
             var success = await _empresaService.DeleteAsync(id);
             if (!success)
-                return NotFound(new { message = "Empresa n�o encontrada" });
+                return NotFound(new { message = "Empresa não encontrada" });
 
             return NoContent();
         }

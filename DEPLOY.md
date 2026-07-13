@@ -1,6 +1,6 @@
-﻿# Guia de Deploy - Benef�cios API
+﻿# Guia de Deploy - Benefícios API
 
-## ?? Op��es de Deploy
+## Opções de Deploy
 
 ### 1. Docker Compose (Recomendado para desenvolvimento)
 ### 2. Azure App Service
@@ -9,21 +9,21 @@
 
 ---
 
-## ?? Deploy com Docker Compose
+## Deploy com Docker Compose
 
-### Pr�-requisitos
+### Pré-requisitos
 - Docker
 - Docker Compose
 
 ### Passos
 
-1. **Clone o reposit�rio**
+1. **Clone o repositório**
 ```bash
 git clone <url-do-repositorio>
 cd beneficios-api
 ```
 
-2. **Configure as vari�veis de ambiente** (opcional)
+2. **Configure as variáveis de ambiente** (opcional)
 
    Edite `docker-compose.yml` ou crie um arquivo `.env`:
 ```env
@@ -59,9 +59,9 @@ docker-compose down -v
 
 ---
 
-## ?? Deploy no Azure App Service
+## Deploy no Azure App Service
 
-### Pr�-requisitos
+### Pré-requisitos
 - Conta Azure
 - Azure CLI instalado
 - .NET 9 SDK
@@ -118,7 +118,7 @@ az webapp create \
   --runtime "DOTNET:9.0"
 ```
 
-7. **Configurar vari�veis de ambiente**
+7. **Configurar variáveis de ambiente**
 ```bash
 az webapp config appsettings set \
   --resource-group beneficios-rg \
@@ -130,7 +130,7 @@ az webapp config appsettings set \
     JwtSettings__Audience="BeneficiosClient"
 ```
 
-8. **Deploy da aplica��o**
+8. **Deploy da aplicção**
 ```bash
 cd src/Beneficios.Api
 dotnet publish -c Release -o ./publish
@@ -149,9 +149,9 @@ az webapp browse --resource-group beneficios-rg --name beneficios-api
 
 ---
 
-## ?? Deploy com Kubernetes
+## Deploy com Kubernetes
 
-### Pr�-requisitos
+### Pré-requisitos
 - Cluster Kubernetes
 - kubectl configurado
 - Imagem Docker publicada
@@ -163,7 +163,7 @@ docker build -t seu-registro/beneficios-api:v1 -f src/Beneficios.Api/Dockerfile 
 docker push seu-registro/beneficios-api:v1
 ```
 
-### 2. Criar arquivos de configura��o
+### 2. Criar arquivos de configurção
 
 **namespace.yaml**
 ```yaml
@@ -322,9 +322,9 @@ kubectl logs -f deployment/beneficios-api -n beneficios
 
 ---
 
-## ??? Deploy em VM/Servidor Linux
+## Deploy em VM/Servidor Linux
 
-### Pr�-requisitos
+### Pré-requisitos
 - Ubuntu 20.04+ ou Debian 11+
 - Acesso SSH ao servidor
 
@@ -359,7 +359,7 @@ GRANT ALL PRIVILEGES ON DATABASE beneficios TO beneficios;
 \q
 ```
 
-5. **Clonar e publicar aplica��o**
+5. **Clonar e publicar aplicção**
 ```bash
 git clone <url-do-repositorio>
 cd beneficios-api/src/Beneficios.Api
@@ -371,7 +371,7 @@ dotnet publish -c Release -o /var/www/beneficios-api
 sudo nano /var/www/beneficios-api/appsettings.json
 ```
 
-7. **Criar servi�o systemd**
+7. **Criar serviço systemd**
 ```bash
 sudo nano /etc/systemd/system/beneficios-api.service
 ```
@@ -396,7 +396,7 @@ Environment=ASPNETCORE_URLS=http://localhost:5000
 WantedBy=multi-user.target
 ```
 
-8. **Iniciar servi�o**
+8. **Iniciar serviço**
 ```bash
 sudo systemctl daemon-reload
 sudo systemctl enable beneficios-api
@@ -442,39 +442,39 @@ sudo certbot --nginx -d seu-dominio.com
 
 ---
 
-## ?? Checklist Pr�-Deploy
+## Checklist Pré-Deploy
 
-- [ ] Vari�veis de ambiente configuradas
-- [ ] Banco de dados criado e acess�vel
+- [ ] Variáveis de ambiente configuradas
+- [ ] Banco de dados criado e acessível
 - [ ] Scripts SQL executados
 - [ ] Testes passando
 - [ ] Logs configurados
 - [ ] Health check funcionando
-- [ ] JWT secret configurado (m�nimo 32 caracteres)
-- [ ] HTTPS configurado (produ��o)
+- [ ] JWT secret configurado (mínimo 32 caracteres)
+- [ ] HTTPS configurado (produção)
 - [ ] Backup do banco configurado
 - [ ] Monitoramento configurado
 
 ---
 
-## ?? Seguran�a
+## Segurança
 
-### Checklist de Seguran�a
+### Checklist de Segurança
 
-- [ ] Use HTTPS em produ��o
-- [ ] Altere as senhas padr�o
+- [ ] Use HTTPS em produção
+- [ ] Altere as senhas padrão
 - [ ] Use senhas fortes para JWT
 - [ ] Configure CORS adequadamente
 - [ ] Limite rate limiting
 - [ ] Configure firewall
-- [ ] Mantenha depend�ncias atualizadas
-- [ ] Use bcrypt para senhas (n�o Base64)
-- [ ] Configure logs mas n�o exponha dados sens�veis
+- [ ] Mantenha dependências atualizadas
+- [ ] Use bcrypt para senhas (não Base64)
+- [ ] Configure logs mas não exponha dados sensíveis
 - [ ] Use Azure Key Vault ou similar para secrets
 
 ---
 
-## ?? Monitoramento
+## Monitoramento
 
 ### Application Insights (Azure)
 
@@ -502,7 +502,7 @@ app.MapMetrics();
 
 ---
 
-## ?? CI/CD
+## CI/CD
 
 ### GitHub Actions
 
@@ -548,14 +548,14 @@ jobs:
 
 ---
 
-## ?? Suporte
+## Suporte
 
 Em caso de problemas durante o deploy, verifique:
 
-1. Logs da aplica��o
+1. Logs da aplicção
 2. Logs do servidor web (Nginx/IIS)
 3. Conectividade com banco de dados
-4. Vari�veis de ambiente
+4. Variáveis de ambiente
 5. Portas abertas no firewall
 
-Para mais informa��es, consulte a documenta��o oficial do .NET e Azure.
+Para mais informções, consulte a documentção oficial do .NET e Azure.

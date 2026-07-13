@@ -52,8 +52,16 @@ export class EmpresaFormComponent implements OnInit {
 
   readonly form = this.fb.nonNullable.group({
     razaoSocial: ['', [Validators.required, Validators.minLength(2)]],
-    dominio: ['', [Validators.required, Validators.pattern(/^[a-z0-9-]+$/)]],
+    dominio: ['', [Validators.required, Validators.pattern(/^[a-zA-Z0-9]+$/)]],
   });
+
+  onDominioInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const sanitized = input.value.replace(/[^a-zA-Z0-9]/g, '');
+    if (sanitized !== input.value) {
+      this.form.controls.dominio.setValue(sanitized);
+    }
+  }
 
   private readonly razaoSocialValue = toSignal(this.form.controls.razaoSocial.valueChanges, {
     initialValue: this.form.controls.razaoSocial.value,

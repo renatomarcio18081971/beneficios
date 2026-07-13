@@ -1,5 +1,6 @@
 ﻿using Beneficios.Api.DependencyInjection;
 using Beneficios.Api.Middleware;
+using Beneficios.Application.Configuration;
 using Beneficios.Application.Interfaces;
 using Beneficios.Application.Mappings;
 using Beneficios.Application.Services;
@@ -38,6 +39,8 @@ builder.Services.AddApiSwagger();
 builder.Services.AddApiForwardedHeaders();
 builder.Services.AddApiCors(builder.Configuration);
 
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection(EmailSettings.SectionName));
+
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddAutoMapper(typeof(UsuarioProfile));
 
@@ -59,6 +62,7 @@ builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
 builder.Services.AddScoped<IEmpresaRepository, EmpresaRepository>();
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 builder.Services.AddScoped<IEmpresaService, EmpresaService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 builder.Services.AddSingleton<ITokenService>(sp =>
 {
