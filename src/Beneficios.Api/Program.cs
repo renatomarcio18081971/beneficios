@@ -1,4 +1,5 @@
-﻿using Beneficios.Api.DependencyInjection;
+﻿using Beneficios.Api.Background;
+using Beneficios.Api.DependencyInjection;
 using Beneficios.Api.Middleware;
 using Beneficios.Application.Configuration;
 using Beneficios.Application.Interfaces;
@@ -70,11 +71,15 @@ builder.Services.AddScoped<ITenantSchemaAccessor>(sp =>
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
 builder.Services.AddScoped<IEmpresaRepository, EmpresaRepository>();
 builder.Services.AddScoped<IPerfilRepository, PerfilRepository>();
+builder.Services.AddScoped<ICalendarioDiaRepository, CalendarioDiaRepository>();
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 builder.Services.AddScoped<IEmpresaService, EmpresaService>();
 builder.Services.AddScoped<IPerfilService, PerfilService>();
+builder.Services.AddScoped<ICalendarioDiaService, CalendarioDiaService>();
 builder.Services.AddScoped<IPermissaoService, PermissaoService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<ICalendarioAnoGarantia, CalendarioAnoGarantia>();
+builder.Services.AddHostedService<CalendarioAnoHostedService>();
 
 builder.Services.AddSingleton<ITokenService>(sp =>
 {
@@ -125,10 +130,12 @@ try
     using var scope = app.Services.CreateScope();
     var provisioner = scope.ServiceProvider.GetRequiredService<ITenantProvisioner>();
     await provisioner.GarantirPerfisEmTenantsExistentesAsync();
+    var calendarioGarantia = scope.ServiceProvider.GetRequiredService<ICalendarioAnoGarantia>();
+    await calendarioGarantia.GarantirAnoCorrenteEmTenantsExistentesAsync();
 }
 catch (Exception ex)
 {
-    Log.Warning(ex, "Não foi possível migrar perfis nos tenants existentes na inicialização.");
+    Log.Warning(ex, "Não foi possível migrar perfis/calendário nos tenants existentes na inicialização.");
 }
 
 app.UseApiForwardedHeaders();

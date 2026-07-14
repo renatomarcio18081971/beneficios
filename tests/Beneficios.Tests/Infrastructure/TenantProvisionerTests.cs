@@ -103,6 +103,16 @@ public class TenantProvisionerTests(PostgresFixture fixture)
               WHERE table_schema = @SchemaName AND table_name = 'calendario_dias')
             """, new { SchemaName = schemaName });
         Assert.True(calendarioExiste);
+
+        var anoCorrente = DateTime.UtcNow.Year;
+        var diasDoAno = await fixture.Connection.ExecuteScalarAsync<int>(
+            $"""
+            SELECT COUNT(*)::int FROM {quotedSchema}.calendario_dias
+            WHERE EXTRACT(YEAR FROM data) = @Ano
+            """,
+            new { Ano = anoCorrente });
+        var esperado = DateTime.IsLeapYear(anoCorrente) ? 366 : 365;
+        Assert.Equal(esperado, diasDoAno);
     }
 
     [SkippableFact]

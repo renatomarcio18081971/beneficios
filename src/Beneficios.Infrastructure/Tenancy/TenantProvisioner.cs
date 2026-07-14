@@ -44,6 +44,12 @@ public class TenantProvisioner : ITenantProvisioner
             TenantSchemaSql.CriarTabelaCalendarioDias(schemaName),
             cancellationToken: cancellationToken));
 
+        await CalendarioAnoGerador.GerarSeAusenteAsync(
+            connection,
+            schemaName,
+            DateTime.UtcNow.Year,
+            cancellationToken);
+
         await connection.ExecuteAsync(new CommandDefinition(
             TenantSchemaSql.InserirUsuarioPadrao(schemaName),
             new

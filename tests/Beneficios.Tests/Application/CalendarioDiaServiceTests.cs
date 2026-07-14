@@ -1,7 +1,8 @@
-using AutoMapper;
+﻿using AutoMapper;
 using Beneficios.Application.DTOs;
 using Beneficios.Application.Mappings;
 using Beneficios.Application.Services;
+using Beneficios.Domain;
 using Beneficios.Domain.Enums;
 using Beneficios.Domain.Interfaces;
 using Beneficios.Domain.Models;
@@ -79,6 +80,6 @@ public class CalendarioDiaServiceTests
     [InlineData(2025, 365)]
     public void MontarDiasDoAno_DeveRespeitarAnoBissexto(int ano, int esperado)
     {
-        Assert.Equal(esperado, CalendarioDiaService.MontarDiasDoAno(ano).Count);
+        Assert.Equal(esperado, CalendarioAnoFabrica.MontarDiasDoAno(ano).Count);
     }
 }
