@@ -1,4 +1,4 @@
-namespace Beneficios.Domain.Interfaces;
+﻿namespace Beneficios.Domain.Interfaces;
 
 public interface ITenantProvisioner
 {
@@ -6,4 +6,10 @@ public interface ITenantProvisioner
         string razaoSocial,
         Guid empresaId,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Garante tabelas de perfil, perfil Dono e vínculo do usuário padrão em todos os schemas tenant_*.
+    /// Idempotente — seguro para reexecução.
+    /// </summary>
+    Task EnsurePerfisEmTenantsExistentesAsync(CancellationToken cancellationToken = default);
 }

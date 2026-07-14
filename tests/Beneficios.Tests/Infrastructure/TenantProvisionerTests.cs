@@ -97,6 +97,63 @@ public class TenantProvisionerTests(PostgresFixture fixture)
         Assert.Equal(dono.Id, perfilIdUsuario);
     }
 
+    [SkippableFact]
+    public async Task EnsurePerfisEmTenantsExistentesAsync_DeveMigrarSchemaAntigo()
+    {
+        await PostgresTestHelper.PrepareAsync(fixture);
+
+        var empresaId = Guid.NewGuid();
+        var empresaRepository = new EmpresaRepository(fixture.Connection!);
+        await empresaRepository.SalvarAsync(new EmpresaSalvarParams
+        {
+            Id = empresaId,
+            RazaoSocial = "Empresa Legacy LTDA",
+            Dominio = "legacy",
+        });
+
+        var schemaName = TenantSchemaNames.FromRazaoSocial("Empresa Legacy LTDA");
+        var quotedSchema = TenantSchemaSql.QuoteIdentifier(schemaName);
+
+        await fixture.Connection!.ExecuteAsync(TenantSchemaSql.CreateSchema(schemaName));
+        await fixture.Connection.ExecuteAsync(TenantSchemaSql.CreateUsuariosTable(schemaName));
+        await fixture.Connection.ExecuteAsync(
+            $"""
+            INSERT INTO {quotedSchema}.usuarios
+                (id, nome, senha, email, perfil, empresa_id, data_inclusao)
+            VALUES
+                (@Id, @Nome, @Senha, @Email, 'Empresa', @EmpresaId, @DataInclusao)
+            """,
+            new
+            {
+                Id = Guid.NewGuid(),
+                Nome = TenantDefaultUser.Nome,
+                Senha = Criptografia.Encrypt(TenantDefaultUser.Senha),
+                Email = TenantDefaultUser.Email,
+                EmpresaId = empresaId,
+                DataInclusao = DateTime.UtcNow,
+            });
+
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["ConnectionStrings:DefaultConnection"] = fixture.CatalogConnectionString,
+            })
+            .Build();
+
+        var provisioner = new TenantProvisioner(configuration);
+        await provisioner.EnsurePerfisEmTenantsExistentesAsync();
+
+        var donoId = await fixture.Connection.ExecuteScalarAsync<Guid?>(
+            $"SELECT id FROM {quotedSchema}.perfis WHERE eh_sistema = TRUE LIMIT 1");
+        Assert.NotNull(donoId);
+
+        var perfilIdUsuario = await fixture.Connection.ExecuteScalarAsync<Guid?>(
+            $"""
+            SELECT perfil_id FROM {quotedSchema}.usuarios WHERE email = @Email
+            """, new { Email = TenantDefaultUser.Email });
+        Assert.Equal(donoId, perfilIdUsuario);
+    }
+
     private sealed class DonoProvisionadoResult
     {
         public Guid Id { get; init; }
