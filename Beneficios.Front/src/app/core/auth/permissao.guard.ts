@@ -1,11 +1,11 @@
 ﻿import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
-import { PermissionService } from './permission.service';
+import { PermissaoService } from './permissao.service';
 import { TenantService } from '../tenant/tenant.service';
 
-export function permissionGuard(codigoMenu: string): CanActivateFn {
+export function permissaoGuard(codigoMenu: string): CanActivateFn {
   return () => {
-    const permission = inject(PermissionService);
+    const permissao = inject(PermissaoService);
     const tenant = inject(TenantService);
     const router = inject(Router);
 
@@ -13,7 +13,7 @@ export function permissionGuard(codigoMenu: string): CanActivateFn {
       return router.createUrlTree(['/empresas']);
     }
 
-    if (permission.can(codigoMenu, 'visualizar')) {
+    if (permissao.possuiPermissao(codigoMenu, 'visualizar')) {
       return true;
     }
 

@@ -8,15 +8,21 @@ namespace Beneficios.Infrastructure.Repositories;
 public class UsuarioRepository : IUsuarioRepository
 {
     private readonly IDbConnection _dbConnection;
+    private readonly ITenantSchemaAccessor _tenantSchema;
 
-    public UsuarioRepository(IDbConnection dbConnection)
+    public UsuarioRepository(IDbConnection dbConnection, ITenantSchemaAccessor tenantSchema)
     {
         _dbConnection = dbConnection;
+        _tenantSchema = tenantSchema;
     }
 
     public async Task<Guid> SalvarAsync(UsuarioSalvarParams usuario)
     {
-        var sql = @"
+        var sql = _tenantSchema.EhCatalogo
+            ? @"
+            INSERT INTO usuarios (id, nome, senha, email, empresa_id, data_inclusao)
+            VALUES (@Id, @Nome, @Senha, @Email, @EmpresaId, @DataInclusao)"
+            : @"
             INSERT INTO usuarios (id, nome, senha, email, empresa_id, perfil_id, data_inclusao)
             VALUES (@Id, @Nome, @Senha, @Email, @EmpresaId, @PerfilId, @DataInclusao)";
 
@@ -36,7 +42,16 @@ public class UsuarioRepository : IUsuarioRepository
 
     public async Task<bool> AtualizarAsync(UsuarioAtualizarParams usuario)
     {
-        var sql = @"
+        var sql = _tenantSchema.EhCatalogo
+            ? @"
+            UPDATE usuarios
+            SET nome = @Nome,
+                email = @Email,
+                empresa_id = @EmpresaId,
+                data_alteracao = @DataAlteracao,
+                usuario_alteracao_id = @UsuarioAlteracaoId
+            WHERE id = @Id"
+            : @"
             UPDATE usuarios
             SET nome = @Nome,
                 email = @Email,
@@ -69,43 +84,13 @@ public class UsuarioRepository : IUsuarioRepository
 
     public async Task<UsuarioQueryResult?> ObterUmAsync(Guid id)
     {
-        var sql = @"
-            SELECT 
-                u.id AS Id,
-                u.nome AS Nome,
-                u.email AS Email,
-                u.empresa_id AS EmpresaId,
-                u.perfil_id AS PerfilId,
-                p.nome AS PerfilAcessoNome,
-                e.razao_social AS EmpresaNome,
-                u.data_inclusao AS DataInclusao,
-                u.data_alteracao AS DataAlteracao
-            FROM usuarios u
-            LEFT JOIN empresas e ON u.empresa_id = e.id
-            LEFT JOIN perfis p ON u.perfil_id = p.id
-            WHERE u.id = @Id";
-
+        var sql = MontarConsultaUsuarios("WHERE u.id = @Id");
         return await _dbConnection.QueryFirstOrDefaultAsync<UsuarioQueryResult>(sql, new { Id = id });
     }
 
     public async Task<UsuarioQueryResult[]> ObterTodosAsync()
     {
-        var sql = @"
-            SELECT 
-                u.id AS Id,
-                u.nome AS Nome,
-                u.email AS Email,
-                u.empresa_id AS EmpresaId,
-                u.perfil_id AS PerfilId,
-                p.nome AS PerfilAcessoNome,
-                e.razao_social AS EmpresaNome,
-                u.data_inclusao AS DataInclusao,
-                u.data_alteracao AS DataAlteracao
-            FROM usuarios u
-            LEFT JOIN empresas e ON u.empresa_id = e.id
-            LEFT JOIN perfis p ON u.perfil_id = p.id
-            ORDER BY u.nome";
-
+        var sql = MontarConsultaUsuarios(string.Empty) + " ORDER BY u.nome";
         var result = await _dbConnection.QueryAsync<UsuarioQueryResult>(sql);
         return result.ToArray();
     }
@@ -131,64 +116,20 @@ public class UsuarioRepository : IUsuarioRepository
             ? "WHERE " + string.Join(" AND ", conditions)
             : string.Empty;
 
-        var sql = $@"
-            SELECT 
-                u.id AS Id,
-                u.nome AS Nome,
-                u.email AS Email,
-                u.empresa_id AS EmpresaId,
-                u.perfil_id AS PerfilId,
-                p.nome AS PerfilAcessoNome,
-                e.razao_social AS EmpresaNome,
-                u.data_inclusao AS DataInclusao,
-                u.data_alteracao AS DataAlteracao
-            FROM usuarios u
-            LEFT JOIN empresas e ON u.empresa_id = e.id
-            LEFT JOIN perfis p ON u.perfil_id = p.id
-            {whereClause}
-            ORDER BY u.nome";
-
+        var sql = MontarConsultaUsuarios(whereClause) + " ORDER BY u.nome";
         var result = await _dbConnection.QueryAsync<UsuarioQueryResult>(sql, parameters);
         return result.ToArray();
     }
 
     public async Task<UsuarioAuthResult?> GetByEmailAsync(string email)
     {
-        var sql = @"
-            SELECT 
-                u.id AS Id,
-                u.nome AS Nome,
-                u.email AS Email,
-                u.senha AS Senha,
-                u.empresa_id AS EmpresaId,
-                u.perfil AS Perfil,
-                u.perfil_id AS PerfilId,
-                e.dominio AS EmpresaDominio,
-                u.token AS Token
-            FROM usuarios u
-            LEFT JOIN empresas e ON u.empresa_id = e.id
-            WHERE u.email = @Email";
-
+        var sql = MontarConsultaAutenticacao("WHERE u.email = @Email");
         return await _dbConnection.QueryFirstOrDefaultAsync<UsuarioAuthResult>(sql, new { Email = email });
     }
 
     public async Task<UsuarioAuthResult?> GetByCodigoAlterarSenhaAsync(string codigo)
     {
-        var sql = @"
-            SELECT 
-                u.id AS Id,
-                u.nome AS Nome,
-                u.email AS Email,
-                u.senha AS Senha,
-                u.empresa_id AS EmpresaId,
-                u.perfil AS Perfil,
-                u.perfil_id AS PerfilId,
-                e.dominio AS EmpresaDominio,
-                u.token AS Token
-            FROM usuarios u
-            LEFT JOIN empresas e ON u.empresa_id = e.id
-            WHERE u.codigo_alterar_senha = @Codigo";
-
+        var sql = MontarConsultaAutenticacao("WHERE u.codigo_alterar_senha = @Codigo");
         return await _dbConnection.QueryFirstOrDefaultAsync<UsuarioAuthResult>(sql, new { Codigo = codigo });
     }
 
@@ -234,5 +175,78 @@ public class UsuarioRepository : IUsuarioRepository
         });
 
         return rowsAffected > 0;
+    }
+
+    private string MontarConsultaUsuarios(string whereClause)
+    {
+        if (_tenantSchema.EhCatalogo)
+        {
+            return $@"
+            SELECT 
+                u.id AS Id,
+                u.nome AS Nome,
+                u.email AS Email,
+                u.empresa_id AS EmpresaId,
+                CAST(NULL AS uuid) AS PerfilId,
+                CAST(NULL AS varchar) AS PerfilAcessoNome,
+                e.razao_social AS EmpresaNome,
+                u.data_inclusao AS DataInclusao,
+                u.data_alteracao AS DataAlteracao
+            FROM usuarios u
+            LEFT JOIN empresas e ON u.empresa_id = e.id
+            {whereClause}";
+        }
+
+        return $@"
+            SELECT 
+                u.id AS Id,
+                u.nome AS Nome,
+                u.email AS Email,
+                u.empresa_id AS EmpresaId,
+                u.perfil_id AS PerfilId,
+                p.nome AS PerfilAcessoNome,
+                e.razao_social AS EmpresaNome,
+                u.data_inclusao AS DataInclusao,
+                u.data_alteracao AS DataAlteracao
+            FROM usuarios u
+            LEFT JOIN empresas e ON u.empresa_id = e.id
+            LEFT JOIN perfis p ON u.perfil_id = p.id
+            {whereClause}";
+    }
+
+    private string MontarConsultaAutenticacao(string whereClause)
+    {
+        if (_tenantSchema.EhCatalogo)
+        {
+            return $@"
+            SELECT 
+                u.id AS Id,
+                u.nome AS Nome,
+                u.email AS Email,
+                u.senha AS Senha,
+                u.empresa_id AS EmpresaId,
+                u.perfil AS Perfil,
+                CAST(NULL AS uuid) AS PerfilId,
+                e.dominio AS EmpresaDominio,
+                u.token AS Token
+            FROM usuarios u
+            LEFT JOIN empresas e ON u.empresa_id = e.id
+            {whereClause}";
+        }
+
+        return $@"
+            SELECT 
+                u.id AS Id,
+                u.nome AS Nome,
+                u.email AS Email,
+                u.senha AS Senha,
+                u.empresa_id AS EmpresaId,
+                u.perfil AS Perfil,
+                u.perfil_id AS PerfilId,
+                e.dominio AS EmpresaDominio,
+                u.token AS Token
+            FROM usuarios u
+            LEFT JOIN empresas e ON u.empresa_id = e.id
+            {whereClause}";
     }
 }

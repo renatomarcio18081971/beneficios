@@ -3,7 +3,6 @@
 const API_BASE = 'http://localhost:5000/api';
 
 const fullPermissoes = [
-  { codigoMenu: 'dashboard', visualizar: true, criar: true, editar: true, excluir: true },
   { codigoMenu: 'usuarios', visualizar: true, criar: true, editar: true, excluir: true },
   { codigoMenu: 'perfis', visualizar: true, criar: true, editar: true, excluir: true },
 ];

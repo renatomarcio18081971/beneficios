@@ -39,7 +39,7 @@ public class PermissaoServiceTests
     }
 
     [Fact]
-    public async Task EnsureAsync_QuandoSemPermissao_DeveLancarUnauthorizedAccess()
+    public async Task GarantirPermissaoAsync_QuandoSemPermissao_DeveLancarUnauthorizedAccess()
     {
         var usuarioId = Guid.NewGuid();
         _repositoryMock
@@ -47,11 +47,11 @@ public class PermissaoServiceTests
             .ReturnsAsync([]);
 
         await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
-            _service.EnsureAsync(usuarioId, "usuarios", AcaoPermissao.Visualizar));
+            _service.GarantirPermissaoAsync(usuarioId, "usuarios", AcaoPermissao.Visualizar));
     }
 
     [Fact]
-    public async Task EnsureAsync_QuandoTemPermissao_NaoDeveLancar()
+    public async Task GarantirPermissaoAsync_QuandoTemPermissao_NaoDeveLancar()
     {
         var usuarioId = Guid.NewGuid();
         _repositoryMock
@@ -64,6 +64,6 @@ public class PermissaoServiceTests
                 }
             ]);
 
-        await _service.EnsureAsync(usuarioId, "usuarios", AcaoPermissao.Visualizar);
+        await _service.GarantirPermissaoAsync(usuarioId, "usuarios", AcaoPermissao.Visualizar);
     }
 }

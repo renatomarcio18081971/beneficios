@@ -18,12 +18,12 @@ public class TenantProvisioner : ITenantProvisioner
             ?? throw new InvalidOperationException("Connection string 'DefaultConnection' não configurada.");
     }
 
-    public async Task ProvisionAsync(
+    public async Task ProvisionarAsync(
         string razaoSocial,
         Guid empresaId,
         CancellationToken cancellationToken = default)
     {
-        var schemaName = TenantSchemaSql.BuildSchemaName(razaoSocial);
+        var schemaName = TenantSchemaSql.MontarNomeSchema(razaoSocial);
         var agora = DateTime.UtcNow;
 
         using IDbConnection connection = DatabaseConfiguration.CreateConnection(_catalogConnectionString);
@@ -31,17 +31,17 @@ public class TenantProvisioner : ITenantProvisioner
             connection.Open();
 
         await connection.ExecuteAsync(new CommandDefinition(
-            TenantSchemaSql.CreateSchema(schemaName),
+            TenantSchemaSql.CriarSchema(schemaName),
             cancellationToken: cancellationToken));
 
         await connection.ExecuteAsync(new CommandDefinition(
-            TenantSchemaSql.CreateUsuariosTable(schemaName),
+            TenantSchemaSql.CriarTabelaUsuarios(schemaName),
             cancellationToken: cancellationToken));
 
-        var perfilId = await EnsurePerfisNoSchemaAsync(connection, schemaName, agora, cancellationToken);
+        var perfilId = await GarantirPerfisNoSchemaAsync(connection, schemaName, agora, cancellationToken);
 
         await connection.ExecuteAsync(new CommandDefinition(
-            TenantSchemaSql.InsertDefaultUsuario(schemaName),
+            TenantSchemaSql.InserirUsuarioPadrao(schemaName),
             new
             {
                 Id = Guid.NewGuid(),
@@ -55,7 +55,7 @@ public class TenantProvisioner : ITenantProvisioner
             cancellationToken: cancellationToken));
     }
 
-    public async Task EnsurePerfisEmTenantsExistentesAsync(CancellationToken cancellationToken = default)
+    public async Task GarantirPerfisEmTenantsExistentesAsync(CancellationToken cancellationToken = default)
     {
         using IDbConnection connection = DatabaseConfiguration.CreateConnection(_catalogConnectionString);
         if (connection.State != ConnectionState.Open)
@@ -73,30 +73,30 @@ public class TenantProvisioner : ITenantProvisioner
         var agora = DateTime.UtcNow;
         foreach (var schemaName in schemas)
         {
-            await EnsurePerfisNoSchemaAsync(connection, schemaName, agora, cancellationToken);
+            await GarantirPerfisNoSchemaAsync(connection, schemaName, agora, cancellationToken);
             await VincularUsuarioPadraoAoDonoAsync(connection, schemaName, cancellationToken);
         }
     }
 
-    private static async Task<Guid> EnsurePerfisNoSchemaAsync(
+    private static async Task<Guid> GarantirPerfisNoSchemaAsync(
         IDbConnection connection,
         string schemaName,
         DateTime agora,
         CancellationToken cancellationToken)
     {
         await connection.ExecuteAsync(new CommandDefinition(
-            TenantSchemaSql.CreatePerfisTable(schemaName),
+            TenantSchemaSql.CriarTabelaPerfis(schemaName),
             cancellationToken: cancellationToken));
 
         await connection.ExecuteAsync(new CommandDefinition(
-            TenantSchemaSql.CreatePerfilPermissoesTable(schemaName),
+            TenantSchemaSql.CriarTabelaPerfilPermissoes(schemaName),
             cancellationToken: cancellationToken));
 
         await connection.ExecuteAsync(new CommandDefinition(
-            TenantSchemaSql.AlterUsuariosAddPerfilId(schemaName),
+            TenantSchemaSql.AlterarUsuariosAdicionarPerfilId(schemaName),
             cancellationToken: cancellationToken));
 
-        var quoted = TenantSchemaSql.QuoteIdentifier(schemaName);
+        var quoted = TenantSchemaSql.CitarIdentificador(schemaName);
         var donoId = await connection.ExecuteScalarAsync<Guid?>(new CommandDefinition(
             $"""
             SELECT id FROM {quoted}.perfis WHERE eh_sistema = TRUE LIMIT 1
@@ -108,7 +108,7 @@ public class TenantProvisioner : ITenantProvisioner
 
         var perfilId = Guid.NewGuid();
         await connection.ExecuteAsync(new CommandDefinition(
-            TenantSchemaSql.InsertPerfilDono(schemaName),
+            TenantSchemaSql.InserirPerfilDono(schemaName),
             new
             {
                 Id = perfilId,
@@ -120,7 +120,7 @@ public class TenantProvisioner : ITenantProvisioner
         foreach (var modulo in ModulosSistemaCatalog.Todos)
         {
             await connection.ExecuteAsync(new CommandDefinition(
-                TenantSchemaSql.InsertPerfilPermissao(schemaName),
+                TenantSchemaSql.InserirPerfilPermissao(schemaName),
                 new
                 {
                     Id = Guid.NewGuid(),
@@ -142,7 +142,7 @@ public class TenantProvisioner : ITenantProvisioner
         string schemaName,
         CancellationToken cancellationToken)
     {
-        var quoted = TenantSchemaSql.QuoteIdentifier(schemaName);
+        var quoted = TenantSchemaSql.CitarIdentificador(schemaName);
         await connection.ExecuteAsync(new CommandDefinition(
             $"""
             UPDATE {quoted}.usuarios u

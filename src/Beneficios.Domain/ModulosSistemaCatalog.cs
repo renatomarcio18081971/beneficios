@@ -5,9 +5,12 @@ namespace Beneficios.Domain;
 
 public static class ModulosSistemaCatalog
 {
+    /// <summary>
+    /// Módulos sujeitos a validação de perfil.
+    /// Dashboard fica fora do catálogo — todos os usuários tenant podem visualizá-lo.
+    /// </summary>
     public static IReadOnlyList<ModuloSistema> Todos { get; } =
     [
-        new("dashboard", "Dashboard", "/dashboard", AcaoPermissao.Visualizar),
         new("usuarios", "Usuários", "/usuarios", AcaoPermissao.Todas),
         new("perfis", "Perfis", "/perfis", AcaoPermissao.Todas),
     ];

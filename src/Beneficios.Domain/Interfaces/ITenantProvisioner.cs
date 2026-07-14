@@ -2,7 +2,7 @@
 
 public interface ITenantProvisioner
 {
-    Task ProvisionAsync(
+    Task ProvisionarAsync(
         string razaoSocial,
         Guid empresaId,
         CancellationToken cancellationToken = default);
@@ -11,5 +11,5 @@ public interface ITenantProvisioner
     /// Garante tabelas de perfil, perfil Dono e vínculo do usuário padrão em todos os schemas tenant_*.
     /// Idempotente — seguro para reexecução.
     /// </summary>
-    Task EnsurePerfisEmTenantsExistentesAsync(CancellationToken cancellationToken = default);
+    Task GarantirPerfisEmTenantsExistentesAsync(CancellationToken cancellationToken = default);
 }

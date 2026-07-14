@@ -32,7 +32,7 @@ public class PermissaoService : IPermissaoService
         };
     }
 
-    public async Task EnsureAsync(Guid usuarioId, string codigoMenu, AcaoPermissao acao)
+    public async Task GarantirPermissaoAsync(Guid usuarioId, string codigoMenu, AcaoPermissao acao)
     {
         if (!await PossuiAsync(usuarioId, codigoMenu, acao))
             throw new UnauthorizedAccessException("Sem permissão para esta operação.");

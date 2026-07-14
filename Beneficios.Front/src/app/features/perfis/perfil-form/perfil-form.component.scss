@@ -10,7 +10,12 @@
 }
 
 .perfil-form-card mat-card-content {
-  margin-top: 20px;
+  margin-top: 28px;
+  padding-top: 8px;
+}
+
+form > .full-width:first-of-type {
+  margin-top: 4px;
 }
 
 .full-width {

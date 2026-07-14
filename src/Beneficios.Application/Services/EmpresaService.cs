@@ -32,7 +32,7 @@ public class EmpresaService : IEmpresaService
 
         try
         {
-            await _tenantProvisioner.ProvisionAsync(salvarParams.RazaoSocial, salvarParams.Id);
+            await _tenantProvisioner.ProvisionarAsync(salvarParams.RazaoSocial, salvarParams.Id);
         }
         catch
         {

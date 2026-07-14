@@ -7,18 +7,21 @@ namespace Beneficios.Tests.Domain;
 public class ModulosSistemaCatalogTests
 {
     [Fact]
-    public void Todos_DeveConterCodigosDaV1()
+    public void Todos_DeveConterSomenteModulosComValidacaoDePerfil()
     {
         var codigos = ModulosSistemaCatalog.Todos.Select(m => m.Codigo).ToArray();
-        Assert.Contains("dashboard", codigos);
+        Assert.DoesNotContain("dashboard", codigos);
         Assert.Contains("usuarios", codigos);
         Assert.Contains("perfis", codigos);
     }
 
     [Fact]
-    public void Dashboard_DeveSuportarSomenteVisualizar()
+    public void UsuariosEPerfis_DevemSuportarTodasAsAcoes()
     {
-        var dashboard = ModulosSistemaCatalog.Todos.Single(m => m.Codigo == "dashboard");
-        Assert.Equal(AcaoPermissao.Visualizar, dashboard.AcoesSuportadas);
+        foreach (var codigo in new[] { "usuarios", "perfis" })
+        {
+            var modulo = ModulosSistemaCatalog.Todos.Single(m => m.Codigo == codigo);
+            Assert.Equal(AcaoPermissao.Todas, modulo.AcoesSuportadas);
+        }
     }
 }

@@ -13,7 +13,7 @@ namespace Beneficios.Tests.Infrastructure;
 public class TenantProvisionerTests(PostgresFixture fixture)
 {
     [SkippableFact]
-    public async Task ProvisionAsync_DeveCriarSchemaTabelaEUsuarioPadrao()
+    public async Task ProvisionarAsync_DeveCriarSchemaTabelaEUsuarioPadrao()
     {
         await PostgresTestHelper.PrepareAsync(fixture);
 
@@ -34,10 +34,10 @@ public class TenantProvisionerTests(PostgresFixture fixture)
             .Build();
 
         var provisioner = new TenantProvisioner(configuration);
-        await provisioner.ProvisionAsync("Nova Empresa LTDA", empresaId);
+        await provisioner.ProvisionarAsync("Nova Empresa LTDA", empresaId);
 
         var schemaName = TenantSchemaNames.FromRazaoSocial("Nova Empresa LTDA");
-        var quotedSchema = TenantSchemaSql.QuoteIdentifier(schemaName);
+        var quotedSchema = TenantSchemaSql.CitarIdentificador(schemaName);
 
         var tableExists = await fixture.Connection!.ExecuteScalarAsync<bool>(
             """
@@ -98,7 +98,7 @@ public class TenantProvisionerTests(PostgresFixture fixture)
     }
 
     [SkippableFact]
-    public async Task EnsurePerfisEmTenantsExistentesAsync_DeveMigrarSchemaAntigo()
+    public async Task GarantirPerfisEmTenantsExistentesAsync_DeveMigrarSchemaAntigo()
     {
         await PostgresTestHelper.PrepareAsync(fixture);
 
@@ -112,10 +112,10 @@ public class TenantProvisionerTests(PostgresFixture fixture)
         });
 
         var schemaName = TenantSchemaNames.FromRazaoSocial("Empresa Legacy LTDA");
-        var quotedSchema = TenantSchemaSql.QuoteIdentifier(schemaName);
+        var quotedSchema = TenantSchemaSql.CitarIdentificador(schemaName);
 
-        await fixture.Connection!.ExecuteAsync(TenantSchemaSql.CreateSchema(schemaName));
-        await fixture.Connection.ExecuteAsync(TenantSchemaSql.CreateUsuariosTable(schemaName));
+        await fixture.Connection!.ExecuteAsync(TenantSchemaSql.CriarSchema(schemaName));
+        await fixture.Connection.ExecuteAsync(TenantSchemaSql.CriarTabelaUsuarios(schemaName));
         await fixture.Connection.ExecuteAsync(
             $"""
             INSERT INTO {quotedSchema}.usuarios
@@ -141,7 +141,7 @@ public class TenantProvisionerTests(PostgresFixture fixture)
             .Build();
 
         var provisioner = new TenantProvisioner(configuration);
-        await provisioner.EnsurePerfisEmTenantsExistentesAsync();
+        await provisioner.GarantirPerfisEmTenantsExistentesAsync();
 
         var donoId = await fixture.Connection.ExecuteScalarAsync<Guid?>(
             $"SELECT id FROM {quotedSchema}.perfis WHERE eh_sistema = TRUE LIMIT 1");

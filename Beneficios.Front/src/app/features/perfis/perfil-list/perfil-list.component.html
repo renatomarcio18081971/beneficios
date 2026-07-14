@@ -1,4 +1,4 @@
-<div class="perfil-list-page">
+﻿<div class="perfil-list-page">
   <div class="perfil-list-header">
     <h1>Perfis</h1>
 
@@ -25,7 +25,7 @@
         </button>
       }
 
-      @if (canCriar) {
+      @if (podeCriar) {
         <a mat-flat-button color="primary" routerLink="/perfis/novo">
           <mat-icon aria-hidden="true">add</mat-icon>
           Novo perfil
@@ -88,12 +88,12 @@
                 </p>
               </mat-card-content>
               <mat-card-actions align="end">
-                @if (canEditar) {
+                @if (podeEditar) {
                   <button type="button" mat-icon-button aria-label="Editar" (click)="edit(perfil)">
                     <mat-icon aria-hidden="true">edit</mat-icon>
                   </button>
                 }
-                @if (canExcluir && !perfil.ehSistema) {
+                @if (podeExcluir && !perfil.ehSistema) {
                   <button type="button" mat-icon-button color="warn" aria-label="Excluir" (click)="confirmDelete(perfil)">
                     <mat-icon aria-hidden="true">delete</mat-icon>
                   </button>
@@ -120,12 +120,12 @@
             <ng-container matColumnDef="acoes">
               <th mat-header-cell *matHeaderCellDef>Ações</th>
               <td mat-cell *matCellDef="let perfil" class="actions-cell">
-                @if (canEditar) {
+                @if (podeEditar) {
                   <button type="button" mat-icon-button aria-label="Editar" (click)="edit(perfil)">
                     <mat-icon aria-hidden="true">edit</mat-icon>
                   </button>
                 }
-                @if (canExcluir && !perfil.ehSistema) {
+                @if (podeExcluir && !perfil.ehSistema) {
                   <button type="button" mat-icon-button color="warn" aria-label="Excluir" (click)="confirmDelete(perfil)">
                     <mat-icon aria-hidden="true">delete</mat-icon>
                   </button>

@@ -28,13 +28,6 @@ public class PerfilRepositoryTests(PostgresFixture fixture)
                 {
                     Id = Guid.NewGuid(),
                     PerfilId = perfilId,
-                    CodigoMenu = "dashboard",
-                    Visualizar = true,
-                },
-                new PerfilPermissaoParams
-                {
-                    Id = Guid.NewGuid(),
-                    PerfilId = perfilId,
                     CodigoMenu = "usuarios",
                     Visualizar = true,
                     Criar = true,
@@ -56,7 +49,7 @@ public class PerfilRepositoryTests(PostgresFixture fixture)
         Assert.NotNull(perfil);
         Assert.Equal("Operador", perfil!.Nome);
         Assert.False(perfil.EhSistema);
-        Assert.Equal(3, perfil.Permissoes.Count);
+        Assert.Equal(2, perfil.Permissoes.Count);
         Assert.Contains(perfil.Permissoes, p => p.CodigoMenu == "usuarios" && p.Criar);
     }
 

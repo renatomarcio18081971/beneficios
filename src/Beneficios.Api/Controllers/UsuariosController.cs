@@ -264,7 +264,7 @@ public class UsuariosController : ControllerBase
         var usuarioId = GetUsuarioIdFromToken()
             ?? throw new UnauthorizedAccessException("Sem permissão para esta operação.");
 
-        await _permissaoService.EnsureAsync(usuarioId, CodigoMenu, acao);
+        await _permissaoService.GarantirPermissaoAsync(usuarioId, CodigoMenu, acao);
         return null;
     }
 

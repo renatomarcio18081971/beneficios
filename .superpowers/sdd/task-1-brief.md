@@ -1,71 +1,113 @@
-## Task 1: Backend — Campo Perfil (schema + domain)
+﻿## Task 1: Catálogo de módulos + `AcaoPermissao`
 
 **Files:**
-- Create: `src/Beneficios.Infrastructure/Scripts/04_Alter_Table_Usuarios_Perfil.sql`
-- Create: `src/Beneficios.Domain/Enums/UsuarioPerfil.cs`
-- Modify: `src/Beneficios.Domain/Entities/Usuario.cs`
-- Modify: `src/Beneficios.Domain/Models/UsuarioAuthResult.cs`
-- Modify: `src/Beneficios.Domain/Models/UsuarioQueryResult.cs`
-- Modify: `src/Beneficios.Domain/Models/UsuarioSalvarParams.cs`
-- Modify: `src/Beneficios.Infrastructure/Scripts/03_Insert_Sample_Data.sql`
-- Test: `tests/Beneficios.Tests/Domain/UsuarioTests.cs`
+- Create: `src/Beneficios.Domain/Enums/AcaoPermissao.cs`
+- Create: `src/Beneficios.Domain/Models/ModuloSistema.cs`
+- Create: `src/Beneficios.Domain/ModulosSistemaCatalog.cs`
+- Test: `tests/Beneficios.Tests/Domain/ModulosSistemaCatalogTests.cs`
 
 **Interfaces:**
-- Produces: `UsuarioPerfil` enum (`Admin = 0`, `Empresa = 1`), propriedade `Perfil` nas entidades/models
+- Produces: `AcaoPermissao` { Visualizar, Criar, Editar, Excluir }; `ModuloSistema(string Codigo, string NomeExibicao, string Rota, AcaoPermissao AcoesSuportadas)`; `ModulosSistemaCatalog.Todos` com códigos `dashboard`, `usuarios`, `perfis`
 
 - [ ] **Step 1: Write the failing test**
 
-Adicionar em `tests/Beneficios.Tests/Domain/UsuarioTests.cs`:
-
 ```csharp
-[Fact]
-public void Usuario_DeveTerPropriedadePerfil()
+using Beneficios.Domain;
+using Beneficios.Domain.Enums;
+using Xunit;
+
+namespace Beneficios.Tests.Domain;
+
+public class ModulosSistemaCatalogTests
 {
-    var usuario = new Usuario { Perfil = UsuarioPerfil.Admin };
-    Assert.Equal(UsuarioPerfil.Admin, usuario.Perfil);
+    [Fact]
+    public void Todos_DeveConterCodigosDaV1()
+    {
+        var codigos = ModulosSistemaCatalog.Todos.Select(m => m.Codigo).ToArray();
+        Assert.Contains("dashboard", codigos);
+        Assert.Contains("usuarios", codigos);
+        Assert.Contains("perfis", codigos);
+    }
+
+    [Fact]
+    public void Dashboard_DeveSuportarSomenteVisualizar()
+    {
+        var dashboard = ModulosSistemaCatalog.Todos.Single(m => m.Codigo == "dashboard");
+        Assert.Equal(AcaoPermissao.Visualizar, dashboard.AcoesSuportadas);
+    }
 }
 ```
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `dotnet test tests/Beneficios.Tests/Beneficios.Tests.csproj --filter "Usuario_DeveTerPropriedadePerfil" -v n`
-Expected: FAIL — `UsuarioPerfil` / `Perfil` não existem
+Run: `dotnet test tests/Beneficios.Tests/Beneficios.Tests.csproj --filter "ModulosSistemaCatalogTests" -v n`  
+Expected: FAIL (tipos não existem)
 
-- [ ] **Step 3: Write minimal implementation**
+- [ ] **Step 3: Implement**
 
-`04_Alter_Table_Usuarios_Perfil.sql`:
-
-```sql
-ALTER TABLE beneficios.usuarios
-    ADD COLUMN perfil VARCHAR(20) NOT NULL DEFAULT 'Empresa';
-
-UPDATE beneficios.usuarios SET perfil = 'Admin' WHERE email = 'admin@exemplo.com';
-```
-
-`UsuarioPerfil.cs`:
+`AcaoPermissao.cs`:
 
 ```csharp
 namespace Beneficios.Domain.Enums;
 
-public enum UsuarioPerfil
+[Flags]
+public enum AcaoPermissao
 {
-    Empresa = 0,
-    Admin = 1
+    Nenhuma = 0,
+    Visualizar = 1,
+    Criar = 2,
+    Editar = 4,
+    Excluir = 8,
+    Todas = Visualizar | Criar | Editar | Excluir
 }
 ```
 
-Adicionar `public UsuarioPerfil Perfil { get; set; }` em `Usuario`, `UsuarioAuthResult`, `UsuarioQueryResult`, `UsuarioSalvarParams`.
+`ModuloSistema.cs`:
 
-Atualizar `03_Insert_Sample_Data.sql` para incluir coluna `perfil` nos INSERTs (`Admin` para admin@exemplo.com, `Empresa` para teste@exemplo.com).
+```csharp
+using Beneficios.Domain.Enums;
 
-- [ ] **Step 4: Run test to verify it passes**
+namespace Beneficios.Domain.Models;
 
-Run: `dotnet test tests/Beneficios.Tests/Beneficios.Tests.csproj --filter "Usuario_DeveTerPropriedadePerfil" -v n`
-Expected: PASS
+public sealed record ModuloSistema(
+    string Codigo,
+    string NomeExibicao,
+    string Rota,
+    AcaoPermissao AcoesSuportadas);
+```
+
+`ModulosSistemaCatalog.cs`:
+
+```csharp
+using Beneficios.Domain.Enums;
+using Beneficios.Domain.Models;
+
+namespace Beneficios.Domain;
+
+public static class ModulosSistemaCatalog
+{
+    public static IReadOnlyList<ModuloSistema> Todos { get; } =
+    [
+        new("dashboard", "Dashboard", "/dashboard", AcaoPermissao.Visualizar),
+        new("usuarios", "Usuários", "/usuarios", AcaoPermissao.Todas),
+        new("perfis", "Perfis", "/perfis", AcaoPermissao.Todas),
+    ];
+
+    public static ModuloSistema? ObterPorCodigo(string codigo) =>
+        Todos.FirstOrDefault(m => m.Codigo.Equals(codigo, StringComparison.OrdinalIgnoreCase));
+}
+```
+
+Salvar com **UTF-8 BOM**.
+
+- [ ] **Step 4: Run tests — expect PASS**
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/Beneficios.Domain src/Beneficios.Infrastructure/Scripts tests/Beneficios.Tests/Domain/UsuarioTests.cs
-git commit -m "feat(domain): add UsuarioPerfil enum and perfil column script"
+git add src/Beneficios.Domain/Enums/AcaoPermissao.cs src/Beneficios.Domain/Models/ModuloSistema.cs src/Beneficios.Domain/ModulosSistemaCatalog.cs tests/Beneficios.Tests/Domain/ModulosSistemaCatalogTests.cs
+git commit -m "feat: add module catalog and permission actions for tenant RBAC"
 ```
+
+---
+

@@ -5,11 +5,11 @@ import { AcaoPermissao } from './modulos-sistema';
 import { PermissaoMenu } from './auth.models';
 
 @Injectable({ providedIn: 'root' })
-export class PermissionService {
+export class PermissaoService {
   private readonly auth = inject(AuthService);
   private readonly tenant = inject(TenantService);
 
-  can(codigoMenu: string, acao: AcaoPermissao): boolean {
+  possuiPermissao(codigoMenu: string, acao: AcaoPermissao): boolean {
     if (this.tenant.isAdminMode()) {
       return false;
     }
@@ -22,10 +22,10 @@ export class PermissionService {
       return false;
     }
 
-    return this.flag(linha, acao);
+    return this.obterFlagAcao(linha, acao);
   }
 
-  private flag(linha: PermissaoMenu, acao: AcaoPermissao): boolean {
+  private obterFlagAcao(linha: PermissaoMenu, acao: AcaoPermissao): boolean {
     switch (acao) {
       case 'visualizar':
         return linha.visualizar;

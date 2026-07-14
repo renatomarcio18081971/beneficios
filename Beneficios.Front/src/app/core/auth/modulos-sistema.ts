@@ -8,14 +8,8 @@ export interface ModuloSistema {
   acoesSuportadas: AcaoPermissao[];
 }
 
+/** Módulos sujeitos a validação de perfil (dashboard fica fora, acessível a todos). */
 export const MODULOS_SISTEMA: readonly ModuloSistema[] = [
-  {
-    codigo: 'dashboard',
-    nomeExibicao: 'Dashboard',
-    rota: '/dashboard',
-    icone: 'dashboard',
-    acoesSuportadas: ['visualizar'],
-  },
   {
     codigo: 'usuarios',
     nomeExibicao: 'Usuários',

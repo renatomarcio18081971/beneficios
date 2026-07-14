@@ -1,6 +1,9 @@
+﻿using Beneficios.Domain.Enums;
 using Beneficios.Domain.Models;
 using Beneficios.Domain.ValueObjects;
 using Beneficios.Infrastructure.Repositories;
+using Beneficios.Infrastructure.Tenancy;
+using Dapper;
 using Xunit;
 
 namespace Beneficios.Tests.Infrastructure;
@@ -17,7 +20,7 @@ public class UsuarioRepositoryTests(PostgresFixture fixture)
 
         var empresaId = await SeedEmpresaAsync();
         await using var tenantConnection = await fixture.CreateTenantConnectionAsync(TenantRazaoSocial);
-        var repository = new UsuarioRepository(tenantConnection);
+        var repository = new UsuarioRepository(tenantConnection, TenantSchemaAccessor.ParaTenant("tenant_test"));
         var usuarioId = Guid.NewGuid();
 
         var result = await repository.SalvarAsync(new UsuarioSalvarParams
@@ -44,7 +47,7 @@ public class UsuarioRepositoryTests(PostgresFixture fixture)
 
         var empresaId = await SeedEmpresaAsync();
         await using var tenantConnection = await fixture.CreateTenantConnectionAsync(TenantRazaoSocial);
-        var repository = new UsuarioRepository(tenantConnection);
+        var repository = new UsuarioRepository(tenantConnection, TenantSchemaAccessor.ParaTenant("tenant_test"));
         var usuarioId = Guid.NewGuid();
         var senhaCriptografada = Criptografia.Encrypt("admin123");
 
@@ -71,7 +74,7 @@ public class UsuarioRepositoryTests(PostgresFixture fixture)
 
         var empresaId = await SeedEmpresaAsync();
         await using var tenantConnection = await fixture.CreateTenantConnectionAsync(TenantRazaoSocial);
-        var repository = new UsuarioRepository(tenantConnection);
+        var repository = new UsuarioRepository(tenantConnection, TenantSchemaAccessor.ParaTenant("tenant_test"));
         var usuarioId = Guid.NewGuid();
 
         await repository.SalvarAsync(new UsuarioSalvarParams
@@ -100,7 +103,7 @@ public class UsuarioRepositoryTests(PostgresFixture fixture)
 
         var empresaId = await SeedEmpresaAsync();
         await using var tenantConnection = await fixture.CreateTenantConnectionAsync(TenantRazaoSocial);
-        var repository = new UsuarioRepository(tenantConnection);
+        var repository = new UsuarioRepository(tenantConnection, TenantSchemaAccessor.ParaTenant("tenant_test"));
         var usuarioId = Guid.NewGuid();
 
         await repository.SalvarAsync(new UsuarioSalvarParams
@@ -135,7 +138,7 @@ public class UsuarioRepositoryTests(PostgresFixture fixture)
 
         var empresaId = await SeedEmpresaAsync();
         await using var tenantConnection = await fixture.CreateTenantConnectionAsync(TenantRazaoSocial);
-        var repository = new UsuarioRepository(tenantConnection);
+        var repository = new UsuarioRepository(tenantConnection, TenantSchemaAccessor.ParaTenant("tenant_test"));
         var usuarioId = Guid.NewGuid();
 
         await repository.SalvarAsync(new UsuarioSalvarParams
@@ -160,7 +163,7 @@ public class UsuarioRepositoryTests(PostgresFixture fixture)
 
         var empresaId = await SeedEmpresaAsync();
         await using var tenantConnection = await fixture.CreateTenantConnectionAsync(TenantRazaoSocial);
-        var repository = new UsuarioRepository(tenantConnection);
+        var repository = new UsuarioRepository(tenantConnection, TenantSchemaAccessor.ParaTenant("tenant_test"));
 
         await repository.SalvarAsync(new UsuarioSalvarParams
         {
@@ -193,7 +196,7 @@ public class UsuarioRepositoryTests(PostgresFixture fixture)
 
         var empresaId = await SeedEmpresaAsync();
         await using var tenantConnection = await fixture.CreateTenantConnectionAsync(TenantRazaoSocial);
-        var repository = new UsuarioRepository(tenantConnection);
+        var repository = new UsuarioRepository(tenantConnection, TenantSchemaAccessor.ParaTenant("tenant_test"));
         var usuarioId = Guid.NewGuid();
 
         await repository.SalvarAsync(new UsuarioSalvarParams
@@ -221,7 +224,7 @@ public class UsuarioRepositoryTests(PostgresFixture fixture)
 
         var empresaId = await SeedEmpresaAsync();
         await using var tenantConnection = await fixture.CreateTenantConnectionAsync(TenantRazaoSocial);
-        var repository = new UsuarioRepository(tenantConnection);
+        var repository = new UsuarioRepository(tenantConnection, TenantSchemaAccessor.ParaTenant("tenant_test"));
         var usuarioId = Guid.NewGuid();
         var novaSenhaCriptografada = Criptografia.Encrypt("novaSenha456");
 
@@ -252,7 +255,7 @@ public class UsuarioRepositoryTests(PostgresFixture fixture)
 
         var empresaId = await SeedEmpresaAsync();
         await using var tenantConnection = await fixture.CreateTenantConnectionAsync(TenantRazaoSocial);
-        var repository = new UsuarioRepository(tenantConnection);
+        var repository = new UsuarioRepository(tenantConnection, TenantSchemaAccessor.ParaTenant("tenant_test"));
 
         await repository.SalvarAsync(new UsuarioSalvarParams
         {
@@ -284,7 +287,7 @@ public class UsuarioRepositoryTests(PostgresFixture fixture)
 
         var empresaId = await SeedEmpresaAsync();
         await using var tenantConnection = await fixture.CreateTenantConnectionAsync(TenantRazaoSocial);
-        var repository = new UsuarioRepository(tenantConnection);
+        var repository = new UsuarioRepository(tenantConnection, TenantSchemaAccessor.ParaTenant("tenant_test"));
 
         await repository.SalvarAsync(new UsuarioSalvarParams
         {
@@ -308,7 +311,7 @@ public class UsuarioRepositoryTests(PostgresFixture fixture)
 
         var empresaId = await SeedEmpresaAsync();
         await using var tenantConnection = await fixture.CreateTenantConnectionAsync(TenantRazaoSocial);
-        var repository = new UsuarioRepository(tenantConnection);
+        var repository = new UsuarioRepository(tenantConnection, TenantSchemaAccessor.ParaTenant("tenant_test"));
 
         await repository.SalvarAsync(new UsuarioSalvarParams
         {
@@ -322,6 +325,36 @@ public class UsuarioRepositoryTests(PostgresFixture fixture)
         var usuarios = await repository.FiltrarAsync(new UsuarioFiltroParams { Nome = "Inexistente" });
 
         Assert.Empty(usuarios);
+    }
+
+    [SkippableFact]
+    public async Task GetByEmailAsync_NoCatalogo_NaoDeveReferenciarPerfilId()
+    {
+        await PostgresTestHelper.PrepareAsync(fixture);
+
+        var usuarioId = Guid.NewGuid();
+        var senhaCriptografada = Criptografia.Encrypt("admin123");
+
+        await fixture.Connection!.ExecuteAsync("""
+            INSERT INTO beneficios.usuarios (id, nome, senha, email, perfil, empresa_id, data_inclusao)
+            VALUES (@Id, @Nome, @Senha, @Email, @Perfil, NULL, NOW())
+            """,
+            new
+            {
+                Id = usuarioId,
+                Nome = "Administrador",
+                Senha = senhaCriptografada,
+                Email = "admin.catalogo@example.com",
+                Perfil = "Admin",
+            });
+
+        var repository = new UsuarioRepository(fixture.Connection!, TenantSchemaAccessor.ParaCatalogo());
+        var usuario = await repository.GetByEmailAsync("admin.catalogo@example.com");
+
+        Assert.NotNull(usuario);
+        Assert.Equal(usuarioId, usuario.Id);
+        Assert.Null(usuario.PerfilId);
+        Assert.Equal(UsuarioPerfil.Admin, usuario.Perfil);
     }
 
     private async Task<Guid> SeedEmpresaAsync()

@@ -141,7 +141,7 @@ public class PostgresFixture : IDisposable
 
         var builder = new NpgsqlConnectionStringBuilder(CatalogConnectionString)
         {
-            SearchPath = TenantSchemaNames.GetTenantSearchPath(razaoSocial),
+            SearchPath = TenantSchemaNames.ObterSearchPathTenant(razaoSocial),
         };
 
         var tenantConnection = new NpgsqlConnection(builder.ConnectionString);
@@ -151,12 +151,12 @@ public class PostgresFixture : IDisposable
 
     public static async Task ProvisionTenantSchemaAsync(IDbConnection connection, string razaoSocial)
     {
-        var schemaName = TenantSchemaSql.BuildSchemaName(razaoSocial);
-        await connection.ExecuteAsync(TenantSchemaSql.CreateSchema(schemaName));
-        await connection.ExecuteAsync(TenantSchemaSql.CreateUsuariosTable(schemaName));
-        await connection.ExecuteAsync(TenantSchemaSql.CreatePerfisTable(schemaName));
-        await connection.ExecuteAsync(TenantSchemaSql.CreatePerfilPermissoesTable(schemaName));
-        await connection.ExecuteAsync(TenantSchemaSql.AlterUsuariosAddPerfilId(schemaName));
+        var schemaName = TenantSchemaSql.MontarNomeSchema(razaoSocial);
+        await connection.ExecuteAsync(TenantSchemaSql.CriarSchema(schemaName));
+        await connection.ExecuteAsync(TenantSchemaSql.CriarTabelaUsuarios(schemaName));
+        await connection.ExecuteAsync(TenantSchemaSql.CriarTabelaPerfis(schemaName));
+        await connection.ExecuteAsync(TenantSchemaSql.CriarTabelaPerfilPermissoes(schemaName));
+        await connection.ExecuteAsync(TenantSchemaSql.AlterarUsuariosAdicionarPerfilId(schemaName));
     }
 
     public void Dispose()

@@ -6,12 +6,12 @@ namespace Beneficios.Infrastructure.Tenancy;
 
 public static class TenantSchemaSql
 {
-    public static string CreateSchema(string schemaName) =>
-        $"CREATE SCHEMA IF NOT EXISTS {QuoteIdentifier(schemaName)};";
+    public static string CriarSchema(string schemaName) =>
+        $"CREATE SCHEMA IF NOT EXISTS {CitarIdentificador(schemaName)};";
 
-    public static string CreateUsuariosTable(string schemaName)
+    public static string CriarTabelaUsuarios(string schemaName)
     {
-        var quotedSchema = QuoteIdentifier(schemaName);
+        var quotedSchema = CitarIdentificador(schemaName);
         var indexPrefix = schemaName.Replace('-', '_');
 
         return $"""
@@ -40,9 +40,9 @@ public static class TenantSchemaSql
             """;
     }
 
-    public static string CreatePerfisTable(string schemaName)
+    public static string CriarTabelaPerfis(string schemaName)
     {
-        var quotedSchema = QuoteIdentifier(schemaName);
+        var quotedSchema = CitarIdentificador(schemaName);
         var indexPrefix = schemaName.Replace('-', '_');
 
         return $"""
@@ -60,9 +60,9 @@ public static class TenantSchemaSql
             """;
     }
 
-    public static string CreatePerfilPermissoesTable(string schemaName)
+    public static string CriarTabelaPerfilPermissoes(string schemaName)
     {
-        var quotedSchema = QuoteIdentifier(schemaName);
+        var quotedSchema = CitarIdentificador(schemaName);
         var indexPrefix = schemaName.Replace('-', '_');
 
         return $"""
@@ -85,9 +85,9 @@ public static class TenantSchemaSql
             """;
     }
 
-    public static string AlterUsuariosAddPerfilId(string schemaName)
+    public static string AlterarUsuariosAdicionarPerfilId(string schemaName)
     {
-        var quotedSchema = QuoteIdentifier(schemaName);
+        var quotedSchema = CitarIdentificador(schemaName);
         var indexPrefix = schemaName.Replace('-', '_');
 
         return $"""
@@ -111,9 +111,9 @@ public static class TenantSchemaSql
             """;
     }
 
-    public static string InsertPerfilDono(string schemaName)
+    public static string InserirPerfilDono(string schemaName)
     {
-        var quotedSchema = QuoteIdentifier(schemaName);
+        var quotedSchema = CitarIdentificador(schemaName);
 
         return $"""
             INSERT INTO {quotedSchema}.perfis
@@ -123,9 +123,9 @@ public static class TenantSchemaSql
             """;
     }
 
-    public static string InsertPerfilPermissao(string schemaName)
+    public static string InserirPerfilPermissao(string schemaName)
     {
-        var quotedSchema = QuoteIdentifier(schemaName);
+        var quotedSchema = CitarIdentificador(schemaName);
 
         return $"""
             INSERT INTO {quotedSchema}.perfil_permissoes
@@ -135,9 +135,9 @@ public static class TenantSchemaSql
             """;
     }
 
-    public static string InsertDefaultUsuario(string schemaName)
+    public static string InserirUsuarioPadrao(string schemaName)
     {
-        var quotedSchema = QuoteIdentifier(schemaName);
+        var quotedSchema = CitarIdentificador(schemaName);
 
         return $"""
             INSERT INTO {quotedSchema}.usuarios
@@ -147,9 +147,9 @@ public static class TenantSchemaSql
             """;
     }
 
-    public static string BuildSchemaName(string razaoSocial) =>
+    public static string MontarNomeSchema(string razaoSocial) =>
         TenantSchemaNames.FromRazaoSocial(razaoSocial);
 
-    public static string QuoteIdentifier(string identifier) =>
+    public static string CitarIdentificador(string identifier) =>
         "\"" + identifier.Replace("\"", "\"\"") + "\"";
 }

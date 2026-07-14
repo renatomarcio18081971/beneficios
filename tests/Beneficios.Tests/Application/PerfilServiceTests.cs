@@ -39,7 +39,7 @@ public class PerfilServiceTests
         Assert.NotEqual(Guid.Empty, id);
         Assert.NotNull(salvo);
         Assert.Equal(ModulosSistemaCatalog.Todos.Count, salvo!.Permissoes.Count);
-        Assert.Contains(salvo.Permissoes, p => p.CodigoMenu == "dashboard" && !p.Visualizar);
+        Assert.DoesNotContain(salvo.Permissoes, p => p.CodigoMenu == "dashboard");
         Assert.Contains(salvo.Permissoes, p => p.CodigoMenu == "usuarios" && p.Criar);
         Assert.Contains(salvo.Permissoes, p => p.CodigoMenu == "perfis" && !p.Visualizar);
     }

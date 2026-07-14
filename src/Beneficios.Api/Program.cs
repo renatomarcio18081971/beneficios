@@ -4,6 +4,7 @@ using Beneficios.Application.Configuration;
 using Beneficios.Application.Interfaces;
 using Beneficios.Application.Mappings;
 using Beneficios.Application.Services;
+using Beneficios.Domain;
 using Beneficios.Domain.Interfaces;
 using Beneficios.Infrastructure.Configurations;
 using Beneficios.Infrastructure.Repositories;
@@ -56,6 +57,14 @@ builder.Services.AddScoped<IDbConnection>(sp =>
         ?? configuration.GetConnectionString("DefaultConnection")
         ?? throw new InvalidOperationException("Connection string 'DefaultConnection' não configurada.");
     return DatabaseConfiguration.CreateConnection(connectionString);
+});
+
+builder.Services.AddScoped<ITenantSchemaAccessor>(sp =>
+{
+    var httpContextAccessor = sp.GetRequiredService<IHttpContextAccessor>();
+    var schema = httpContextAccessor.HttpContext?.Items[TenantContextKeys.Schema] as string
+        ?? TenantSchemaNames.CatalogSchema;
+    return new TenantSchemaAccessor(schema);
 });
 
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
@@ -115,7 +124,7 @@ try
 {
     using var scope = app.Services.CreateScope();
     var provisioner = scope.ServiceProvider.GetRequiredService<ITenantProvisioner>();
-    await provisioner.EnsurePerfisEmTenantsExistentesAsync();
+    await provisioner.GarantirPerfisEmTenantsExistentesAsync();
 }
 catch (Exception ex)
 {
