@@ -13,12 +13,19 @@ public class ModulosSistemaCatalogTests
         Assert.DoesNotContain("dashboard", codigos);
         Assert.Contains("usuarios", codigos);
         Assert.Contains("perfis", codigos);
+        Assert.Contains("dias_uteis", codigos);
     }
 
     [Fact]
-    public void UsuariosEPerfis_DevemSuportarTodasAsAcoes()
+    public void Todos_DeveConterDiasUteis()
     {
-        foreach (var codigo in new[] { "usuarios", "perfis" })
+        Assert.Contains(ModulosSistemaCatalog.Todos, m => m.Codigo == "dias_uteis" && m.Rota == "/dias-uteis");
+    }
+
+    [Fact]
+    public void ModulosDePerfil_DevemSuportarTodasAsAcoes()
+    {
+        foreach (var codigo in new[] { "usuarios", "perfis", "dias_uteis" })
         {
             var modulo = ModulosSistemaCatalog.Todos.Single(m => m.Codigo == codigo);
             Assert.Equal(AcaoPermissao.Todas, modulo.AcoesSuportadas);
