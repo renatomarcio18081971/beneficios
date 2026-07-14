@@ -1,4 +1,4 @@
-namespace Beneficios.Domain.Models;
+﻿namespace Beneficios.Domain.Models;
 
 using Beneficios.Domain.Enums;
 
@@ -10,4 +10,5 @@ public record UsuarioSalvarParams
     public string Email { get; init; } = string.Empty;
     public Guid EmpresaId { get; init; }
     public UsuarioPerfil Perfil { get; init; }
+    public Guid? PerfilId { get; init; }
 }

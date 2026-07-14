@@ -3,6 +3,8 @@ export interface Usuario {
   nome: string;
   email: string;
   empresaId: string;
+  perfilId?: string | null;
+  perfilAcessoNome?: string | null;
   empresaNome: string;
   dataInclusao: string;
   dataAlteracao: string | null;
@@ -13,12 +15,14 @@ export interface UsuarioSalvarRequest {
   senha: string;
   email: string;
   empresaId: string;
+  perfilId: string;
 }
 
 export interface UsuarioAtualizarRequest {
   nome: string;
   email: string;
   empresaId: string;
+  perfilId: string;
 }
 
 export interface UsuarioCreateResponse {

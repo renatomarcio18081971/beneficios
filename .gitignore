@@ -217,6 +217,12 @@ Beneficios.Front/.env.sonar.local
 **/coverage/
 *.opencover.xml
 
+# Playwright
+**/test-results/
+**/playwright-report/
+**/blob-report/
+**/playwright/.cache/
+
 # Docker
 docker-compose.override.yml
 .env.docker

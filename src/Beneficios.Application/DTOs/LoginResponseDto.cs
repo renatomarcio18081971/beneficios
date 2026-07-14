@@ -11,4 +11,7 @@ public class LoginResponseDto
     public UsuarioPerfil Perfil { get; set; }
     public Guid? EmpresaId { get; set; }
     public string EmpresaDominio { get; set; } = string.Empty;
+    public Guid? PerfilAcessoId { get; set; }
+    public string PerfilAcessoNome { get; set; } = string.Empty;
+    public List<PermissaoMenuDto> Permissoes { get; set; } = [];
 }

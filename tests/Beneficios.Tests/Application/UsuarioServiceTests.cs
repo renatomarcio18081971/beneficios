@@ -1,4 +1,4 @@
-using AutoMapper;
+﻿using AutoMapper;
 using Beneficios.Application.DTOs;
 using Beneficios.Application.Interfaces;
 using Beneficios.Application.Mappings;
@@ -16,6 +16,7 @@ namespace Beneficios.Tests.Application;
 public class UsuarioServiceTests
 {
     private readonly Mock<IUsuarioRepository> _repositoryMock;
+    private readonly Mock<IPerfilRepository> _perfilRepositoryMock;
     private readonly Mock<ITokenService> _tokenServiceMock;
     private readonly Mock<IEmailService> _emailServiceMock;
     private readonly IMapper _mapper;
@@ -24,11 +25,16 @@ public class UsuarioServiceTests
     public UsuarioServiceTests()
     {
         _repositoryMock = new Mock<IUsuarioRepository>();
+        _perfilRepositoryMock = new Mock<IPerfilRepository>();
         _tokenServiceMock = new Mock<ITokenService>();
         _emailServiceMock = new Mock<IEmailService>();
         _mapper = new MapperConfiguration(cfg => cfg.AddProfile<UsuarioProfile>()).CreateMapper();
+        _perfilRepositoryMock
+            .Setup(x => x.ObterUmAsync(It.IsAny<Guid>()))
+            .ReturnsAsync((Guid id) => new PerfilQueryResult { Id = id, Nome = "Operador" });
         _service = new UsuarioService(
             _repositoryMock.Object,
+            _perfilRepositoryMock.Object,
             _mapper,
             _tokenServiceMock.Object,
             _emailServiceMock.Object);
@@ -37,7 +43,7 @@ public class UsuarioServiceTests
     [Fact]
     public async Task SalvarAsync_DeveCriarUsuarioComSucesso()
     {
-        var dto = new UsuarioSalvarDto("Joao Silva", "senha123", "joao@example.com", Guid.NewGuid());
+        var dto = new UsuarioSalvarDto("Joao Silva", "senha123", "joao@example.com", Guid.NewGuid(), Guid.NewGuid());
 
         _repositoryMock.Setup(x => x.SalvarAsync(It.IsAny<UsuarioSalvarParams>()))
             .ReturnsAsync((UsuarioSalvarParams p) => p.Id);
@@ -53,7 +59,7 @@ public class UsuarioServiceTests
     public async Task AtualizarAsync_DeveAtualizarUsuarioComSucesso()
     {
         var id = Guid.NewGuid();
-        var dto = new UsuarioAtualizarDto("Joao Silva", "joao@example.com", Guid.NewGuid());
+        var dto = new UsuarioAtualizarDto("Joao Silva", "joao@example.com", Guid.NewGuid(), Guid.NewGuid());
 
         _repositoryMock.Setup(x => x.ObterUmAsync(id)).ReturnsAsync(new UsuarioQueryResult
         {
@@ -74,7 +80,7 @@ public class UsuarioServiceTests
     public async Task AtualizarAsync_UsuarioPadrao_NaoDeveAtualizar()
     {
         var id = Guid.NewGuid();
-        var dto = new UsuarioAtualizarDto("Outro Nome", "outro@example.com", Guid.NewGuid());
+        var dto = new UsuarioAtualizarDto("Outro Nome", "outro@example.com", Guid.NewGuid(), Guid.NewGuid());
 
         _repositoryMock.Setup(x => x.ObterUmAsync(id)).ReturnsAsync(new UsuarioQueryResult
         {
@@ -181,6 +187,7 @@ public class UsuarioServiceTests
     public async Task LoginAsync_DeveRetornarTokenQuandoCredenciaisValidas()
     {
         var usuarioId = Guid.NewGuid();
+        var perfilId = Guid.NewGuid();
         var authResult = new UsuarioAuthResult
         {
             Id = usuarioId,
@@ -189,12 +196,22 @@ public class UsuarioServiceTests
             Senha = Criptografia.Encrypt("senha123"),
             EmpresaId = Guid.NewGuid(),
             Perfil = UsuarioPerfil.Empresa,
+            PerfilId = perfilId,
             EmpresaDominio = "exemplo"
         };
 
         _repositoryMock.Setup(x => x.GetByEmailAsync("joao@example.com")).ReturnsAsync(authResult);
         _tokenServiceMock.Setup(x => x.GenerateToken(usuarioId, "joao@example.com", UsuarioPerfil.Empresa, authResult.EmpresaId)).Returns("jwt-token");
         _repositoryMock.Setup(x => x.UpdateTokenAsync(usuarioId, "jwt-token")).ReturnsAsync(true);
+        _perfilRepositoryMock.Setup(x => x.ObterUmAsync(perfilId)).ReturnsAsync(new PerfilQueryResult
+        {
+            Id = perfilId,
+            Nome = "Dono",
+            Permissoes =
+            [
+                new PerfilPermissaoParams { CodigoMenu = "usuarios", Visualizar = true, Criar = true }
+            ]
+        });
 
         var result = await _service.LoginAsync(new LoginDto("joao@example.com", "senha123"), "exemplo");
 
@@ -202,6 +219,9 @@ public class UsuarioServiceTests
         Assert.Equal("jwt-token", result!.Token);
         Assert.Equal(usuarioId, result.UsuarioId);
         Assert.Equal("Joao", result.Nome);
+        Assert.Equal(perfilId, result.PerfilAcessoId);
+        Assert.Equal("Dono", result.PerfilAcessoNome);
+        Assert.NotEmpty(result.Permissoes);
         _repositoryMock.Verify(x => x.UpdateTokenAsync(usuarioId, "jwt-token"), Times.Once);
     }
 
@@ -526,5 +546,25 @@ public class UsuarioServiceTests
         var result = await _service.FiltrarAsync(new UsuarioFiltroDto("Inexistente", null));
 
         Assert.Empty(result);
+    }
+
+    [Fact]
+    public async Task LoginAsync_EmTenant_SemPerfilId_DeveLancarMensagemFixa()
+    {
+        var authResult = new UsuarioAuthResult
+        {
+            Id = Guid.NewGuid(),
+            Email = "u@test.com",
+            Senha = Criptografia.Encrypt("senha123"),
+            Perfil = UsuarioPerfil.Empresa,
+            PerfilId = null,
+            EmpresaDominio = "exemplo"
+        };
+        _repositoryMock.Setup(x => x.GetByEmailAsync("u@test.com")).ReturnsAsync(authResult);
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            _service.LoginAsync(new LoginDto("u@test.com", "senha123"), "exemplo"));
+
+        Assert.Equal(UsuarioService.MensagemUsuarioSemPerfil, ex.Message);
     }
 }

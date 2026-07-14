@@ -1,0 +1,160 @@
+﻿.dias-uteis-page {
+  padding: 16px;
+  width: 100%;
+  max-width: 720px;
+  box-sizing: border-box;
+}
+
+.dias-uteis-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.dias-uteis-header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: var(--beneficios-text);
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.mes-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.mes-nav h2 {
+  margin: 0;
+  flex: 1;
+  text-align: center;
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: var(--beneficios-text);
+}
+
+.legenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 16px;
+  margin-bottom: 16px;
+  font-size: 0.8125rem;
+  color: var(--beneficios-text);
+}
+
+.legenda-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.swatch--util {
+  background: #e8f5e9;
+}
+
+.swatch--nao-util {
+  background: #eceff1;
+}
+
+.swatch--excecao {
+  background: #fff3e0;
+}
+
+.loading-container,
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 32px 8px;
+  text-align: center;
+  color: var(--beneficios-text);
+}
+
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.cal-weekday {
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #666;
+  padding: 4px 0;
+}
+
+.cal-day {
+  aspect-ratio: 1;
+  min-height: 40px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding: 6px;
+  font: inherit;
+  color: var(--beneficios-text);
+}
+
+.cal-day:hover:not(.cal-day--empty) {
+  outline: 2px solid var(--beneficios-primary, #1565c0);
+  outline-offset: 1px;
+}
+
+.cal-day--empty {
+  border: none;
+  background: transparent;
+  cursor: default;
+  pointer-events: none;
+}
+
+.cal-day--util {
+  background: #e8f5e9;
+}
+
+.cal-day--nao-util {
+  background: #eceff1;
+  color: #607d8b;
+}
+
+.cal-day--excecao {
+  background: #fff3e0;
+  border-color: #ffcc80;
+}
+
+.cal-day__num {
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1;
+}
+
+@media (max-width: 480px) {
+  .cal-day {
+    min-height: 36px;
+    padding: 4px;
+  }
+
+  .cal-day__num {
+    font-size: 0.75rem;
+  }
+}

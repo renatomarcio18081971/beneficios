@@ -1,7 +1,8 @@
-namespace Beneficios.Application.DTOs;
+﻿namespace Beneficios.Application.DTOs;
 
 public record UsuarioAtualizarDto(
     string Nome,
     string Email,
-    Guid EmpresaId
+    Guid EmpresaId,
+    Guid PerfilId
 );

@@ -12,21 +12,27 @@ namespace Beneficios.Application.Services;
 
 public class UsuarioService : IUsuarioService
 {
+    public const string MensagemUsuarioSemPerfil =
+        "Usuário sem perfil configurado, procure o administrador do sistema !";
+
     private const string MensagemRedefinicaoSenha =
         "Olá, você solicitou redefinição de senha. Informe este código quando solicitado.";
 
     private readonly IUsuarioRepository _usuarioRepository;
+    private readonly IPerfilRepository _perfilRepository;
     private readonly IMapper _mapper;
     private readonly ITokenService _tokenService;
     private readonly IEmailService _emailService;
 
     public UsuarioService(
         IUsuarioRepository usuarioRepository,
+        IPerfilRepository perfilRepository,
         IMapper mapper,
         ITokenService tokenService,
         IEmailService emailService)
     {
         _usuarioRepository = usuarioRepository;
+        _perfilRepository = perfilRepository;
         _mapper = mapper;
         _tokenService = tokenService;
         _emailService = emailService;
@@ -34,8 +40,13 @@ public class UsuarioService : IUsuarioService
 
     public async Task<Guid> SalvarAsync(UsuarioSalvarDto dto)
     {
+        await ValidarPerfilAcessoAsync(dto.PerfilId);
+
         var usuario = _mapper.Map<Usuario>(dto);
-        var salvarParams = _mapper.Map<UsuarioSalvarParams>(usuario);
+        var salvarParams = _mapper.Map<UsuarioSalvarParams>(usuario) with
+        {
+            PerfilId = dto.PerfilId
+        };
         await _usuarioRepository.SalvarAsync(salvarParams);
         return usuario.Id;
     }
@@ -49,10 +60,13 @@ public class UsuarioService : IUsuarioService
         if (TenantDefaultUser.IsDefaultUser(usuario.Email))
             return false;
 
+        await ValidarPerfilAcessoAsync(dto.PerfilId);
+
         return await _usuarioRepository.AtualizarAsync(
             _mapper.Map<UsuarioAtualizarParams>(dto) with
             {
                 Id = id,
+                PerfilId = dto.PerfilId,
                 UsuarioAlteracaoId = usuarioAlteracaoId
             });
     }
@@ -107,6 +121,10 @@ public class UsuarioService : IUsuarioService
         if (!ValidateTenantAccess(usuario, tenantSubdomain))
             return null;
 
+        var isAdmin = string.Equals(tenantSubdomain, "admin", StringComparison.OrdinalIgnoreCase);
+        if (!isAdmin && usuario.PerfilId is null)
+            throw new InvalidOperationException(MensagemUsuarioSemPerfil);
+
         var empresaId = usuario.Perfil == UsuarioPerfil.Admin ? null : (Guid?)usuario.EmpresaId;
         var token = _tokenService.GenerateToken(usuario.Id, usuario.Email, usuario.Perfil, empresaId);
         await _usuarioRepository.UpdateTokenAsync(usuario.Id, token);
@@ -115,6 +133,21 @@ public class UsuarioService : IUsuarioService
         response.Token = token;
         if (usuario.Perfil == UsuarioPerfil.Admin)
             response.EmpresaId = null;
+
+        if (!isAdmin && usuario.PerfilId is Guid perfilId)
+        {
+            var perfil = await _perfilRepository.ObterUmAsync(perfilId);
+            response.PerfilAcessoId = perfilId;
+            response.PerfilAcessoNome = perfil?.Nome ?? string.Empty;
+            response.Permissoes = (perfil?.Permissoes ?? [])
+                .Select(p => new PermissaoMenuDto(
+                    p.CodigoMenu,
+                    p.Visualizar,
+                    p.Criar,
+                    p.Editar,
+                    p.Excluir))
+                .ToList();
+        }
 
         return response;
     }
@@ -148,6 +181,13 @@ public class UsuarioService : IUsuarioService
 
         var senhaCriptografada = Criptografia.Encrypt(dto.NovaSenha);
         return await _usuarioRepository.AtualizarSenhaAsync(usuario.Id, senhaCriptografada);
+    }
+
+    private async Task ValidarPerfilAcessoAsync(Guid perfilId)
+    {
+        var perfil = await _perfilRepository.ObterUmAsync(perfilId);
+        if (perfil is null)
+            throw new InvalidOperationException("Perfil de acesso não encontrado.");
     }
 
     private static bool ValidateTenantAccess(UsuarioAuthResult usuario, string tenantSubdomain)

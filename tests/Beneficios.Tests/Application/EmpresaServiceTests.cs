@@ -33,7 +33,7 @@ public class EmpresaServiceTests
         _repositoryMock.Setup(x => x.SalvarAsync(It.IsAny<EmpresaSalvarParams>()))
             .ReturnsAsync((EmpresaSalvarParams p) => p.Id);
         _provisionerMock
-            .Setup(x => x.ProvisionAsync(dto.RazaoSocial, It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.ProvisionarAsync(dto.RazaoSocial, It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
         var result = await _service.SalvarAsync(dto);
@@ -42,7 +42,7 @@ public class EmpresaServiceTests
         _repositoryMock.Verify(x => x.SalvarAsync(It.Is<EmpresaSalvarParams>(p =>
             p.RazaoSocial == dto.RazaoSocial && p.Dominio == dto.Dominio)), Times.Once);
         _provisionerMock.Verify(
-            x => x.ProvisionAsync(dto.RazaoSocial, result, It.IsAny<CancellationToken>()),
+            x => x.ProvisionarAsync(dto.RazaoSocial, result, It.IsAny<CancellationToken>()),
             Times.Once);
     }
 
@@ -54,7 +54,7 @@ public class EmpresaServiceTests
         _repositoryMock.Setup(x => x.SalvarAsync(It.IsAny<EmpresaSalvarParams>()))
             .ReturnsAsync((EmpresaSalvarParams p) => p.Id);
         _provisionerMock
-            .Setup(x => x.ProvisionAsync(dto.RazaoSocial, It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.ProvisionarAsync(dto.RazaoSocial, It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new InvalidOperationException("Falha no schema"));
         _repositoryMock.Setup(x => x.DeleteAsync(It.IsAny<Guid>())).ReturnsAsync(true);
 
@@ -92,7 +92,7 @@ public class EmpresaServiceTests
         _repositoryMock.Verify(x => x.DeleteAsync(id), Times.Once);
         _repositoryMock.Verify(x => x.ObterUmAsync(It.IsAny<Guid>()), Times.Never);
         _provisionerMock.Verify(
-            x => x.ProvisionAsync(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
+            x => x.ProvisionarAsync(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
             Times.Never);
     }
 

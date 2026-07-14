@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+﻿import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
@@ -25,6 +25,9 @@ export class AuthService {
             perfil: response.perfil,
             empresaId: response.empresaId,
             empresaDominio: response.empresaDominio,
+            perfilAcessoId: response.perfilAcessoId,
+            perfilAcessoNome: response.perfilAcessoNome,
+            permissoes: response.permissoes ?? [],
           };
           sessionStorage.setItem(TOKEN_KEY, response.token);
           sessionStorage.setItem(USER_KEY, JSON.stringify(session));

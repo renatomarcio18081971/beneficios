@@ -1,4 +1,4 @@
-import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
+﻿import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { Component, inject, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -11,6 +11,8 @@ import { AsyncPipe } from '@angular/common';
 import { map, shareReplay } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
 import { TenantService } from '../../core/tenant/tenant.service';
+import { PermissaoService } from '../../core/auth/permissao.service';
+import { MODULOS_SISTEMA } from '../../core/auth/modulos-sistema';
 
 interface NavItem {
   label: string;
@@ -43,6 +45,7 @@ export class ShellComponent {
   private readonly breakpointObserver = inject(BreakpointObserver);
   private readonly authService = inject(AuthService);
   private readonly tenantService = inject(TenantService);
+  private readonly permissaoService = inject(PermissaoService);
   private readonly router = inject(Router);
 
   readonly isHandset$ = this.breakpointObserver
@@ -61,12 +64,22 @@ export class ShellComponent {
   }
 
   get navItems(): NavItem[] {
-    return this.tenantService.isAdminMode()
-      ? [{ label: 'Empresas', route: '/empresas', icon: 'business' }]
-      : [
-          { label: 'Dashboard', route: '/dashboard', icon: 'dashboard' },
-          { label: 'Usuários', route: '/usuarios', icon: 'people' },
-        ];
+    if (this.tenantService.isAdminMode()) {
+      return [{ label: 'Empresas', route: '/empresas', icon: 'business' }];
+    }
+
+    const itensPermissao = MODULOS_SISTEMA
+      .filter((modulo) => this.permissaoService.possuiPermissao(modulo.codigo, 'visualizar'))
+      .map((modulo) => ({
+        label: modulo.nomeExibicao,
+        route: modulo.rota,
+        icon: modulo.icone,
+      }));
+
+    return [
+      { label: 'Dashboard', route: '/dashboard', icon: 'dashboard' },
+      ...itensPermissao,
+    ];
   }
 
   toggleSidenav(): void {

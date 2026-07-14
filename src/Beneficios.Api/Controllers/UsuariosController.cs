@@ -1,5 +1,6 @@
 ﻿using Beneficios.Application.DTOs;
 using Beneficios.Application.Interfaces;
+using Beneficios.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.IdentityModel.Tokens.Jwt;
@@ -11,12 +12,19 @@ namespace Beneficios.Api.Controllers;
 [Route("api/[controller]")]
 public class UsuariosController : ControllerBase
 {
+    private const string CodigoMenu = "usuarios";
+
     private readonly IUsuarioService _usuarioService;
+    private readonly IPermissaoService _permissaoService;
     private readonly ILogger<UsuariosController> _logger;
 
-    public UsuariosController(IUsuarioService usuarioService, ILogger<UsuariosController> logger)
+    public UsuariosController(
+        IUsuarioService usuarioService,
+        IPermissaoService permissaoService,
+        ILogger<UsuariosController> logger)
     {
         _usuarioService = usuarioService;
+        _permissaoService = permissaoService;
         _logger = logger;
     }
 
@@ -26,9 +34,20 @@ public class UsuariosController : ControllerBase
     {
         try
         {
+            if (await DenyIfUnauthorizedAsync(AcaoPermissao.Criar) is { } denied)
+                return denied;
+
             _logger.LogInformation("Criando novo usuário: {Email}", dto.Email);
             var id = await _usuarioService.SalvarAsync(dto);
             return CreatedAtAction(nameof(GetById), new { id }, new { id });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
         }
         catch (Exception ex)
         {
@@ -88,6 +107,9 @@ public class UsuariosController : ControllerBase
     {
         try
         {
+            if (await DenyIfUnauthorizedAsync(AcaoPermissao.Editar) is { } denied)
+                return denied;
+
             var usuarioAlteracaoId = GetUsuarioIdFromToken();
             _logger.LogInformation("Atualizando usuário: {Id}", id);
 
@@ -96,6 +118,10 @@ public class UsuariosController : ControllerBase
                 return NotFound(new { message = "Usuário não encontrado" });
 
             return NoContent();
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new { message = ex.Message });
         }
         catch (Exception ex)
         {
@@ -110,8 +136,15 @@ public class UsuariosController : ControllerBase
     {
         try
         {
+            if (await DenyIfUnauthorizedAsync(AcaoPermissao.Visualizar) is { } denied)
+                return denied;
+
             var usuarios = await _usuarioService.FiltrarAsync(new UsuarioFiltroDto(nome, email));
             return Ok(usuarios);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new { message = ex.Message });
         }
         catch (Exception ex)
         {
@@ -126,11 +159,18 @@ public class UsuariosController : ControllerBase
     {
         try
         {
+            if (await DenyIfUnauthorizedAsync(AcaoPermissao.Visualizar) is { } denied)
+                return denied;
+
             var usuario = await _usuarioService.ObterUmAsync(id);
             if (usuario == null)
                 return NotFound(new { message = "Usuário não encontrado" });
 
             return Ok(usuario);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new { message = ex.Message });
         }
         catch (Exception ex)
         {
@@ -145,8 +185,15 @@ public class UsuariosController : ControllerBase
     {
         try
         {
+            if (await DenyIfUnauthorizedAsync(AcaoPermissao.Visualizar) is { } denied)
+                return denied;
+
             var usuarios = await _usuarioService.ObterTodosAsync();
             return Ok(usuarios);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new { message = ex.Message });
         }
         catch (Exception ex)
         {
@@ -161,12 +208,19 @@ public class UsuariosController : ControllerBase
     {
         try
         {
+            if (await DenyIfUnauthorizedAsync(AcaoPermissao.Excluir) is { } denied)
+                return denied;
+
             _logger.LogInformation("Deletando usuário: {Id}", id);
             var success = await _usuarioService.DeleteAsync(id);
             if (!success)
                 return NotFound(new { message = "Usuário não encontrado" });
 
             return NoContent();
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new { message = ex.Message });
         }
         catch (Exception ex)
         {
@@ -191,11 +245,37 @@ public class UsuariosController : ControllerBase
 
             return Ok(response);
         }
+        catch (InvalidOperationException ex)
+        {
+            return Unauthorized(new { message = ex.Message });
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Erro ao fazer login: {Email}", loginDto.Email);
             return StatusCode(500, new { message = "Erro ao fazer login" });
         }
+    }
+
+    private async Task<IActionResult?> DenyIfUnauthorizedAsync(AcaoPermissao acao)
+    {
+        if (IsAdminTenant())
+            return null;
+
+        var usuarioId = GetUsuarioIdFromToken()
+            ?? throw new UnauthorizedAccessException("Sem permissão para esta operação.");
+
+        await _permissaoService.GarantirPermissaoAsync(usuarioId, CodigoMenu, acao);
+        return null;
+    }
+
+    private bool IsAdminTenant()
+    {
+        if (HttpContext?.Request is null)
+            return true;
+
+        var tenant = Request.Headers["X-Tenant"].FirstOrDefault()
+            ?? ExtractSubdomain(Request.Host.Host);
+        return string.Equals(tenant, "admin", StringComparison.OrdinalIgnoreCase);
     }
 
     private Guid? GetUsuarioIdFromToken()

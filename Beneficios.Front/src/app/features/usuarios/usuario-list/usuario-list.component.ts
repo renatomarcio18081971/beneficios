@@ -1,4 +1,4 @@
-import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
+﻿import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { DatePipe } from '@angular/common';
 import { Component, DestroyRef, ViewChild, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -26,6 +26,7 @@ import {
   CONFIRM_DELETE_DIALOG_WIDTH,
 } from '../../../shared/dialogs/confirm-delete-dialog.component';
 import { isTenantDefaultUser } from '../../../shared/constants/tenant-default-user';
+import { PermissaoService } from '../../../core/auth/permissao.service';
 import {
   DATA_INCLUSAO_DATE_PIPE_FORMAT,
   formatDataInclusao,
@@ -78,8 +79,29 @@ export class UsuarioListComponent {
   private readonly router = inject(Router);
   private readonly breakpointObserver = inject(BreakpointObserver);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly permissao = inject(PermissaoService);
 
-  readonly displayedColumns = ['nome', 'email', 'dataInclusao', 'acoes'];
+  get podeCriar(): boolean {
+    return this.permissao.possuiPermissao('usuarios', 'criar');
+  }
+
+  get podeEditar(): boolean {
+    return this.permissao.possuiPermissao('usuarios', 'editar');
+  }
+
+  get podeExcluir(): boolean {
+    return this.permissao.possuiPermissao('usuarios', 'excluir');
+  }
+
+  get exibirAcoes(): boolean {
+    return this.podeEditar || this.podeExcluir;
+  }
+
+  get displayedColumns(): string[] {
+    return this.exibirAcoes
+      ? ['nome', 'email', 'dataInclusao', 'acoes']
+      : ['nome', 'email', 'dataInclusao'];
+  }
   readonly dataInclusaoFormat = DATA_INCLUSAO_DATE_PIPE_FORMAT;
   readonly dataSource = new MatTableDataSource<Usuario>([]);
 

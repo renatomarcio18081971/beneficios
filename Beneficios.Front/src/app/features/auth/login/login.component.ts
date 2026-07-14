@@ -1,4 +1,4 @@
-import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
+﻿import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -62,10 +62,16 @@ export class LoginComponent {
       },
       error: (error: HttpErrorResponse) => {
         this.loading = false;
+        if (error.status === 0) {
+          this.errorMessage =
+            'Não foi possível conectar à API. Verifique se o backend está rodando em http://localhost:5000.';
+          return;
+        }
+
+        const apiMessage = (error.error as { message?: string } | null)?.message;
         this.errorMessage =
-          error.status === 0
-            ? 'Não foi possível conectar à API. Verifique se o backend está rodando em http://localhost:5000.'
-            : 'Email ou senha inválidos.';
+          apiMessage?.trim() ||
+          (error.status === 401 ? 'Email ou senha inválidos.' : 'Não foi possível entrar. Tente novamente.');
       },
     });
   }

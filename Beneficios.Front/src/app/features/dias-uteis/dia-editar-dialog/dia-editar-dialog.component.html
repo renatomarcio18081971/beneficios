@@ -1,0 +1,29 @@
+﻿<h2 mat-dialog-title>Dia {{ dataFormatada() }}</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="form" class="dia-form">
+    <mat-slide-toggle formControlName="ehDiaUtil">Dia útil</mat-slide-toggle>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Tipo de exceção</mat-label>
+      <mat-select formControlName="tipoExcecao">
+        <mat-option [value]="null">Nenhuma</mat-option>
+        @for (tipo of tipos; track tipo.valor) {
+          <mat-option [value]="tipo.valor">{{ tipo.label }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Observação</mat-label>
+      <textarea matInput formControlName="observacao" rows="3"></textarea>
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button type="button" mat-button (click)="cancelar()">Cancelar</button>
+  @if (data.podeEditar) {
+    <button type="button" mat-flat-button color="primary" (click)="salvar()">Salvar</button>
+  }
+</mat-dialog-actions>

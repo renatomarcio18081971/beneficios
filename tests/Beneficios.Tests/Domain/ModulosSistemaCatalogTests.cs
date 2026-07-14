@@ -1,0 +1,34 @@
+﻿using Beneficios.Domain;
+using Beneficios.Domain.Enums;
+using Xunit;
+
+namespace Beneficios.Tests.Domain;
+
+public class ModulosSistemaCatalogTests
+{
+    [Fact]
+    public void Todos_DeveConterSomenteModulosComValidacaoDePerfil()
+    {
+        var codigos = ModulosSistemaCatalog.Todos.Select(m => m.Codigo).ToArray();
+        Assert.DoesNotContain("dashboard", codigos);
+        Assert.Contains("usuarios", codigos);
+        Assert.Contains("perfis", codigos);
+        Assert.Contains("dias_uteis", codigos);
+    }
+
+    [Fact]
+    public void Todos_DeveConterDiasUteis()
+    {
+        Assert.Contains(ModulosSistemaCatalog.Todos, m => m.Codigo == "dias_uteis" && m.Rota == "/dias-uteis");
+    }
+
+    [Fact]
+    public void ModulosDePerfil_DevemSuportarTodasAsAcoes()
+    {
+        foreach (var codigo in new[] { "usuarios", "perfis", "dias_uteis" })
+        {
+            var modulo = ModulosSistemaCatalog.Todos.Single(m => m.Codigo == codigo);
+            Assert.Equal(AcaoPermissao.Todas, modulo.AcoesSuportadas);
+        }
+    }
+}

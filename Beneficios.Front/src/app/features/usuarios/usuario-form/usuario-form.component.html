@@ -57,6 +57,18 @@
             }
           </mat-form-field>
 
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Perfil de acesso</mat-label>
+            <mat-select formControlName="perfilId">
+              @for (perfil of perfis(); track perfil.id) {
+                <mat-option [value]="perfil.id">{{ perfil.nome }}</mat-option>
+              }
+            </mat-select>
+            @if (form.controls.perfilId.hasError('required') && form.controls.perfilId.touched) {
+              <mat-error>Perfil é obrigatório.</mat-error>
+            }
+          </mat-form-field>
+
           @if (errorMessage()) {
             <p class="error-message">{{ errorMessage() }}</p>
           }
