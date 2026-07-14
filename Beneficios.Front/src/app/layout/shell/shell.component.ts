@@ -11,6 +11,8 @@ import { AsyncPipe } from '@angular/common';
 import { map, shareReplay } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
 import { TenantService } from '../../core/tenant/tenant.service';
+import { PermissionService } from '../../core/auth/permission.service';
+import { MODULOS_SISTEMA } from '../../core/auth/modulos-sistema';
 
 interface NavItem {
   label: string;
@@ -43,6 +45,7 @@ export class ShellComponent {
   private readonly breakpointObserver = inject(BreakpointObserver);
   private readonly authService = inject(AuthService);
   private readonly tenantService = inject(TenantService);
+  private readonly permissionService = inject(PermissionService);
   private readonly router = inject(Router);
 
   readonly isHandset$ = this.breakpointObserver
@@ -61,12 +64,17 @@ export class ShellComponent {
   }
 
   get navItems(): NavItem[] {
-    return this.tenantService.isAdminMode()
-      ? [{ label: 'Empresas', route: '/empresas', icon: 'business' }]
-      : [
-          { label: 'Dashboard', route: '/dashboard', icon: 'dashboard' },
-          { label: 'Usuários', route: '/usuarios', icon: 'people' },
-        ];
+    if (this.tenantService.isAdminMode()) {
+      return [{ label: 'Empresas', route: '/empresas', icon: 'business' }];
+    }
+
+    return MODULOS_SISTEMA
+      .filter((modulo) => this.permissionService.can(modulo.codigo, 'visualizar'))
+      .map((modulo) => ({
+        label: modulo.nomeExibicao,
+        route: modulo.rota,
+        icon: modulo.icone,
+      }));
   }
 
   toggleSidenav(): void {

@@ -2,7 +2,7 @@ import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { DatePipe } from '@angular/common';
 import { Component, DestroyRef, ViewChild, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -15,8 +15,8 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTable, MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { finalize } from 'rxjs';
-import { UsuarioService } from '../../../core/api/usuario.service';
-import { Usuario } from '../../../core/api/usuario.models';
+import { PerfilService } from '../../../core/api/perfil.service';
+import { Perfil } from '../../../core/api/perfil.models';
 import { TenantService } from '../../../core/tenant/tenant.service';
 import { ExportColumn } from '../../../shared/utils/export.models';
 import { ExportService } from '../../../shared/utils/export.service';
@@ -25,7 +25,6 @@ import {
   ConfirmDeleteDialogData,
   CONFIRM_DELETE_DIALOG_WIDTH,
 } from '../../../shared/dialogs/confirm-delete-dialog.component';
-import { isTenantDefaultUser } from '../../../shared/constants/tenant-default-user';
 import { PermissionService } from '../../../core/auth/permission.service';
 import {
   DATA_INCLUSAO_DATE_PIPE_FORMAT,
@@ -34,12 +33,11 @@ import {
 
 function atLeastOneFilter(control: AbstractControl): ValidationErrors | null {
   const nome = control.get('nome')?.value?.trim();
-  const email = control.get('email')?.value?.trim();
-  return nome || email ? null : { atLeastOneFilter: true };
+  return nome ? null : { atLeastOneFilter: true };
 }
 
 @Component({
-  selector: 'app-usuario-list',
+  selector: 'app-perfil-list',
   standalone: true,
   imports: [
     ReactiveFormsModule,
@@ -55,24 +53,24 @@ function atLeastOneFilter(control: AbstractControl): ValidationErrors | null {
     MatProgressSpinnerModule,
     MatTooltipModule,
   ],
-  templateUrl: './usuario-list.component.html',
-  styleUrl: './usuario-list.component.scss',
+  templateUrl: './perfil-list.component.html',
+  styleUrl: './perfil-list.component.scss',
 })
-export class UsuarioListComponent {
+export class PerfilListComponent {
   @ViewChild(MatPaginator) set matPaginator(paginator: MatPaginator | undefined) {
     if (paginator) {
       this.dataSource.paginator = paginator;
     }
   }
 
-  @ViewChild(MatTable) set matTable(table: MatTable<Usuario> | undefined) {
+  @ViewChild(MatTable) set matTable(table: MatTable<Perfil> | undefined) {
     if (table && this.dataSource.data.length > 0) {
       queueMicrotask(() => table.renderRows());
     }
   }
 
   private readonly fb = inject(FormBuilder);
-  private readonly usuarioService = inject(UsuarioService);
+  private readonly perfilService = inject(PerfilService);
   private readonly exportService = inject(ExportService);
   private readonly tenantService = inject(TenantService);
   private readonly dialog = inject(MatDialog);
@@ -82,15 +80,15 @@ export class UsuarioListComponent {
   private readonly permission = inject(PermissionService);
 
   get canCriar(): boolean {
-    return this.permission.can('usuarios', 'criar');
+    return this.permission.can('perfis', 'criar');
   }
 
   get canEditar(): boolean {
-    return this.permission.can('usuarios', 'editar');
+    return this.permission.can('perfis', 'editar');
   }
 
   get canExcluir(): boolean {
-    return this.permission.can('usuarios', 'excluir');
+    return this.permission.can('perfis', 'excluir');
   }
 
   get showAcoes(): boolean {
@@ -99,11 +97,12 @@ export class UsuarioListComponent {
 
   get displayedColumns(): string[] {
     return this.showAcoes
-      ? ['nome', 'email', 'dataInclusao', 'acoes']
-      : ['nome', 'email', 'dataInclusao'];
+      ? ['nome', 'ehSistema', 'dataInclusao', 'acoes']
+      : ['nome', 'ehSistema', 'dataInclusao'];
   }
+
   readonly dataInclusaoFormat = DATA_INCLUSAO_DATE_PIPE_FORMAT;
-  readonly dataSource = new MatTableDataSource<Usuario>([]);
+  readonly dataSource = new MatTableDataSource<Perfil>([]);
 
   readonly loading = signal(true);
   readonly errorMessage = signal('');
@@ -111,16 +110,17 @@ export class UsuarioListComponent {
   isMobile = false;
 
   readonly filterForm = this.fb.nonNullable.group(
-    {
-      nome: [''],
-      email: ['', Validators.email],
-    },
+    { nome: [''] },
     { validators: atLeastOneFilter },
   );
 
   private readonly exportColumns: ExportColumn[] = [
     { key: 'nome', label: 'Nome' },
-    { key: 'email', label: 'Email' },
+    {
+      key: 'ehSistema',
+      label: 'Sistema',
+      format: (value) => (value ? 'Sim' : 'Não'),
+    },
     {
       key: 'dataInclusao',
       label: 'Data inclusão',
@@ -136,12 +136,12 @@ export class UsuarioListComponent {
         this.isMobile = result.matches;
       });
 
-    this.loadUsuarios();
+    this.loadPerfis();
   }
 
-  loadUsuarios(): void {
+  loadPerfis(): void {
     this.hasActiveFilter.set(false);
-    this.fetchUsuarios(() => this.usuarioService.list());
+    this.fetchPerfis(() => this.perfilService.list());
   }
 
   applyFilter(): void {
@@ -150,17 +150,17 @@ export class UsuarioListComponent {
       return;
     }
 
-    const { nome, email } = this.filterForm.getRawValue();
+    const { nome } = this.filterForm.getRawValue();
     this.hasActiveFilter.set(true);
-    this.fetchUsuarios(() => this.usuarioService.filtrar({ nome, email }));
+    this.fetchPerfis(() => this.perfilService.filtrar({ nome }));
   }
 
   clearFilter(): void {
     this.filterForm.reset();
-    this.loadUsuarios();
+    this.loadPerfis();
   }
 
-  private fetchUsuarios(request: () => ReturnType<UsuarioService['list']>): void {
+  private fetchPerfis(request: () => ReturnType<PerfilService['list']>): void {
     this.loading.set(true);
     this.errorMessage.set('');
 
@@ -170,41 +170,33 @@ export class UsuarioListComponent {
         finalize(() => this.loading.set(false)),
       )
       .subscribe({
-        next: (usuarios) => {
-          this.dataSource.data = usuarios;
+        next: (perfis) => {
+          this.dataSource.data = perfis;
         },
         error: () => {
-          this.errorMessage.set('Não foi possível carregar os usuários.');
+          this.errorMessage.set('Não foi possível carregar os perfis.');
         },
       });
   }
 
-  edit(usuario: Usuario): void {
-    if (this.isProtectedUser(usuario)) {
-      return;
-    }
-
-    void this.router.navigate(['/usuarios', usuario.id, 'editar']);
-  }
-
-  isProtectedUser(usuario: Usuario): boolean {
-    return isTenantDefaultUser(usuario.email);
+  edit(perfil: Perfil): void {
+    void this.router.navigate(['/perfis', perfil.id, 'editar']);
   }
 
   exportExcel(): void {
     const subdomain = this.tenantService.getSubdomain();
-    const filename = this.exportService.buildFilename('usuarios', subdomain, 'xlsx');
+    const filename = this.exportService.buildFilename('perfis', subdomain, 'xlsx');
     void this.exportService.exportToExcel(this.dataSource.data, this.exportColumns, filename);
   }
 
   exportPdf(): void {
     const subdomain = this.tenantService.getSubdomain();
-    const filename = this.exportService.buildFilename('usuarios', subdomain, 'pdf');
-    void this.exportService.exportToPdf(this.dataSource.data, this.exportColumns, filename, 'Usuários');
+    const filename = this.exportService.buildFilename('perfis', subdomain, 'pdf');
+    void this.exportService.exportToPdf(this.dataSource.data, this.exportColumns, filename, 'Perfis');
   }
 
-  confirmDelete(usuario: Usuario): void {
-    if (this.isProtectedUser(usuario)) {
+  confirmDelete(perfil: Perfil): void {
+    if (perfil.ehSistema) {
       return;
     }
 
@@ -213,7 +205,7 @@ export class UsuarioListComponent {
       {
         width: CONFIRM_DELETE_DIALOG_WIDTH,
         maxWidth: '90vw',
-        data: { nome: usuario.nome },
+        data: { nome: perfil.nome },
       },
     );
 
@@ -222,13 +214,12 @@ export class UsuarioListComponent {
         return;
       }
 
-      this.usuarioService.delete(usuario.id).subscribe({
-        next: () => this.loadUsuarios(),
+      this.perfilService.delete(perfil.id).subscribe({
+        next: () => this.loadPerfis(),
         error: () => {
-          this.errorMessage.set('Não foi possível excluir o usuário.');
+          this.errorMessage.set('Não foi possível excluir o perfil.');
         },
       });
     });
   }
-
 }

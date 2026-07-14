@@ -1,0 +1,99 @@
+<div class="perfil-form-page">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>{{ title }}</mat-card-title>
+    </mat-card-header>
+
+    <mat-card-content>
+      @if (loadingData()) {
+        <div class="loading-container">
+          <mat-spinner diameter="40"></mat-spinner>
+        </div>
+      } @else {
+        @if (errorMessage()) {
+          <p class="error-message">{{ errorMessage() }}</p>
+        }
+
+        @if (ehSistema) {
+          <p class="hint">Perfil de sistema: somente consulta das permissões.</p>
+        }
+
+        <form [formGroup]="form" (ngSubmit)="submit()">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Nome</mat-label>
+            <input matInput formControlName="nome">
+            @if (form.controls.nome.hasError('required') && form.controls.nome.touched) {
+              <mat-error>Informe o nome.</mat-error>
+            }
+          </mat-form-field>
+
+          <h3>Permissões por módulo</h3>
+          <div class="matriz-table" role="table">
+            <div class="matriz-header" role="row">
+              <span role="columnheader">Módulo</span>
+              <span role="columnheader">Visualizar</span>
+              <span role="columnheader">Criar</span>
+              <span role="columnheader">Editar</span>
+              <span role="columnheader">Excluir</span>
+            </div>
+
+            @for (linha of matriz(); track linha.codigo) {
+              <div class="matriz-row" role="row">
+                <span role="cell">{{ linha.nome }}</span>
+                <span role="cell">
+                  @if (linha.suporta.visualizar) {
+                    <mat-checkbox
+                      [checked]="linha.visualizar"
+                      [disabled]="ehSistema"
+                      (change)="toggle(linha.codigo, 'visualizar', $event.checked)"
+                    ></mat-checkbox>
+                  }
+                </span>
+                <span role="cell">
+                  @if (linha.suporta.criar) {
+                    <mat-checkbox
+                      [checked]="linha.criar"
+                      [disabled]="ehSistema"
+                      (change)="toggle(linha.codigo, 'criar', $event.checked)"
+                    ></mat-checkbox>
+                  }
+                </span>
+                <span role="cell">
+                  @if (linha.suporta.editar) {
+                    <mat-checkbox
+                      [checked]="linha.editar"
+                      [disabled]="ehSistema"
+                      (change)="toggle(linha.codigo, 'editar', $event.checked)"
+                    ></mat-checkbox>
+                  }
+                </span>
+                <span role="cell">
+                  @if (linha.suporta.excluir) {
+                    <mat-checkbox
+                      [checked]="linha.excluir"
+                      [disabled]="ehSistema"
+                      (change)="toggle(linha.codigo, 'excluir', $event.checked)"
+                    ></mat-checkbox>
+                  }
+                </span>
+              </div>
+            }
+          </div>
+
+          <div class="form-actions">
+            <a mat-stroked-button routerLink="/perfis">Cancelar</a>
+            @if (!ehSistema) {
+              <button mat-flat-button color="primary" type="submit" [disabled]="loading()">
+                @if (loading()) {
+                  <mat-spinner diameter="20"></mat-spinner>
+                } @else {
+                  Salvar
+                }
+              </button>
+            }
+          </div>
+        </form>
+      }
+    </mat-card-content>
+  </mat-card>
+</div>

@@ -12,6 +12,9 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { finalize } from 'rxjs';
 import { AuthService } from '../../../core/auth/auth.service';
 import { UsuarioService } from '../../../core/api/usuario.service';
+import { PerfilService } from '../../../core/api/perfil.service';
+import { Perfil } from '../../../core/api/perfil.models';
+import { MatSelectModule } from '@angular/material/select';
 import {
   ConfirmSaveDialogComponent,
   ConfirmSaveDialogData,
@@ -31,6 +34,7 @@ import { isTenantDefaultUser } from '../../../shared/constants/tenant-default-us
     MatIconModule,
     MatButtonModule,
     MatProgressSpinnerModule,
+    MatSelectModule,
   ],
   templateUrl: './usuario-form.component.html',
   styleUrl: './usuario-form.component.scss',
@@ -38,6 +42,7 @@ import { isTenantDefaultUser } from '../../../shared/constants/tenant-default-us
 export class UsuarioFormComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly usuarioService = inject(UsuarioService);
+  private readonly perfilService = inject(PerfilService);
   private readonly authService = inject(AuthService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -48,6 +53,7 @@ export class UsuarioFormComponent implements OnInit {
   readonly loadingData = signal(false);
   readonly errorMessage = signal('');
   readonly senhaVisible = signal(false);
+  readonly perfis = signal<Perfil[]>([]);
   isEdit = false;
   usuarioId = '';
 
@@ -55,9 +61,12 @@ export class UsuarioFormComponent implements OnInit {
     nome: ['', [Validators.required, Validators.minLength(2)]],
     email: ['', [Validators.required, Validators.email]],
     senha: [''],
+    perfilId: ['', Validators.required],
   });
 
   ngOnInit(): void {
+    this.loadPerfis();
+
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
       this.isEdit = true;
@@ -69,6 +78,16 @@ export class UsuarioFormComponent implements OnInit {
 
     this.form.controls.senha.setValidators([Validators.required, Validators.minLength(6)]);
     this.form.controls.senha.updateValueAndValidity();
+  }
+
+  private loadPerfis(): void {
+    this.perfilService
+      .list()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (perfis) => this.perfis.set(perfis),
+        error: () => this.errorMessage.set('Não foi possível carregar os perfis.'),
+      });
   }
 
   get title(): string {
@@ -100,6 +119,7 @@ export class UsuarioFormComponent implements OnInit {
           this.form.patchValue({
             nome: usuario.nome,
             email: usuario.email,
+            perfilId: usuario.perfilId ?? '',
           });
         },
         error: () => {
@@ -141,12 +161,12 @@ export class UsuarioFormComponent implements OnInit {
       return;
     }
 
-    const { nome, email, senha } = this.form.getRawValue();
+    const { nome, email, senha, perfilId } = this.form.getRawValue();
     this.loading.set(true);
     this.errorMessage.set('');
 
     if (this.isEdit) {
-      this.usuarioService.update(this.usuarioId, { nome, email, empresaId }).subscribe({
+      this.usuarioService.update(this.usuarioId, { nome, email, empresaId, perfilId }).subscribe({
         next: () => void this.router.navigate(['/usuarios']),
         error: () => {
           this.loading.set(false);
@@ -156,7 +176,7 @@ export class UsuarioFormComponent implements OnInit {
       return;
     }
 
-    this.usuarioService.create({ nome, email, senha, empresaId }).subscribe({
+    this.usuarioService.create({ nome, email, senha, empresaId, perfilId }).subscribe({
       next: () => void this.router.navigate(['/usuarios']),
       error: () => {
         this.loading.set(false);

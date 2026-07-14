@@ -3,6 +3,7 @@ import { authGuard } from './core/auth/auth.guard';
 import { adminGuard } from './core/auth/admin.guard';
 import { tenantGuard } from './core/auth/tenant.guard';
 import { guestGuard } from './core/auth/guest.guard';
+import { permissionGuard } from './core/auth/permission.guard';
 import { ShellComponent } from './layout/shell/shell.component';
 
 export const routes: Routes = [
@@ -48,27 +49,45 @@ export const routes: Routes = [
       },
       {
         path: 'dashboard',
-        canActivate: [tenantGuard],
+        canActivate: [tenantGuard, permissionGuard('dashboard')],
         loadComponent: () =>
           import('./features/dashboard/dashboard.component').then((m) => m.DashboardComponent),
       },
       {
         path: 'usuarios',
-        canActivate: [tenantGuard],
+        canActivate: [tenantGuard, permissionGuard('usuarios')],
         loadComponent: () =>
           import('./features/usuarios/usuario-list/usuario-list.component').then((m) => m.UsuarioListComponent),
       },
       {
         path: 'usuarios/novo',
-        canActivate: [tenantGuard],
+        canActivate: [tenantGuard, permissionGuard('usuarios')],
         loadComponent: () =>
           import('./features/usuarios/usuario-form/usuario-form.component').then((m) => m.UsuarioFormComponent),
       },
       {
         path: 'usuarios/:id/editar',
-        canActivate: [tenantGuard],
+        canActivate: [tenantGuard, permissionGuard('usuarios')],
         loadComponent: () =>
           import('./features/usuarios/usuario-form/usuario-form.component').then((m) => m.UsuarioFormComponent),
+      },
+      {
+        path: 'perfis',
+        canActivate: [tenantGuard, permissionGuard('perfis')],
+        loadComponent: () =>
+          import('./features/perfis/perfil-list/perfil-list.component').then((m) => m.PerfilListComponent),
+      },
+      {
+        path: 'perfis/novo',
+        canActivate: [tenantGuard, permissionGuard('perfis')],
+        loadComponent: () =>
+          import('./features/perfis/perfil-form/perfil-form.component').then((m) => m.PerfilFormComponent),
+      },
+      {
+        path: 'perfis/:id/editar',
+        canActivate: [tenantGuard, permissionGuard('perfis')],
+        loadComponent: () =>
+          import('./features/perfis/perfil-form/perfil-form.component').then((m) => m.PerfilFormComponent),
       },
       { path: '', pathMatch: 'full', redirectTo: 'login' },
     ],
