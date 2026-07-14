@@ -113,6 +113,22 @@ public class TenantProvisionerTests(PostgresFixture fixture)
             new { Ano = anoCorrente });
         var esperado = DateTime.IsLeapYear(anoCorrente) ? 366 : 365;
         Assert.Equal(esperado, diasDoAno);
+
+        var funcionariosExiste = await fixture.Connection!.ExecuteScalarAsync<bool>(
+            """
+            SELECT EXISTS(
+              SELECT 1 FROM information_schema.tables
+              WHERE table_schema = @SchemaName AND table_name = 'funcionarios')
+            """, new { SchemaName = schemaName });
+        Assert.True(funcionariosExiste);
+
+        var beneficiosExiste = await fixture.Connection!.ExecuteScalarAsync<bool>(
+            """
+            SELECT EXISTS(
+              SELECT 1 FROM information_schema.tables
+              WHERE table_schema = @SchemaName AND table_name = 'funcionario_beneficios')
+            """, new { SchemaName = schemaName });
+        Assert.True(beneficiosExiste);
     }
 
     [SkippableFact]

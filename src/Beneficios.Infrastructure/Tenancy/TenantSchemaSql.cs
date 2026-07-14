@@ -135,6 +135,84 @@ public static class TenantSchemaSql
             """;
     }
 
+    public static string CriarTabelaFuncionarios(string schemaName)
+    {
+        var quotedSchema = CitarIdentificador(schemaName);
+        var indexPrefix = schemaName.Replace('-', '_');
+
+        return $"""
+            CREATE TABLE IF NOT EXISTS {quotedSchema}.funcionarios (
+                id UUID PRIMARY KEY,
+                nome VARCHAR(200) NOT NULL,
+                cpf VARCHAR(11) NOT NULL,
+                matricula VARCHAR(50) NULL,
+                data_admissao DATE NOT NULL,
+                data_desligamento DATE NULL,
+                cargo VARCHAR(200) NOT NULL,
+                salario_base NUMERIC(18,2) NOT NULL,
+                tipo_contrato VARCHAR(20) NOT NULL,
+                centro_custo VARCHAR(200) NULL,
+                res_cep VARCHAR(8) NULL,
+                res_logradouro VARCHAR(200) NULL,
+                res_numero VARCHAR(30) NULL,
+                res_complemento VARCHAR(100) NULL,
+                res_bairro VARCHAR(100) NULL,
+                res_cidade VARCHAR(100) NULL,
+                res_uf VARCHAR(2) NULL,
+                trab_nome_local VARCHAR(200) NULL,
+                trab_cep VARCHAR(8) NULL,
+                trab_logradouro VARCHAR(200) NULL,
+                trab_numero VARCHAR(30) NULL,
+                trab_complemento VARCHAR(100) NULL,
+                trab_bairro VARCHAR(100) NULL,
+                trab_cidade VARCHAR(100) NULL,
+                trab_uf VARCHAR(2) NULL,
+                situacao VARCHAR(20) NOT NULL,
+                motivo_afastamento TEXT NULL,
+                jornada VARCHAR(40) NOT NULL,
+                jornada_detalhe VARCHAR(200) NULL,
+                data_inclusao TIMESTAMP NOT NULL DEFAULT NOW(),
+                data_alteracao TIMESTAMP NULL,
+                usuario_alteracao_id UUID NULL,
+                CONSTRAINT uq_{indexPrefix}_funcionarios_cpf UNIQUE (cpf)
+            );
+
+            CREATE UNIQUE INDEX IF NOT EXISTS uq_{indexPrefix}_funcionarios_matricula
+                ON {quotedSchema}.funcionarios(matricula)
+                WHERE matricula IS NOT NULL;
+
+            CREATE INDEX IF NOT EXISTS idx_{indexPrefix}_funcionarios_nome
+                ON {quotedSchema}.funcionarios(nome);
+
+            CREATE INDEX IF NOT EXISTS idx_{indexPrefix}_funcionarios_situacao
+                ON {quotedSchema}.funcionarios(situacao);
+            """;
+    }
+
+    public static string CriarTabelaFuncionarioBeneficios(string schemaName)
+    {
+        var quotedSchema = CitarIdentificador(schemaName);
+        var indexPrefix = schemaName.Replace('-', '_');
+
+        return $"""
+            CREATE TABLE IF NOT EXISTS {quotedSchema}.funcionario_beneficios (
+                id UUID PRIMARY KEY,
+                funcionario_id UUID NOT NULL,
+                codigo_beneficio VARCHAR(40) NOT NULL,
+                ativo BOOLEAN NOT NULL,
+                data_inicio DATE NULL,
+                data_fim DATE NULL,
+                opt_in BOOLEAN NOT NULL DEFAULT FALSE,
+                data_inclusao TIMESTAMP NOT NULL DEFAULT NOW(),
+                data_alteracao TIMESTAMP NULL,
+                CONSTRAINT fk_{indexPrefix}_func_benef_funcionario
+                    FOREIGN KEY (funcionario_id) REFERENCES {quotedSchema}.funcionarios(id),
+                CONSTRAINT uq_{indexPrefix}_func_benef_codigo
+                    UNIQUE (funcionario_id, codigo_beneficio)
+            );
+            """;
+    }
+
     public static string InserirPerfilDono(string schemaName)
     {
         var quotedSchema = CitarIdentificador(schemaName);

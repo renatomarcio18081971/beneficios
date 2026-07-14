@@ -44,6 +44,14 @@ public class TenantProvisioner : ITenantProvisioner
             TenantSchemaSql.CriarTabelaCalendarioDias(schemaName),
             cancellationToken: cancellationToken));
 
+        await connection.ExecuteAsync(new CommandDefinition(
+            TenantSchemaSql.CriarTabelaFuncionarios(schemaName),
+            cancellationToken: cancellationToken));
+
+        await connection.ExecuteAsync(new CommandDefinition(
+            TenantSchemaSql.CriarTabelaFuncionarioBeneficios(schemaName),
+            cancellationToken: cancellationToken));
+
         await CalendarioAnoGerador.GerarSeAusenteAsync(
             connection,
             schemaName,
@@ -108,6 +116,14 @@ public class TenantProvisioner : ITenantProvisioner
 
         await connection.ExecuteAsync(new CommandDefinition(
             TenantSchemaSql.CriarTabelaCalendarioDias(schemaName),
+            cancellationToken: cancellationToken));
+
+        await connection.ExecuteAsync(new CommandDefinition(
+            TenantSchemaSql.CriarTabelaFuncionarios(schemaName),
+            cancellationToken: cancellationToken));
+
+        await connection.ExecuteAsync(new CommandDefinition(
+            TenantSchemaSql.CriarTabelaFuncionarioBeneficios(schemaName),
             cancellationToken: cancellationToken));
 
         var quoted = TenantSchemaSql.CitarIdentificador(schemaName);

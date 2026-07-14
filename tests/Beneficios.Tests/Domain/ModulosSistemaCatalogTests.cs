@@ -14,6 +14,7 @@ public class ModulosSistemaCatalogTests
         Assert.Contains("usuarios", codigos);
         Assert.Contains("perfis", codigos);
         Assert.Contains("dias_uteis", codigos);
+        Assert.Contains("funcionarios", codigos);
     }
 
     [Fact]
@@ -23,9 +24,15 @@ public class ModulosSistemaCatalogTests
     }
 
     [Fact]
+    public void Todos_DeveConterFuncionarios()
+    {
+        Assert.Contains(ModulosSistemaCatalog.Todos, m => m.Codigo == "funcionarios" && m.Rota == "/funcionarios");
+    }
+
+    [Fact]
     public void ModulosDePerfil_DevemSuportarTodasAsAcoes()
     {
-        foreach (var codigo in new[] { "usuarios", "perfis", "dias_uteis" })
+        foreach (var codigo in new[] { "usuarios", "perfis", "dias_uteis", "funcionarios" })
         {
             var modulo = ModulosSistemaCatalog.Todos.Single(m => m.Codigo == codigo);
             Assert.Equal(AcaoPermissao.Todas, modulo.AcoesSuportadas);

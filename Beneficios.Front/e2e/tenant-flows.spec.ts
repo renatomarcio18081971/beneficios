@@ -2,6 +2,7 @@
 import {
   loginTenant,
   mockDiasUteisMes,
+  mockFuncionarioList,
   mockPerfilList,
   mockTenantLogin,
   mockTenantLoginSemPerfil,
@@ -42,6 +43,24 @@ test.describe('Fluxos críticos tenant', () => {
     await expect(page.getByRole('heading', { name: 'Dias úteis' })).toBeVisible();
     await expect(page.getByRole('grid', { name: 'Calendário do mês' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Dia 01' })).toBeVisible();
+  });
+
+  test('abrir Funcionários exibe listagem', async ({ page }) => {
+    await mockFuncionarioList(page, [
+      {
+        id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+        nome: 'Ana Silva',
+        cpf: '52998224725',
+        matricula: '001',
+        situacao: 'Ativo',
+        beneficios: [],
+      },
+    ]);
+    await loginTenant(page);
+    await page.getByRole('link', { name: 'Funcionários' }).click();
+    await page.waitForURL('**/funcionarios');
+    await expect(page.getByRole('heading', { name: 'Funcionários' })).toBeVisible();
+    await expect(page.getByText('Ana Silva')).toBeVisible();
   });
 
   test('criar usuário na tenant', async ({ page }) => {

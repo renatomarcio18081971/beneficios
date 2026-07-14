@@ -14,6 +14,7 @@ public static class ModulosSistemaCatalog
         new("usuarios", "Usuários", "/usuarios", AcaoPermissao.Todas),
         new("perfis", "Perfis", "/perfis", AcaoPermissao.Todas),
         new("dias_uteis", "Calendário", "/dias-uteis", AcaoPermissao.Todas),
+        new("funcionarios", "Funcionários", "/funcionarios", AcaoPermissao.Todas),
     ];
 
     public static ModuloSistema? ObterPorCodigo(string codigo) =>

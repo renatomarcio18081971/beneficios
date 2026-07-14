@@ -97,6 +97,30 @@ export const routes: Routes = [
             (m) => m.DiasUteisPageComponent,
           ),
       },
+      {
+        path: 'funcionarios',
+        canActivate: [tenantGuard, permissaoGuard('funcionarios')],
+        loadComponent: () =>
+          import('./features/funcionarios/funcionario-list/funcionario-list.component').then(
+            (m) => m.FuncionarioListComponent,
+          ),
+      },
+      {
+        path: 'funcionarios/novo',
+        canActivate: [tenantGuard, permissaoGuard('funcionarios')],
+        loadComponent: () =>
+          import('./features/funcionarios/funcionario-form/funcionario-form.component').then(
+            (m) => m.FuncionarioFormComponent,
+          ),
+      },
+      {
+        path: 'funcionarios/:id/editar',
+        canActivate: [tenantGuard, permissaoGuard('funcionarios')],
+        loadComponent: () =>
+          import('./features/funcionarios/funcionario-form/funcionario-form.component').then(
+            (m) => m.FuncionarioFormComponent,
+          ),
+      },
       { path: '', pathMatch: 'full', redirectTo: 'login' },
     ],
   },

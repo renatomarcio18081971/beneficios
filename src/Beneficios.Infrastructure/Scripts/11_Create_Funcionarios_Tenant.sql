@@ -1,0 +1,2 @@
+﻿-- Referência: tabelas funcionarios + funcionario_beneficios no schema tenant
+-- Aplicado via TenantSchemaSql.CriarTabelaFuncionarios / CriarTabelaFuncionarioBeneficios

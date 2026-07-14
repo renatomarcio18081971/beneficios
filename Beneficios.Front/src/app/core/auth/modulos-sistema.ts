@@ -31,4 +31,11 @@ export const MODULOS_SISTEMA: readonly ModuloSistema[] = [
     icone: 'calendar_month',
     acoesSuportadas: ['visualizar', 'criar', 'editar', 'excluir'],
   },
+  {
+    codigo: 'funcionarios',
+    nomeExibicao: 'Funcionários',
+    rota: '/funcionarios',
+    icone: 'badge',
+    acoesSuportadas: ['visualizar', 'criar', 'editar', 'excluir'],
+  },
 ] as const;
