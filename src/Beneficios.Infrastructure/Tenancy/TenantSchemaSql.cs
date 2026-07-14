@@ -168,7 +168,6 @@ public static class TenantSchemaSql
                 trab_cidade VARCHAR(100) NULL,
                 trab_uf VARCHAR(2) NULL,
                 situacao VARCHAR(20) NOT NULL,
-                motivo_afastamento TEXT NULL,
                 jornada VARCHAR(40) NOT NULL,
                 jornada_detalhe VARCHAR(200) NULL,
                 data_inclusao TIMESTAMP NOT NULL DEFAULT NOW(),
@@ -210,6 +209,60 @@ public static class TenantSchemaSql
                 CONSTRAINT uq_{indexPrefix}_func_benef_codigo
                     UNIQUE (funcionario_id, codigo_beneficio)
             );
+            """;
+    }
+
+    public static string CriarTabelaFuncionarioAfastamentos(string schemaName)
+    {
+        var quotedSchema = CitarIdentificador(schemaName);
+        var indexPrefix = schemaName.Replace('-', '_');
+
+        return $"""
+            CREATE TABLE IF NOT EXISTS {quotedSchema}.funcionario_afastamentos (
+                id UUID PRIMARY KEY,
+                funcionario_id UUID NOT NULL,
+                tipo VARCHAR(40) NOT NULL,
+                data_inicio DATE NOT NULL,
+                data_fim DATE NULL,
+                observacao TEXT NULL,
+                data_inclusao TIMESTAMP NOT NULL DEFAULT NOW(),
+                data_alteracao TIMESTAMP NULL,
+                usuario_alteracao_id UUID NULL,
+                CONSTRAINT fk_{indexPrefix}_func_afast_funcionario
+                    FOREIGN KEY (funcionario_id) REFERENCES {quotedSchema}.funcionarios(id)
+            );
+
+            CREATE INDEX IF NOT EXISTS idx_{indexPrefix}_func_afast_funcionario
+                ON {quotedSchema}.funcionario_afastamentos(funcionario_id);
+
+            CREATE INDEX IF NOT EXISTS idx_{indexPrefix}_func_afast_datas
+                ON {quotedSchema}.funcionario_afastamentos(data_inicio, data_fim);
+            """;
+    }
+
+    public static string DropColunaMotivoAfastamento(string schemaName)
+    {
+        var quotedSchema = CitarIdentificador(schemaName);
+        return $"""
+            ALTER TABLE {quotedSchema}.funcionarios DROP COLUMN IF EXISTS motivo_afastamento;
+            """;
+    }
+
+    public static string RecalcularSituacoesPorAfastamento(string schemaName)
+    {
+        var quotedSchema = CitarIdentificador(schemaName);
+        return $"""
+            UPDATE {quotedSchema}.funcionarios f
+            SET situacao = CASE
+                WHEN EXISTS (
+                    SELECT 1 FROM {quotedSchema}.funcionario_afastamentos a
+                    WHERE a.funcionario_id = f.id
+                      AND a.data_inicio <= CURRENT_DATE
+                      AND (a.data_fim IS NULL OR a.data_fim >= CURRENT_DATE)
+                ) THEN 'afastado'
+                ELSE 'ativo'
+            END
+            WHERE f.situacao <> 'desligado';
             """;
     }
 

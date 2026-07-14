@@ -52,6 +52,18 @@ public class TenantProvisioner : ITenantProvisioner
             TenantSchemaSql.CriarTabelaFuncionarioBeneficios(schemaName),
             cancellationToken: cancellationToken));
 
+        await connection.ExecuteAsync(new CommandDefinition(
+            TenantSchemaSql.CriarTabelaFuncionarioAfastamentos(schemaName),
+            cancellationToken: cancellationToken));
+
+        await connection.ExecuteAsync(new CommandDefinition(
+            TenantSchemaSql.DropColunaMotivoAfastamento(schemaName),
+            cancellationToken: cancellationToken));
+
+        await connection.ExecuteAsync(new CommandDefinition(
+            TenantSchemaSql.RecalcularSituacoesPorAfastamento(schemaName),
+            cancellationToken: cancellationToken));
+
         await CalendarioAnoGerador.GerarSeAusenteAsync(
             connection,
             schemaName,
@@ -124,6 +136,18 @@ public class TenantProvisioner : ITenantProvisioner
 
         await connection.ExecuteAsync(new CommandDefinition(
             TenantSchemaSql.CriarTabelaFuncionarioBeneficios(schemaName),
+            cancellationToken: cancellationToken));
+
+        await connection.ExecuteAsync(new CommandDefinition(
+            TenantSchemaSql.CriarTabelaFuncionarioAfastamentos(schemaName),
+            cancellationToken: cancellationToken));
+
+        await connection.ExecuteAsync(new CommandDefinition(
+            TenantSchemaSql.DropColunaMotivoAfastamento(schemaName),
+            cancellationToken: cancellationToken));
+
+        await connection.ExecuteAsync(new CommandDefinition(
+            TenantSchemaSql.RecalcularSituacoesPorAfastamento(schemaName),
             cancellationToken: cancellationToken));
 
         var quoted = TenantSchemaSql.CitarIdentificador(schemaName);

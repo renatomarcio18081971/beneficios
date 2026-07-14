@@ -160,6 +160,8 @@ public class PostgresFixture : IDisposable
         await connection.ExecuteAsync(TenantSchemaSql.CriarTabelaCalendarioDias(schemaName));
         await connection.ExecuteAsync(TenantSchemaSql.CriarTabelaFuncionarios(schemaName));
         await connection.ExecuteAsync(TenantSchemaSql.CriarTabelaFuncionarioBeneficios(schemaName));
+        await connection.ExecuteAsync(TenantSchemaSql.CriarTabelaFuncionarioAfastamentos(schemaName));
+        await connection.ExecuteAsync(TenantSchemaSql.DropColunaMotivoAfastamento(schemaName));
     }
 
     public void Dispose()

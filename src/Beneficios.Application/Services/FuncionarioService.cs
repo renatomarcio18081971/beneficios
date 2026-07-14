@@ -173,7 +173,6 @@ public class FuncionarioService : IFuncionarioService
         TrabCidade = NullIfWhite(dto.TrabCidade),
         TrabUf = NullIfWhite(dto.TrabUf)?.ToUpperInvariant(),
         Situacao = dto.Situacao,
-        MotivoAfastamento = NullIfWhite(dto.MotivoAfastamento),
         Jornada = dto.Jornada,
         JornadaDetalhe = JornadaTrabalhoCatalog.ExigeDetalhe(dto.Jornada)
             ? dto.JornadaDetalhe!.Trim()
@@ -214,7 +213,6 @@ public class FuncionarioService : IFuncionarioService
         TrabCidade = NullIfWhite(dto.TrabCidade),
         TrabUf = NullIfWhite(dto.TrabUf)?.ToUpperInvariant(),
         Situacao = dto.Situacao,
-        MotivoAfastamento = NullIfWhite(dto.MotivoAfastamento),
         Jornada = dto.Jornada,
         JornadaDetalhe = JornadaTrabalhoCatalog.ExigeDetalhe(dto.Jornada)
             ? dto.JornadaDetalhe!.Trim()

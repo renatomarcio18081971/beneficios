@@ -129,6 +129,23 @@ public class TenantProvisionerTests(PostgresFixture fixture)
               WHERE table_schema = @SchemaName AND table_name = 'funcionario_beneficios')
             """, new { SchemaName = schemaName });
         Assert.True(beneficiosExiste);
+
+        var afastamentosExiste = await fixture.Connection!.ExecuteScalarAsync<bool>(
+            """
+            SELECT EXISTS(
+              SELECT 1 FROM information_schema.tables
+              WHERE table_schema = @SchemaName AND table_name = 'funcionario_afastamentos')
+            """, new { SchemaName = schemaName });
+        Assert.True(afastamentosExiste);
+
+        var motivoExiste = await fixture.Connection!.ExecuteScalarAsync<bool>(
+            """
+            SELECT EXISTS(
+              SELECT 1 FROM information_schema.columns
+              WHERE table_schema = @SchemaName AND table_name = 'funcionarios'
+                AND column_name = 'motivo_afastamento')
+            """, new { SchemaName = schemaName });
+        Assert.False(motivoExiste);
     }
 
     [SkippableFact]

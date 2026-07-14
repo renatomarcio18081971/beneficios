@@ -29,13 +29,13 @@ public class FuncionarioRepository : IFuncionarioRepository
                 cargo, salario_base, tipo_contrato, centro_custo,
                 res_cep, res_logradouro, res_numero, res_complemento, res_bairro, res_cidade, res_uf,
                 trab_nome_local, trab_cep, trab_logradouro, trab_numero, trab_complemento, trab_bairro, trab_cidade, trab_uf,
-                situacao, motivo_afastamento, jornada, jornada_detalhe, data_inclusao)
+                situacao, jornada, jornada_detalhe, data_inclusao)
             VALUES (
                 @Id, @Nome, @Cpf, @Matricula, @DataAdmissao, @DataDesligamento,
                 @Cargo, @SalarioBase, @TipoContrato, @CentroCusto,
                 @ResCep, @ResLogradouro, @ResNumero, @ResComplemento, @ResBairro, @ResCidade, @ResUf,
                 @TrabNomeLocal, @TrabCep, @TrabLogradouro, @TrabNumero, @TrabComplemento, @TrabBairro, @TrabCidade, @TrabUf,
-                @Situacao, @MotivoAfastamento, @Jornada, @JornadaDetalhe, @DataInclusao)
+                @Situacao, @Jornada, @JornadaDetalhe, @DataInclusao)
             """;
 
         await _dbConnection.ExecuteAsync(sql, MapearInsert(parametros), tx);
@@ -78,7 +78,6 @@ public class FuncionarioRepository : IFuncionarioRepository
                 trab_cidade = @TrabCidade,
                 trab_uf = @TrabUf,
                 situacao = @Situacao,
-                motivo_afastamento = @MotivoAfastamento,
                 jornada = @Jornada,
                 jornada_detalhe = @JornadaDetalhe,
                 data_alteracao = @DataAlteracao,
@@ -106,7 +105,12 @@ public class FuncionarioRepository : IFuncionarioRepository
                 trab_nome_local AS TrabNomeLocal, trab_cep AS TrabCep, trab_logradouro AS TrabLogradouro,
                 trab_numero AS TrabNumero, trab_complemento AS TrabComplemento, trab_bairro AS TrabBairro,
                 trab_cidade AS TrabCidade, trab_uf AS TrabUf,
-                situacao AS SituacaoTexto, motivo_afastamento AS MotivoAfastamento,
+                situacao AS SituacaoTexto,
+                (SELECT a.tipo FROM funcionario_afastamentos a
+                 WHERE a.funcionario_id = funcionarios.id
+                   AND a.data_inicio <= CURRENT_DATE
+                   AND (a.data_fim IS NULL OR a.data_fim >= CURRENT_DATE)
+                 LIMIT 1) AS MotivoAfastamentoAtivo,
                 jornada AS JornadaTexto, jornada_detalhe AS JornadaDetalhe,
                 data_inclusao AS DataInclusao, data_alteracao AS DataAlteracao
             FROM funcionarios WHERE id = @Id
@@ -142,7 +146,12 @@ public class FuncionarioRepository : IFuncionarioRepository
                 trab_nome_local AS TrabNomeLocal, trab_cep AS TrabCep, trab_logradouro AS TrabLogradouro,
                 trab_numero AS TrabNumero, trab_complemento AS TrabComplemento, trab_bairro AS TrabBairro,
                 trab_cidade AS TrabCidade, trab_uf AS TrabUf,
-                situacao AS SituacaoTexto, motivo_afastamento AS MotivoAfastamento,
+                situacao AS SituacaoTexto,
+                (SELECT a.tipo FROM funcionario_afastamentos a
+                 WHERE a.funcionario_id = funcionarios.id
+                   AND a.data_inicio <= CURRENT_DATE
+                   AND (a.data_fim IS NULL OR a.data_fim >= CURRENT_DATE)
+                 LIMIT 1) AS MotivoAfastamentoAtivo,
                 jornada AS JornadaTexto, jornada_detalhe AS JornadaDetalhe,
                 data_inclusao AS DataInclusao, data_alteracao AS DataAlteracao
             FROM funcionarios WHERE 1=1
@@ -188,6 +197,28 @@ public class FuncionarioRepository : IFuncionarioRepository
                 WHERE matricula = @Matricula AND (@ExcetoId IS NULL OR id <> @ExcetoId))
             """;
         return await _dbConnection.ExecuteScalarAsync<bool>(sql, new { Matricula = matricula, ExcetoId = excetoId });
+    }
+
+    public async Task AtualizarSituacaoAsync(Guid funcionarioId, string situacaoBanco)
+    {
+        const string sql = """
+            UPDATE funcionarios
+            SET situacao = @Situacao, data_alteracao = @DataAlteracao
+            WHERE id = @Id
+            """;
+        await _dbConnection.ExecuteAsync(sql, new
+        {
+            Id = funcionarioId,
+            Situacao = situacaoBanco,
+            DataAlteracao = DateTime.UtcNow,
+        });
+    }
+
+    public async Task<IReadOnlyList<(Guid Id, string Situacao)>> ListarIdSituacaoAsync()
+    {
+        const string sql = "SELECT id AS Id, situacao AS Situacao FROM funcionarios";
+        var rows = await _dbConnection.QueryAsync<(Guid Id, string Situacao)>(sql);
+        return rows.ToArray();
     }
 
     private async Task SyncBeneficiosAsync(
@@ -258,7 +289,6 @@ public class FuncionarioRepository : IFuncionarioRepository
         p.TrabCidade,
         p.TrabUf,
         Situacao = FuncionarioConversao.SituacaoParaBanco(p.Situacao),
-        p.MotivoAfastamento,
         Jornada = FuncionarioConversao.JornadaParaBanco(p.Jornada),
         p.JornadaDetalhe,
         p.DataInclusao,
@@ -292,7 +322,6 @@ public class FuncionarioRepository : IFuncionarioRepository
         p.TrabCidade,
         p.TrabUf,
         Situacao = FuncionarioConversao.SituacaoParaBanco(p.Situacao),
-        p.MotivoAfastamento,
         Jornada = FuncionarioConversao.JornadaParaBanco(p.Jornada),
         p.JornadaDetalhe,
         DataAlteracao = DateTime.UtcNow,
@@ -327,7 +356,7 @@ public class FuncionarioRepository : IFuncionarioRepository
         TrabCidade = row.TrabCidade,
         TrabUf = row.TrabUf,
         Situacao = FuncionarioConversao.SituacaoDeBanco(row.SituacaoTexto),
-        MotivoAfastamento = row.MotivoAfastamento,
+        MotivoAfastamentoAtivo = row.MotivoAfastamentoAtivo,
         Jornada = FuncionarioConversao.JornadaDeBanco(row.JornadaTexto),
         JornadaDetalhe = row.JornadaDetalhe,
         DataInclusao = row.DataInclusao,
@@ -383,7 +412,7 @@ public class FuncionarioRepository : IFuncionarioRepository
         public string? TrabCidade { get; set; }
         public string? TrabUf { get; set; }
         public string SituacaoTexto { get; set; } = string.Empty;
-        public string? MotivoAfastamento { get; set; }
+        public string? MotivoAfastamentoAtivo { get; set; }
         public string JornadaTexto { get; set; } = string.Empty;
         public string? JornadaDetalhe { get; set; }
         public DateTime DataInclusao { get; set; }

@@ -79,7 +79,6 @@ public class FuncionarioServiceTests
         TrabNomeLocal: null, TrabCep: null, TrabLogradouro: null, TrabNumero: null,
         TrabComplemento: null, TrabBairro: null, TrabCidade: null, TrabUf: null,
         Situacao: situacao,
-        MotivoAfastamento: null,
         Jornada: jornada,
         JornadaDetalhe: jornadaDetalhe,
         Beneficios: new[]

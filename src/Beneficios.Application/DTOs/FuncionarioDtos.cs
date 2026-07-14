@@ -37,7 +37,7 @@ public record FuncionarioDto(
     string? TrabCidade,
     string? TrabUf,
     SituacaoFuncionario Situacao,
-    string? MotivoAfastamento,
+    string? MotivoAfastamentoAtivo,
     JornadaTrabalho Jornada,
     string? JornadaDetalhe,
     DateTime DataInclusao,
@@ -77,7 +77,6 @@ public record FuncionarioSalvarDto(
     string? TrabCidade,
     string? TrabUf,
     SituacaoFuncionario Situacao,
-    string? MotivoAfastamento,
     JornadaTrabalho Jornada,
     string? JornadaDetalhe,
     IReadOnlyList<FuncionarioBeneficioSalvarDto>? Beneficios);
@@ -108,7 +107,6 @@ public record FuncionarioAtualizarDto(
     string? TrabCidade,
     string? TrabUf,
     SituacaoFuncionario Situacao,
-    string? MotivoAfastamento,
     JornadaTrabalho Jornada,
     string? JornadaDetalhe,
     IReadOnlyList<FuncionarioBeneficioSalvarDto>? Beneficios);
