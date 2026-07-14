@@ -154,6 +154,9 @@ public class PostgresFixture : IDisposable
         var schemaName = TenantSchemaSql.BuildSchemaName(razaoSocial);
         await connection.ExecuteAsync(TenantSchemaSql.CreateSchema(schemaName));
         await connection.ExecuteAsync(TenantSchemaSql.CreateUsuariosTable(schemaName));
+        await connection.ExecuteAsync(TenantSchemaSql.CreatePerfisTable(schemaName));
+        await connection.ExecuteAsync(TenantSchemaSql.CreatePerfilPermissoesTable(schemaName));
+        await connection.ExecuteAsync(TenantSchemaSql.AlterUsuariosAddPerfilId(schemaName));
     }
 
     public void Dispose()
