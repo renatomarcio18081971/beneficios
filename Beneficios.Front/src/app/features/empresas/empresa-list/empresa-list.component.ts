@@ -2,11 +2,14 @@ import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { DatePipe } from '@angular/common';
 import { Component, DestroyRef, ViewChild, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatDialog } from '@angular/material/dialog';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTable, MatTableDataSource, MatTableModule } from '@angular/material/table';
@@ -27,10 +30,17 @@ import {
   formatDataInclusao,
 } from '../../../shared/utils/date-format';
 
+function atLeastOneFilter(control: AbstractControl): ValidationErrors | null {
+  const razaoSocial = control.get('razaoSocial')?.value?.trim();
+  const dominio = control.get('dominio')?.value?.trim();
+  return razaoSocial || dominio ? null : { atLeastOneFilter: true };
+}
+
 @Component({
   selector: 'app-empresa-list',
   standalone: true,
   imports: [
+    ReactiveFormsModule,
     RouterLink,
     DatePipe,
     MatTableModule,
@@ -38,6 +48,8 @@ import {
     MatButtonModule,
     MatIconModule,
     MatCardModule,
+    MatFormFieldModule,
+    MatInputModule,
     MatProgressSpinnerModule,
     MatTooltipModule,
   ],
@@ -57,6 +69,7 @@ export class EmpresaListComponent {
     }
   }
 
+  private readonly fb = inject(FormBuilder);
   private readonly empresaService = inject(EmpresaService);
   private readonly exportService = inject(ExportService);
   private readonly tenantService = inject(TenantService);
@@ -71,7 +84,16 @@ export class EmpresaListComponent {
 
   readonly loading = signal(true);
   readonly errorMessage = signal('');
+  readonly hasActiveFilter = signal(false);
   isMobile = false;
+
+  readonly filterForm = this.fb.nonNullable.group(
+    {
+      razaoSocial: [''],
+      dominio: ['', Validators.pattern(/^[a-zA-Z0-9]*$/)],
+    },
+    { validators: atLeastOneFilter },
+  );
 
   private readonly exportColumns: ExportColumn[] = [
     { key: 'razaoSocial', label: 'Razão Social' },
@@ -95,11 +117,39 @@ export class EmpresaListComponent {
   }
 
   loadEmpresas(): void {
+    this.hasActiveFilter.set(false);
+    this.fetchEmpresas(() => this.empresaService.list());
+  }
+
+  applyFilter(): void {
+    if (this.filterForm.invalid) {
+      this.filterForm.markAllAsTouched();
+      return;
+    }
+
+    const { razaoSocial, dominio } = this.filterForm.getRawValue();
+    this.hasActiveFilter.set(true);
+    this.fetchEmpresas(() => this.empresaService.filtrar({ razaoSocial, dominio }));
+  }
+
+  clearFilter(): void {
+    this.filterForm.reset();
+    this.loadEmpresas();
+  }
+
+  onDominioInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const sanitized = input.value.replace(/[^a-zA-Z0-9]/g, '');
+    if (sanitized !== input.value) {
+      this.filterForm.controls.dominio.setValue(sanitized);
+    }
+  }
+
+  private fetchEmpresas(request: () => ReturnType<EmpresaService['list']>): void {
     this.loading.set(true);
     this.errorMessage.set('');
 
-    this.empresaService
-      .list()
+    request()
       .pipe(
         takeUntilDestroyed(this.destroyRef),
         finalize(() => this.loading.set(false)),

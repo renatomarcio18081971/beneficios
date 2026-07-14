@@ -9,4 +9,5 @@ public interface IEmpresaService
     Task<bool> DeleteAsync(Guid id);
     Task<EmpresaDto?> ObterUmAsync(Guid id);
     Task<EmpresaDto[]> ObterTodosAsync();
+    Task<EmpresaDto[]> FiltrarAsync(EmpresaFiltroDto filtro);
 }

@@ -84,6 +84,16 @@ public class UsuarioService : IUsuarioService
         return _mapper.Map<UsuarioDto[]>(usuarios);
     }
 
+    public async Task<UsuarioDto[]> FiltrarAsync(UsuarioFiltroDto filtro)
+    {
+        var usuarios = await _usuarioRepository.FiltrarAsync(new UsuarioFiltroParams
+        {
+            Nome = filtro.Nome,
+            Email = filtro.Email,
+        });
+        return _mapper.Map<UsuarioDto[]>(usuarios);
+    }
+
     public async Task<LoginResponseDto?> LoginAsync(LoginDto loginDto, string tenantSubdomain)
     {
         var usuario = await _usuarioRepository.GetByEmailAsync(loginDto.Email);

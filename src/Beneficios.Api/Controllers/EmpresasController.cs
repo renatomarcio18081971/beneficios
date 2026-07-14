@@ -58,6 +58,21 @@ public class EmpresasController : ControllerBase
         }
     }
 
+    [HttpGet("filtrar")]
+    public async Task<IActionResult> Filtrar([FromQuery] string? razaoSocial, [FromQuery] string? dominio)
+    {
+        try
+        {
+            var empresas = await _empresaService.FiltrarAsync(new EmpresaFiltroDto(razaoSocial, dominio));
+            return Ok(empresas);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erro ao filtrar empresas");
+            return StatusCode(500, new { message = "Erro ao filtrar empresas" });
+        }
+    }
+
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(Guid id)
     {

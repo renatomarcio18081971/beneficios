@@ -9,6 +9,7 @@ public interface IUsuarioRepository
     Task<bool> DeleteAsync(Guid id);
     Task<UsuarioQueryResult?> ObterUmAsync(Guid id);
     Task<UsuarioQueryResult[]> ObterTodosAsync();
+    Task<UsuarioQueryResult[]> FiltrarAsync(UsuarioFiltroParams filtro);
     Task<UsuarioAuthResult?> GetByEmailAsync(string email);
     Task<UsuarioAuthResult?> GetByCodigoAlterarSenhaAsync(string codigo);
     Task<bool> UpdateTokenAsync(Guid id, string token);
