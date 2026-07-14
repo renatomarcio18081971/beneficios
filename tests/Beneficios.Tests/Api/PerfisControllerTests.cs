@@ -11,14 +11,19 @@ namespace Beneficios.Tests.Api;
 public class PerfisControllerTests
 {
     private readonly Mock<IPerfilService> _serviceMock;
+    private readonly Mock<IPermissaoService> _permissaoMock;
     private readonly Mock<ILogger<PerfisController>> _loggerMock;
     private readonly PerfisController _controller;
 
     public PerfisControllerTests()
     {
         _serviceMock = new Mock<IPerfilService>();
+        _permissaoMock = new Mock<IPermissaoService>();
         _loggerMock = new Mock<ILogger<PerfisController>>();
-        _controller = new PerfisController(_serviceMock.Object, _loggerMock.Object);
+        _controller = new PerfisController(
+            _serviceMock.Object,
+            _permissaoMock.Object,
+            _loggerMock.Object);
     }
 
     [Fact]

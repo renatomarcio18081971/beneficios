@@ -64,6 +64,7 @@ builder.Services.AddScoped<IPerfilRepository, PerfilRepository>();
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 builder.Services.AddScoped<IEmpresaService, EmpresaService>();
 builder.Services.AddScoped<IPerfilService, PerfilService>();
+builder.Services.AddScoped<IPermissaoService, PermissaoService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 
 builder.Services.AddSingleton<ITokenService>(sp =>

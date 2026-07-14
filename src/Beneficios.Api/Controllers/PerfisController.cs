@@ -1,5 +1,6 @@
 ﻿using Beneficios.Application.DTOs;
 using Beneficios.Application.Interfaces;
+using Beneficios.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.IdentityModel.Tokens.Jwt;
@@ -12,12 +13,19 @@ namespace Beneficios.Api.Controllers;
 [Route("api/[controller]")]
 public class PerfisController : ControllerBase
 {
+    private const string CodigoMenu = "perfis";
+
     private readonly IPerfilService _perfilService;
+    private readonly IPermissaoService _permissaoService;
     private readonly ILogger<PerfisController> _logger;
 
-    public PerfisController(IPerfilService perfilService, ILogger<PerfisController> logger)
+    public PerfisController(
+        IPerfilService perfilService,
+        IPermissaoService permissaoService,
+        ILogger<PerfisController> logger)
     {
         _perfilService = perfilService;
+        _permissaoService = permissaoService;
         _logger = logger;
     }
 
@@ -26,9 +34,16 @@ public class PerfisController : ControllerBase
     {
         try
         {
+            if (await DenyIfUnauthorizedAsync(AcaoPermissao.Criar) is { } denied)
+                return denied;
+
             _logger.LogInformation("Criando perfil: {Nome}", dto.Nome);
             var id = await _perfilService.SalvarAsync(dto);
             return CreatedAtAction(nameof(GetById), new { id }, new { id });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new { message = ex.Message });
         }
         catch (InvalidOperationException ex)
         {
@@ -46,9 +61,16 @@ public class PerfisController : ControllerBase
     {
         try
         {
+            if (await DenyIfUnauthorizedAsync(AcaoPermissao.Editar) is { } denied)
+                return denied;
+
             _logger.LogInformation("Atualizando perfil: {Id}", id);
             await _perfilService.AtualizarAsync(id, dto, GetUsuarioIdFromToken());
             return NoContent();
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new { message = ex.Message });
         }
         catch (InvalidOperationException ex)
         {
@@ -68,8 +90,15 @@ public class PerfisController : ControllerBase
     {
         try
         {
+            if (await DenyIfUnauthorizedAsync(AcaoPermissao.Visualizar) is { } denied)
+                return denied;
+
             var perfis = await _perfilService.FiltrarAsync(filtro);
             return Ok(perfis);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new { message = ex.Message });
         }
         catch (Exception ex)
         {
@@ -83,11 +112,18 @@ public class PerfisController : ControllerBase
     {
         try
         {
+            if (await DenyIfUnauthorizedAsync(AcaoPermissao.Visualizar) is { } denied)
+                return denied;
+
             var perfil = await _perfilService.ObterUmAsync(id);
             if (perfil is null)
                 return NotFound(new { message = "Perfil não encontrado" });
 
             return Ok(perfil);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new { message = ex.Message });
         }
         catch (Exception ex)
         {
@@ -101,8 +137,15 @@ public class PerfisController : ControllerBase
     {
         try
         {
+            if (await DenyIfUnauthorizedAsync(AcaoPermissao.Visualizar) is { } denied)
+                return denied;
+
             var perfis = await _perfilService.ObterTodosAsync();
             return Ok(perfis);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new { message = ex.Message });
         }
         catch (Exception ex)
         {
@@ -116,9 +159,16 @@ public class PerfisController : ControllerBase
     {
         try
         {
+            if (await DenyIfUnauthorizedAsync(AcaoPermissao.Excluir) is { } denied)
+                return denied;
+
             _logger.LogInformation("Excluindo perfil: {Id}", id);
             await _perfilService.DeleteAsync(id);
             return NoContent();
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new { message = ex.Message });
         }
         catch (InvalidOperationException ex)
         {
@@ -133,10 +183,41 @@ public class PerfisController : ControllerBase
         }
     }
 
+    private async Task<IActionResult?> DenyIfUnauthorizedAsync(AcaoPermissao acao)
+    {
+        if (IsAdminTenant())
+            return null;
+
+        var usuarioId = GetUsuarioIdFromToken()
+            ?? throw new UnauthorizedAccessException("Sem permissão para esta operação.");
+
+        await _permissaoService.EnsureAsync(usuarioId, CodigoMenu, acao);
+        return null;
+    }
+
+    private bool IsAdminTenant()
+    {
+        if (HttpContext?.Request is null)
+            return true;
+
+        var tenant = Request.Headers["X-Tenant"].FirstOrDefault()
+            ?? ExtractSubdomain(Request.Host.Host);
+        return string.Equals(tenant, "admin", StringComparison.OrdinalIgnoreCase);
+    }
+
     private Guid? GetUsuarioIdFromToken()
     {
         var sub = User.FindFirstValue(JwtRegisteredClaimNames.Sub)
             ?? User.FindFirstValue(ClaimTypes.NameIdentifier);
         return Guid.TryParse(sub, out var id) ? id : null;
+    }
+
+    private static string ExtractSubdomain(string host)
+    {
+        if (string.IsNullOrWhiteSpace(host))
+            return "admin";
+
+        var parts = host.Split('.');
+        return parts.Length < 2 ? "admin" : parts[0];
     }
 }
