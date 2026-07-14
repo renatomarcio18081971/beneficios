@@ -5,6 +5,7 @@ const API_BASE = 'http://localhost:5000/api';
 const fullPermissoes = [
   { codigoMenu: 'usuarios', visualizar: true, criar: true, editar: true, excluir: true },
   { codigoMenu: 'perfis', visualizar: true, criar: true, editar: true, excluir: true },
+  { codigoMenu: 'dias_uteis', visualizar: true, criar: true, editar: true, excluir: true },
 ];
 
 export const perfilDonoId = '44444444-4444-4444-4444-444444444444';
@@ -159,6 +160,49 @@ export async function mockUnauthorized(page: Page): Promise<void> {
       contentType: 'application/json',
       body: JSON.stringify({ message: 'Unauthorized' }),
     });
+  });
+}
+
+export async function mockDiasUteisMes(page: Page, dias?: unknown[]): Promise<void> {
+  const amostra =
+    dias ??
+    [
+      {
+        id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+        data: '2026-07-01',
+        ehDiaUtil: true,
+        tipoExcecao: null,
+        origem: 'Geracao',
+        observacao: null,
+      },
+      {
+        id: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
+        data: '2026-07-02',
+        ehDiaUtil: true,
+        tipoExcecao: null,
+        origem: 'Geracao',
+        observacao: null,
+      },
+      {
+        id: 'cccccccc-cccc-cccc-cccc-cccccccccccc',
+        data: '2026-07-03',
+        ehDiaUtil: false,
+        tipoExcecao: 'Nacional',
+        origem: 'Nacional',
+        observacao: 'Independência do Brasil',
+      },
+    ];
+
+  await page.route(`${API_BASE}/dias-uteis**`, async (route: Route) => {
+    if (route.request().method() === 'GET' && !route.request().url().match(/dias-uteis\/[^/?]+$/)) {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(amostra),
+      });
+      return;
+    }
+    await route.continue();
   });
 }
 

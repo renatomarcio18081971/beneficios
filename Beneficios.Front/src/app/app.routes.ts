@@ -89,6 +89,14 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/perfis/perfil-form/perfil-form.component').then((m) => m.PerfilFormComponent),
       },
+      {
+        path: 'dias-uteis',
+        canActivate: [tenantGuard, permissaoGuard('dias_uteis')],
+        loadComponent: () =>
+          import('./features/dias-uteis/dias-uteis-page/dias-uteis-page.component').then(
+            (m) => m.DiasUteisPageComponent,
+          ),
+      },
       { path: '', pathMatch: 'full', redirectTo: 'login' },
     ],
   },

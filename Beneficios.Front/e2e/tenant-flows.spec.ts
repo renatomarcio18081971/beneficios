@@ -1,6 +1,7 @@
 ﻿import { expect, test } from '@playwright/test';
 import {
   loginTenant,
+  mockDiasUteisMes,
   mockPerfilList,
   mockTenantLogin,
   mockTenantLoginSemPerfil,
@@ -31,6 +32,16 @@ test.describe('Fluxos críticos tenant', () => {
   test('menu exibe Perfis para usuário dono', async ({ page }) => {
     await loginTenant(page);
     await expect(page.getByRole('link', { name: 'Perfis' })).toBeVisible();
+  });
+
+  test('abrir Dias úteis exibe grade mensal', async ({ page }) => {
+    await mockDiasUteisMes(page);
+    await loginTenant(page);
+    await page.getByRole('link', { name: 'Dias úteis' }).click();
+    await page.waitForURL('**/dias-uteis');
+    await expect(page.getByRole('heading', { name: 'Dias úteis' })).toBeVisible();
+    await expect(page.getByRole('grid', { name: 'Calendário do mês' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Dia 01' })).toBeVisible();
   });
 
   test('criar usuário na tenant', async ({ page }) => {

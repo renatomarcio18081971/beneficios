@@ -24,4 +24,11 @@ export const MODULOS_SISTEMA: readonly ModuloSistema[] = [
     icone: 'admin_panel_settings',
     acoesSuportadas: ['visualizar', 'criar', 'editar', 'excluir'],
   },
+  {
+    codigo: 'dias_uteis',
+    nomeExibicao: 'Dias úteis',
+    rota: '/dias-uteis',
+    icone: 'calendar_month',
+    acoesSuportadas: ['visualizar', 'criar', 'editar', 'excluir'],
+  },
 ] as const;
