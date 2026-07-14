@@ -319,4 +319,79 @@ public class UsuariosControllerTests
         var badRequest = Assert.IsType<BadRequestObjectResult>(result);
         Assert.NotNull(badRequest.Value);
     }
+
+    [Fact]
+    public async Task Filtrar_DeveRetornarOkComFiltroPorNome()
+    {
+        var usuarios = new[]
+        {
+            new UsuarioDto { Id = Guid.NewGuid(), Nome = "João", Email = "joao@example.com" },
+        };
+
+        _serviceMock.Setup(x => x.FiltrarAsync(It.Is<UsuarioFiltroDto>(f => f.Nome == "João" && f.Email == null)))
+            .ReturnsAsync(usuarios);
+
+        var result = await _controller.Filtrar("João", null);
+
+        var okResult = Assert.IsType<OkObjectResult>(result);
+        Assert.Single(Assert.IsAssignableFrom<UsuarioDto[]>(okResult.Value));
+    }
+
+    [Fact]
+    public async Task Filtrar_DeveRetornarOkComFiltroPorEmail()
+    {
+        var usuarios = new[]
+        {
+            new UsuarioDto { Id = Guid.NewGuid(), Nome = "João", Email = "joao@example.com" },
+        };
+
+        _serviceMock.Setup(x => x.FiltrarAsync(It.Is<UsuarioFiltroDto>(f => f.Nome == null && f.Email == "joao")))
+            .ReturnsAsync(usuarios);
+
+        var result = await _controller.Filtrar(null, "joao");
+
+        var okResult = Assert.IsType<OkObjectResult>(result);
+        Assert.Single(Assert.IsAssignableFrom<UsuarioDto[]>(okResult.Value));
+    }
+
+    [Fact]
+    public async Task Filtrar_DeveRetornarOkComFiltroCombinado()
+    {
+        var usuarios = new[]
+        {
+            new UsuarioDto { Id = Guid.NewGuid(), Nome = "João Silva", Email = "joao@example.com" },
+        };
+
+        _serviceMock.Setup(x => x.FiltrarAsync(It.Is<UsuarioFiltroDto>(f => f.Nome == "João" && f.Email == "joao")))
+            .ReturnsAsync(usuarios);
+
+        var result = await _controller.Filtrar("João", "joao");
+
+        var okResult = Assert.IsType<OkObjectResult>(result);
+        Assert.Single(Assert.IsAssignableFrom<UsuarioDto[]>(okResult.Value));
+    }
+
+    [Fact]
+    public async Task Filtrar_DeveRetornarListaVaziaQuandoNenhumResultado()
+    {
+        _serviceMock.Setup(x => x.FiltrarAsync(It.IsAny<UsuarioFiltroDto>()))
+            .ReturnsAsync(Array.Empty<UsuarioDto>());
+
+        var result = await _controller.Filtrar("Inexistente", null);
+
+        var okResult = Assert.IsType<OkObjectResult>(result);
+        Assert.Empty(Assert.IsAssignableFrom<UsuarioDto[]>(okResult.Value));
+    }
+
+    [Fact]
+    public async Task Filtrar_DeveRetornar500QuandoExcecao()
+    {
+        _serviceMock.Setup(x => x.FiltrarAsync(It.IsAny<UsuarioFiltroDto>()))
+            .ThrowsAsync(new Exception("Erro"));
+
+        var result = await _controller.Filtrar("João", null);
+
+        var statusResult = Assert.IsType<ObjectResult>(result);
+        Assert.Equal(500, statusResult.StatusCode);
+    }
 }

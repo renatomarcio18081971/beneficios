@@ -107,4 +107,69 @@ public class EmpresaRepositoryTests(PostgresFixture fixture)
         Assert.Equal("Empresa Atualizada", empresa!.RazaoSocial);
         Assert.Equal("atualizada", empresa.Dominio);
     }
+
+    [SkippableFact]
+    public async Task FiltrarAsync_DeveFiltrarPorRazaoSocial()
+    {
+        await PostgresTestHelper.PrepareAsync(fixture);
+
+        var repository = new EmpresaRepository(fixture.Connection!);
+
+        await repository.SalvarAsync(new EmpresaSalvarParams
+        {
+            Id = Guid.NewGuid(),
+            RazaoSocial = "Alpha LTDA",
+            Dominio = "alpha",
+        });
+        await repository.SalvarAsync(new EmpresaSalvarParams
+        {
+            Id = Guid.NewGuid(),
+            RazaoSocial = "Beta SA",
+            Dominio = "beta",
+        });
+
+        var empresas = await repository.FiltrarAsync(new EmpresaFiltroParams { RazaoSocial = "Alpha" });
+
+        Assert.Single(empresas);
+        Assert.Equal("Alpha LTDA", empresas[0].RazaoSocial);
+    }
+
+    [SkippableFact]
+    public async Task FiltrarAsync_DeveFiltrarPorDominio()
+    {
+        await PostgresTestHelper.PrepareAsync(fixture);
+
+        var repository = new EmpresaRepository(fixture.Connection!);
+
+        await repository.SalvarAsync(new EmpresaSalvarParams
+        {
+            Id = Guid.NewGuid(),
+            RazaoSocial = "Alpha LTDA",
+            Dominio = "alpha",
+        });
+
+        var empresas = await repository.FiltrarAsync(new EmpresaFiltroParams { Dominio = "alpha" });
+
+        Assert.Single(empresas);
+        Assert.Equal("alpha", empresas[0].Dominio);
+    }
+
+    [SkippableFact]
+    public async Task FiltrarAsync_DeveRetornarVazioQuandoNenhumResultado()
+    {
+        await PostgresTestHelper.PrepareAsync(fixture);
+
+        var repository = new EmpresaRepository(fixture.Connection!);
+
+        await repository.SalvarAsync(new EmpresaSalvarParams
+        {
+            Id = Guid.NewGuid(),
+            RazaoSocial = "Alpha LTDA",
+            Dominio = "alpha",
+        });
+
+        var empresas = await repository.FiltrarAsync(new EmpresaFiltroParams { RazaoSocial = "Inexistente" });
+
+        Assert.Empty(empresas);
+    }
 }

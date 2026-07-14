@@ -54,6 +54,45 @@
     </div>
   </div>
 
+  @if (!errorMessage()) {
+    <form class="filter-bar" [formGroup]="filterForm" (ngSubmit)="applyFilter()">
+      <mat-form-field appearance="outline" class="filter-field">
+        <mat-label>Razão Social</mat-label>
+        <input matInput type="text" formControlName="razaoSocial">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="filter-field">
+        <mat-label>Domínio</mat-label>
+        <input matInput type="text" formControlName="dominio" (input)="onDominioInput($event)">
+        @if (filterForm.controls.dominio.hasError('pattern') && filterForm.controls.dominio.touched) {
+          <mat-error>Use apenas letras e números.</mat-error>
+        }
+      </mat-form-field>
+
+      <div class="filter-actions">
+        <button mat-flat-button color="primary" type="submit" class="filter-button" [disabled]="loading()">
+          <mat-icon aria-hidden="true">filter_alt</mat-icon>
+          Filtrar
+        </button>
+
+        <button
+          mat-stroked-button
+          type="button"
+          class="filter-button"
+          [disabled]="loading()"
+          (click)="clearFilter()"
+        >
+          <mat-icon aria-hidden="true">cleaning_services</mat-icon>
+          Limpar
+        </button>
+      </div>
+
+      @if (filterForm.hasError('atLeastOneFilter') && filterForm.touched) {
+        <p class="filter-error">Informe ao menos um filtro.</p>
+      }
+    </form>
+  }
+
   @if (errorMessage()) {
     <p class="error-message">{{ errorMessage() }}</p>
   } @else if (loading() && dataSource.data.length === 0) {
@@ -61,7 +100,9 @@
       <mat-spinner diameter="40"></mat-spinner>
     </div>
   } @else if (dataSource.data.length === 0) {
-    <p class="empty-message">Nenhuma empresa cadastrada.</p>
+    <p class="empty-message">
+      {{ hasActiveFilter() ? 'Nenhuma empresa encontrada.' : 'Nenhuma empresa cadastrada.' }}
+    </p>
   } @else {
     <div class="list-content" [class.is-loading]="loading()">
       @if (loading()) {

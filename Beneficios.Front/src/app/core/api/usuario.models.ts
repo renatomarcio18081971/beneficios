@@ -24,3 +24,8 @@ export interface UsuarioAtualizarRequest {
 export interface UsuarioCreateResponse {
   id: string;
 }
+
+export interface UsuarioFiltroRequest {
+  nome?: string;
+  email?: string;
+}

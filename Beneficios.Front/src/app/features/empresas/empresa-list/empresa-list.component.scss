@@ -24,6 +24,37 @@
   gap: 8px;
 }
 
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.filter-field {
+  flex: 1 1 200px;
+  min-width: 0;
+}
+
+.filter-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 22px;
+}
+
+.filter-button {
+  height: 56px;
+}
+
+.filter-error {
+  flex: 1 1 100%;
+  margin: -8px 0 0;
+  color: #c62828;
+  font-size: 0.875rem;
+}
+
 .loading-container {
   display: flex;
   justify-content: center;
@@ -92,7 +123,8 @@
 }
 
 .header-actions,
-.actions-cell {
+.actions-cell,
+.filter-actions {
   .mat-icon {
     font-family: 'Material Icons';
     font-feature-settings: 'liga';

@@ -1,11 +1,12 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
   Usuario,
   UsuarioAtualizarRequest,
   UsuarioCreateResponse,
+  UsuarioFiltroRequest,
   UsuarioSalvarRequest,
 } from './usuario.models';
 
@@ -16,6 +17,20 @@ export class UsuarioService {
 
   list(): Observable<Usuario[]> {
     return this.http.get<Usuario[]>(this.baseUrl);
+  }
+
+  filtrar(filtro: UsuarioFiltroRequest): Observable<Usuario[]> {
+    let params = new HttpParams();
+
+    if (filtro.nome?.trim()) {
+      params = params.set('nome', filtro.nome.trim());
+    }
+
+    if (filtro.email?.trim()) {
+      params = params.set('email', filtro.email.trim());
+    }
+
+    return this.http.get<Usuario[]>(`${this.baseUrl}/filtrar`, { params });
   }
 
   getById(id: string): Observable<Usuario> {

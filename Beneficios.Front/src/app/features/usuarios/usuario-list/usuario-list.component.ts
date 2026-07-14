@@ -2,11 +2,14 @@ import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { DatePipe } from '@angular/common';
 import { Component, DestroyRef, ViewChild, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatDialog } from '@angular/material/dialog';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTable, MatTableDataSource, MatTableModule } from '@angular/material/table';
@@ -28,10 +31,17 @@ import {
   formatDataInclusao,
 } from '../../../shared/utils/date-format';
 
+function atLeastOneFilter(control: AbstractControl): ValidationErrors | null {
+  const nome = control.get('nome')?.value?.trim();
+  const email = control.get('email')?.value?.trim();
+  return nome || email ? null : { atLeastOneFilter: true };
+}
+
 @Component({
   selector: 'app-usuario-list',
   standalone: true,
   imports: [
+    ReactiveFormsModule,
     RouterLink,
     DatePipe,
     MatTableModule,
@@ -39,6 +49,8 @@ import {
     MatButtonModule,
     MatIconModule,
     MatCardModule,
+    MatFormFieldModule,
+    MatInputModule,
     MatProgressSpinnerModule,
     MatTooltipModule,
   ],
@@ -58,6 +70,7 @@ export class UsuarioListComponent {
     }
   }
 
+  private readonly fb = inject(FormBuilder);
   private readonly usuarioService = inject(UsuarioService);
   private readonly exportService = inject(ExportService);
   private readonly tenantService = inject(TenantService);
@@ -72,7 +85,16 @@ export class UsuarioListComponent {
 
   readonly loading = signal(true);
   readonly errorMessage = signal('');
+  readonly hasActiveFilter = signal(false);
   isMobile = false;
+
+  readonly filterForm = this.fb.nonNullable.group(
+    {
+      nome: [''],
+      email: ['', Validators.email],
+    },
+    { validators: atLeastOneFilter },
+  );
 
   private readonly exportColumns: ExportColumn[] = [
     { key: 'nome', label: 'Nome' },
@@ -96,11 +118,31 @@ export class UsuarioListComponent {
   }
 
   loadUsuarios(): void {
+    this.hasActiveFilter.set(false);
+    this.fetchUsuarios(() => this.usuarioService.list());
+  }
+
+  applyFilter(): void {
+    if (this.filterForm.invalid) {
+      this.filterForm.markAllAsTouched();
+      return;
+    }
+
+    const { nome, email } = this.filterForm.getRawValue();
+    this.hasActiveFilter.set(true);
+    this.fetchUsuarios(() => this.usuarioService.filtrar({ nome, email }));
+  }
+
+  clearFilter(): void {
+    this.filterForm.reset();
+    this.loadUsuarios();
+  }
+
+  private fetchUsuarios(request: () => ReturnType<UsuarioService['list']>): void {
     this.loading.set(true);
     this.errorMessage.set('');
 
-    this.usuarioService
-      .list()
+    request()
       .pipe(
         takeUntilDestroyed(this.destroyRef),
         finalize(() => this.loading.set(false)),

@@ -90,4 +90,40 @@ public class EmpresaRepository : IEmpresaRepository
         var result = await _dbConnection.QueryAsync<EmpresaQueryResult>(sql);
         return result.ToArray();
     }
+
+    public async Task<EmpresaQueryResult[]> FiltrarAsync(EmpresaFiltroParams filtro)
+    {
+        var conditions = new List<string>();
+        var parameters = new DynamicParameters();
+
+        if (!string.IsNullOrWhiteSpace(filtro.RazaoSocial))
+        {
+            conditions.Add("razao_social ILIKE @RazaoSocial");
+            parameters.Add("RazaoSocial", $"%{filtro.RazaoSocial.Trim()}%");
+        }
+
+        if (!string.IsNullOrWhiteSpace(filtro.Dominio))
+        {
+            conditions.Add("dominio ILIKE @Dominio");
+            parameters.Add("Dominio", $"%{filtro.Dominio.Trim()}%");
+        }
+
+        var whereClause = conditions.Count > 0
+            ? "WHERE " + string.Join(" AND ", conditions)
+            : string.Empty;
+
+        var sql = $@"
+            SELECT 
+                id AS Id,
+                razao_social AS RazaoSocial,
+                dominio AS Dominio,
+                data_inclusao AS DataInclusao,
+                data_alteracao AS DataAlteracao
+            FROM empresas
+            {whereClause}
+            ORDER BY razao_social";
+
+        var result = await _dbConnection.QueryAsync<EmpresaQueryResult>(sql, parameters);
+        return result.ToArray();
+    }
 }

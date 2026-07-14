@@ -9,4 +9,5 @@ public interface IEmpresaRepository
     Task<bool> DeleteAsync(Guid id);
     Task<EmpresaQueryResult?> ObterUmAsync(Guid id);
     Task<EmpresaQueryResult[]> ObterTodosAsync();
+    Task<EmpresaQueryResult[]> FiltrarAsync(EmpresaFiltroParams filtro);
 }
