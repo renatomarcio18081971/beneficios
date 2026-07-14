@@ -17,14 +17,21 @@ public class FuncionarioService : IFuncionarioService
     public const string MensagemDesligamento = "Informe a data de desligamento.";
     public const string MensagemJornadaEspecial = "Informe o detalhe da jornada especial.";
     public const string MensagemBeneficioNaoSuportado = "Benefício não suportado na v1.";
+    public const string MensagemSituacaoInvalida = "Situação inválida.";
+    public const string MensagemAtivoComAfastamento = "Existe afastamento ativo; encerre ou exclua o período antes de marcar como ativo.";
     public const string CodigoValeTransporte = "vale_transporte";
 
     private readonly IFuncionarioRepository _repository;
+    private readonly IFuncionarioAfastamentoRepository _afastamentoRepository;
     private readonly IMapper _mapper;
 
-    public FuncionarioService(IFuncionarioRepository repository, IMapper mapper)
+    public FuncionarioService(
+        IFuncionarioRepository repository,
+        IFuncionarioAfastamentoRepository afastamentoRepository,
+        IMapper mapper)
     {
         _repository = repository;
+        _afastamentoRepository = afastamentoRepository;
         _mapper = mapper;
     }
 
@@ -33,6 +40,7 @@ public class FuncionarioService : IFuncionarioService
         var cpf = ValidarENormalizarCpf(dto.Cpf);
         var matricula = NormalizarMatricula(dto.Matricula);
         ValidarRegras(dto.Situacao, dto.DataDesligamento, dto.Jornada, dto.JornadaDetalhe);
+        await ValidarAtivoSemAfastamentoAsync(dto.Situacao, null);
         var beneficios = NormalizarBeneficios(dto.Beneficios);
 
         if (await _repository.CpfExisteAsync(cpf))
@@ -53,6 +61,7 @@ public class FuncionarioService : IFuncionarioService
         var cpf = ValidarENormalizarCpf(dto.Cpf);
         var matricula = NormalizarMatricula(dto.Matricula);
         ValidarRegras(dto.Situacao, dto.DataDesligamento, dto.Jornada, dto.JornadaDetalhe);
+        await ValidarAtivoSemAfastamentoAsync(dto.Situacao, id);
         var beneficios = NormalizarBeneficios(dto.Beneficios);
 
         if (await _repository.CpfExisteAsync(cpf, id))
@@ -105,6 +114,9 @@ public class FuncionarioService : IFuncionarioService
         JornadaTrabalho jornada,
         string? jornadaDetalhe)
     {
+        if (situacao == SituacaoFuncionario.Afastado)
+            throw new InvalidOperationException(MensagemSituacaoInvalida);
+
         if (situacao == SituacaoFuncionario.Desligado && dataDesligamento is null)
             throw new InvalidOperationException(MensagemDesligamento);
 
@@ -113,6 +125,17 @@ public class FuncionarioService : IFuncionarioService
             if (string.IsNullOrWhiteSpace(jornadaDetalhe))
                 throw new InvalidOperationException(MensagemJornadaEspecial);
         }
+    }
+
+    private async Task ValidarAtivoSemAfastamentoAsync(SituacaoFuncionario situacao, Guid? funcionarioId)
+    {
+        if (situacao != SituacaoFuncionario.Ativo || funcionarioId is null)
+            return;
+
+        var ativo = await _afastamentoRepository.ObterAtivoEmAsync(
+            funcionarioId.Value, DateOnly.FromDateTime(DateTime.UtcNow));
+        if (ativo is not null)
+            throw new InvalidOperationException(MensagemAtivoComAfastamento);
     }
 
     private static IReadOnlyList<FuncionarioBeneficioSalvarParams> NormalizarBeneficios(
