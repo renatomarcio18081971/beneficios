@@ -1,4 +1,4 @@
-namespace Beneficios.Domain.Models;
+﻿namespace Beneficios.Domain.Models;
 
 public record UsuarioAtualizarParams
 {
@@ -6,5 +6,6 @@ public record UsuarioAtualizarParams
     public string Nome { get; init; } = string.Empty;
     public string Email { get; init; } = string.Empty;
     public Guid EmpresaId { get; init; }
+    public Guid? PerfilId { get; init; }
     public Guid? UsuarioAlteracaoId { get; init; }
 }

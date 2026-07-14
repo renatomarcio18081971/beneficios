@@ -10,6 +10,7 @@ public class Usuario
     public string Email { get; set; } = string.Empty;
     public Guid EmpresaId { get; set; }
     public UsuarioPerfil Perfil { get; set; } = UsuarioPerfil.Empresa;
+    public Guid? PerfilId { get; set; }
     public string Token { get; set; } = string.Empty;
     public DateTime DataInclusao { get; set; }
     public DateTime? DataAlteracao { get; set; }

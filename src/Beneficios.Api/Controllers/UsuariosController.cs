@@ -45,6 +45,10 @@ public class UsuariosController : ControllerBase
         {
             return StatusCode(StatusCodes.Status403Forbidden, new { message = ex.Message });
         }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Erro ao criar usuário: {Email}", dto.Email);
@@ -240,6 +244,10 @@ public class UsuariosController : ControllerBase
                 return Unauthorized(new { message = "Email ou senha inválidos" });
 
             return Ok(response);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Unauthorized(new { message = ex.Message });
         }
         catch (Exception ex)
         {

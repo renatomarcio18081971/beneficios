@@ -135,7 +135,7 @@ public class UsuariosControllerTests
     [Fact]
     public async Task Create_DeveRetornarCreatedQuandoSucesso()
     {
-        var dto = new UsuarioSalvarDto("Joao Silva", "senha123", "joao@example.com", Guid.NewGuid());
+        var dto = new UsuarioSalvarDto("Joao Silva", "senha123", "joao@example.com", Guid.NewGuid(), Guid.NewGuid());
         var id = Guid.NewGuid();
 
         _serviceMock.Setup(x => x.SalvarAsync(dto)).ReturnsAsync(id);
@@ -149,7 +149,7 @@ public class UsuariosControllerTests
     [Fact]
     public async Task Create_DeveRetornar500QuandoExcecao()
     {
-        var dto = new UsuarioSalvarDto("Joao Silva", "senha123", "joao@example.com", Guid.NewGuid());
+        var dto = new UsuarioSalvarDto("Joao Silva", "senha123", "joao@example.com", Guid.NewGuid(), Guid.NewGuid());
 
         _serviceMock.Setup(x => x.SalvarAsync(dto)).ThrowsAsync(new Exception("Erro"));
 
@@ -164,7 +164,7 @@ public class UsuariosControllerTests
     {
         var id = Guid.NewGuid();
         var usuarioAlteracaoId = Guid.NewGuid();
-        var dto = new UsuarioAtualizarDto("Joao Silva", "joao@example.com", Guid.NewGuid());
+        var dto = new UsuarioAtualizarDto("Joao Silva", "joao@example.com", Guid.NewGuid(), Guid.NewGuid());
 
         ControllerTestHelper.SetAuthenticatedUser(_controller, usuarioAlteracaoId);
         _serviceMock.Setup(x => x.AtualizarAsync(id, dto, usuarioAlteracaoId)).ReturnsAsync(true);
@@ -178,7 +178,7 @@ public class UsuariosControllerTests
     public async Task Update_DeveRetornarNotFoundQuandoUsuarioNaoExiste()
     {
         var id = Guid.NewGuid();
-        var dto = new UsuarioAtualizarDto("Joao Silva", "joao@example.com", Guid.NewGuid());
+        var dto = new UsuarioAtualizarDto("Joao Silva", "joao@example.com", Guid.NewGuid(), Guid.NewGuid());
 
         ControllerTestHelper.SetAuthenticatedUser(_controller);
         _serviceMock.Setup(x => x.AtualizarAsync(id, dto, It.IsAny<Guid?>())).ReturnsAsync(false);
@@ -192,7 +192,7 @@ public class UsuariosControllerTests
     public async Task Update_DeveRetornar500QuandoExcecao()
     {
         var id = Guid.NewGuid();
-        var dto = new UsuarioAtualizarDto("Joao Silva", "joao@example.com", Guid.NewGuid());
+        var dto = new UsuarioAtualizarDto("Joao Silva", "joao@example.com", Guid.NewGuid(), Guid.NewGuid());
 
         ControllerTestHelper.SetAuthenticatedUser(_controller);
         _serviceMock.Setup(x => x.AtualizarAsync(id, dto, It.IsAny<Guid?>())).ThrowsAsync(new Exception("Erro"));

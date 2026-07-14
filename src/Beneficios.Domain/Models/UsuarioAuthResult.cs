@@ -10,6 +10,8 @@ public class UsuarioAuthResult
     public string Senha { get; set; } = string.Empty;
     public Guid EmpresaId { get; set; }
     public UsuarioPerfil Perfil { get; set; }
+    public Guid? PerfilId { get; set; }
     public string EmpresaDominio { get; set; } = string.Empty;
     public string Token { get; set; } = string.Empty;
+    public string? PerfilAcessoNome { get; set; }
 }

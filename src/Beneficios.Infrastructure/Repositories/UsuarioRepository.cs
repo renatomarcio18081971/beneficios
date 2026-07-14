@@ -1,4 +1,4 @@
-using Beneficios.Domain.Interfaces;
+﻿using Beneficios.Domain.Interfaces;
 using Beneficios.Domain.Models;
 using Dapper;
 using System.Data;
@@ -17,8 +17,8 @@ public class UsuarioRepository : IUsuarioRepository
     public async Task<Guid> SalvarAsync(UsuarioSalvarParams usuario)
     {
         var sql = @"
-            INSERT INTO usuarios (id, nome, senha, email, empresa_id, data_inclusao)
-            VALUES (@Id, @Nome, @Senha, @Email, @EmpresaId, @DataInclusao)";
+            INSERT INTO usuarios (id, nome, senha, email, empresa_id, perfil_id, data_inclusao)
+            VALUES (@Id, @Nome, @Senha, @Email, @EmpresaId, @PerfilId, @DataInclusao)";
 
         await _dbConnection.ExecuteAsync(sql, new
         {
@@ -27,6 +27,7 @@ public class UsuarioRepository : IUsuarioRepository
             usuario.Senha,
             usuario.Email,
             usuario.EmpresaId,
+            usuario.PerfilId,
             DataInclusao = DateTime.UtcNow
         });
 
@@ -40,6 +41,7 @@ public class UsuarioRepository : IUsuarioRepository
             SET nome = @Nome,
                 email = @Email,
                 empresa_id = @EmpresaId,
+                perfil_id = @PerfilId,
                 data_alteracao = @DataAlteracao,
                 usuario_alteracao_id = @UsuarioAlteracaoId
             WHERE id = @Id";
@@ -50,6 +52,7 @@ public class UsuarioRepository : IUsuarioRepository
             usuario.Nome,
             usuario.Email,
             usuario.EmpresaId,
+            usuario.PerfilId,
             DataAlteracao = DateTime.UtcNow,
             usuario.UsuarioAlteracaoId
         });
@@ -72,11 +75,14 @@ public class UsuarioRepository : IUsuarioRepository
                 u.nome AS Nome,
                 u.email AS Email,
                 u.empresa_id AS EmpresaId,
+                u.perfil_id AS PerfilId,
+                p.nome AS PerfilAcessoNome,
                 e.razao_social AS EmpresaNome,
                 u.data_inclusao AS DataInclusao,
                 u.data_alteracao AS DataAlteracao
             FROM usuarios u
             LEFT JOIN empresas e ON u.empresa_id = e.id
+            LEFT JOIN perfis p ON u.perfil_id = p.id
             WHERE u.id = @Id";
 
         return await _dbConnection.QueryFirstOrDefaultAsync<UsuarioQueryResult>(sql, new { Id = id });
@@ -90,11 +96,14 @@ public class UsuarioRepository : IUsuarioRepository
                 u.nome AS Nome,
                 u.email AS Email,
                 u.empresa_id AS EmpresaId,
+                u.perfil_id AS PerfilId,
+                p.nome AS PerfilAcessoNome,
                 e.razao_social AS EmpresaNome,
                 u.data_inclusao AS DataInclusao,
                 u.data_alteracao AS DataAlteracao
             FROM usuarios u
             LEFT JOIN empresas e ON u.empresa_id = e.id
+            LEFT JOIN perfis p ON u.perfil_id = p.id
             ORDER BY u.nome";
 
         var result = await _dbConnection.QueryAsync<UsuarioQueryResult>(sql);
@@ -128,11 +137,14 @@ public class UsuarioRepository : IUsuarioRepository
                 u.nome AS Nome,
                 u.email AS Email,
                 u.empresa_id AS EmpresaId,
+                u.perfil_id AS PerfilId,
+                p.nome AS PerfilAcessoNome,
                 e.razao_social AS EmpresaNome,
                 u.data_inclusao AS DataInclusao,
                 u.data_alteracao AS DataAlteracao
             FROM usuarios u
             LEFT JOIN empresas e ON u.empresa_id = e.id
+            LEFT JOIN perfis p ON u.perfil_id = p.id
             {whereClause}
             ORDER BY u.nome";
 
@@ -150,6 +162,7 @@ public class UsuarioRepository : IUsuarioRepository
                 u.senha AS Senha,
                 u.empresa_id AS EmpresaId,
                 u.perfil AS Perfil,
+                u.perfil_id AS PerfilId,
                 e.dominio AS EmpresaDominio,
                 u.token AS Token
             FROM usuarios u
@@ -169,6 +182,7 @@ public class UsuarioRepository : IUsuarioRepository
                 u.senha AS Senha,
                 u.empresa_id AS EmpresaId,
                 u.perfil AS Perfil,
+                u.perfil_id AS PerfilId,
                 e.dominio AS EmpresaDominio,
                 u.token AS Token
             FROM usuarios u
