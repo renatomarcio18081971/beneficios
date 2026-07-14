@@ -7,6 +7,7 @@ const fullPermissoes = [
   { codigoMenu: 'perfis', visualizar: true, criar: true, editar: true, excluir: true },
   { codigoMenu: 'dias_uteis', visualizar: true, criar: true, editar: true, excluir: true },
   { codigoMenu: 'funcionarios', visualizar: true, criar: true, editar: true, excluir: true },
+  { codigoMenu: 'afastamentos', visualizar: true, criar: true, editar: true, excluir: true },
 ];
 
 export const perfilDonoId = '44444444-4444-4444-4444-444444444444';
@@ -214,6 +215,20 @@ export async function mockFuncionarioList(page: Page, funcionarios: unknown[] = 
         status: 200,
         contentType: 'application/json',
         body: JSON.stringify(funcionarios),
+      });
+      return;
+    }
+    await route.continue();
+  });
+}
+
+export async function mockAfastamentoList(page: Page, afastamentos: unknown[] = []): Promise<void> {
+  await page.route(`${API_BASE}/afastamentos**`, async (route: Route) => {
+    if (route.request().method() === 'GET') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(afastamentos),
       });
       return;
     }

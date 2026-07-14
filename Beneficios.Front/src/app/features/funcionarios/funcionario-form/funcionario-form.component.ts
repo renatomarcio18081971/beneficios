@@ -14,10 +14,11 @@ import {
   FuncionarioSalvarRequest,
   JORNADAS,
   JornadaTrabalho,
-  SITUACOES,
+  SITUACOES_EDITAVEIS,
   SituacaoFuncionario,
   TIPOS_CONTRATO,
   TipoContrato,
+  UFS_BRASIL,
 } from '../../../core/api/funcionario.models';
 import { PermissaoService } from '../../../core/auth/permissao.service';
 
@@ -48,7 +49,9 @@ export class FuncionarioFormComponent implements OnInit {
 
   readonly jornadas = JORNADAS;
   readonly tipos = TIPOS_CONTRATO;
-  readonly situacoes = SITUACOES;
+  readonly situacoes = SITUACOES_EDITAVEIS;
+  readonly situacaoDerivada = signal<SituacaoFuncionario | null>(null);
+  readonly ufs = UFS_BRASIL;
   readonly carregando = signal(false);
   readonly salvando = signal(false);
   readonly id = signal<string | null>(null);
@@ -81,7 +84,6 @@ export class FuncionarioFormComponent implements OnInit {
     trabCidade: [''],
     trabUf: [''],
     situacao: ['Ativo' as SituacaoFuncionario, Validators.required],
-    motivoAfastamento: [''],
     jornada: ['QuarentaHorasSegSex' as JornadaTrabalho, Validators.required],
     jornadaDetalhe: [''],
     vtAtivo: [false],
@@ -163,7 +165,6 @@ export class FuncionarioFormComponent implements OnInit {
       trabCidade: v.trabCidade || null,
       trabUf: v.trabUf || null,
       situacao: v.situacao,
-      motivoAfastamento: v.motivoAfastamento || null,
       jornada: v.jornada,
       jornadaDetalhe: v.jornada === 'EspecialCategoria' ? v.jornadaDetalhe.trim() : null,
       beneficios: [
@@ -227,7 +228,7 @@ export class FuncionarioFormComponent implements OnInit {
             resComplemento: f.resComplemento ?? '',
             resBairro: f.resBairro ?? '',
             resCidade: f.resCidade ?? '',
-            resUf: f.resUf ?? '',
+            resUf: (f.resUf ?? '').toUpperCase(),
             trabNomeLocal: f.trabNomeLocal ?? '',
             trabCep: this.maskCep(f.trabCep),
             trabLogradouro: f.trabLogradouro ?? '',
@@ -235,9 +236,8 @@ export class FuncionarioFormComponent implements OnInit {
             trabComplemento: f.trabComplemento ?? '',
             trabBairro: f.trabBairro ?? '',
             trabCidade: f.trabCidade ?? '',
-            trabUf: f.trabUf ?? '',
-            situacao: f.situacao,
-            motivoAfastamento: f.motivoAfastamento ?? '',
+            trabUf: (f.trabUf ?? '').toUpperCase(),
+            situacao: f.situacao === 'Afastado' ? 'Ativo' : f.situacao,
             jornada: f.jornada,
             jornadaDetalhe: f.jornadaDetalhe ?? '',
             vtAtivo: vt?.ativo ?? false,
@@ -245,6 +245,7 @@ export class FuncionarioFormComponent implements OnInit {
             vtDataFim: vt?.dataFim?.substring(0, 10) ?? '',
             vtOptIn: vt?.optIn ?? false,
           });
+          this.situacaoDerivada.set(f.situacao);
           if (!this.podeEditar) this.form.disable();
         },
         error: () => this.snack.open('Funcionário não encontrado.', 'Fechar', { duration: 4000 }),

@@ -121,6 +121,30 @@ export const routes: Routes = [
             (m) => m.FuncionarioFormComponent,
           ),
       },
+      {
+        path: 'afastamentos',
+        canActivate: [tenantGuard, permissaoGuard('afastamentos')],
+        loadComponent: () =>
+          import('./features/afastamentos/afastamento-list/afastamento-list.component').then(
+            (m) => m.AfastamentoListComponent,
+          ),
+      },
+      {
+        path: 'afastamentos/novo',
+        canActivate: [tenantGuard, permissaoGuard('afastamentos')],
+        loadComponent: () =>
+          import('./features/afastamentos/afastamento-form/afastamento-form.component').then(
+            (m) => m.AfastamentoFormComponent,
+          ),
+      },
+      {
+        path: 'afastamentos/:id/editar',
+        canActivate: [tenantGuard, permissaoGuard('afastamentos')],
+        loadComponent: () =>
+          import('./features/afastamentos/afastamento-form/afastamento-form.component').then(
+            (m) => m.AfastamentoFormComponent,
+          ),
+      },
       { path: '', pathMatch: 'full', redirectTo: 'login' },
     ],
   },

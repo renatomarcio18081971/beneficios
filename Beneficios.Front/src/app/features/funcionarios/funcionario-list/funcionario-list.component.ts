@@ -11,6 +11,7 @@ import { MatTableModule } from '@angular/material/table';
 import { finalize } from 'rxjs';
 import { FuncionarioService } from '../../../core/api/funcionario.service';
 import { Funcionario, SITUACOES } from '../../../core/api/funcionario.models';
+import { labelTipoAfastamento } from '../../../core/api/afastamento.models';
 import { PermissaoService } from '../../../core/auth/permissao.service';
 
 @Component({
@@ -36,11 +37,13 @@ export class FuncionarioListComponent {
   private readonly permissao = inject(PermissaoService);
 
   readonly situacoes = SITUACOES;
+  readonly labelMotivo = labelTipoAfastamento;
   readonly carregando = signal(false);
   readonly dataSource = signal<Funcionario[]>([]);
-  readonly displayedColumns = ['nome', 'cpf', 'matricula', 'situacao', 'acoes'];
+  readonly displayedColumns = ['nome', 'cpf', 'cargo', 'situacao', 'motivo', 'jornada', 'acoes'];
   readonly podeCriar = this.permissao.possuiPermissao('funcionarios', 'criar');
   readonly podeEditar = this.permissao.possuiPermissao('funcionarios', 'editar');
+  readonly podeVerAfastamentos = this.permissao.possuiPermissao('afastamentos', 'visualizar');
 
   readonly filtro = this.fb.nonNullable.group({
     nome: [''],

@@ -47,7 +47,7 @@ export interface Funcionario {
   trabCidade: string | null;
   trabUf: string | null;
   situacao: SituacaoFuncionario;
-  motivoAfastamento: string | null;
+  motivoAfastamentoAtivo: string | null;
   jornada: JornadaTrabalho;
   jornadaDetalhe: string | null;
   dataInclusao?: string;
@@ -88,7 +88,6 @@ export interface FuncionarioSalvarRequest {
   trabCidade: string | null;
   trabUf: string | null;
   situacao: SituacaoFuncionario;
-  motivoAfastamento: string | null;
   jornada: JornadaTrabalho;
   jornadaDetalhe: string | null;
   beneficios: FuncionarioBeneficio[];
@@ -117,4 +116,41 @@ export const SITUACOES = [
   { valor: 'Ativo' as const, label: 'Ativo' },
   { valor: 'Afastado' as const, label: 'Afastado' },
   { valor: 'Desligado' as const, label: 'Desligado' },
+] as const;
+
+/** Situações editáveis no formulário (afastado é derivado). */
+export const SITUACOES_EDITAVEIS = [
+  { valor: 'Ativo' as const, label: 'Ativo' },
+  { valor: 'Desligado' as const, label: 'Desligado' },
+] as const;
+
+/** Unidades federativas do Brasil (código IBGE / UF). */
+export const UFS_BRASIL = [
+  { valor: 'AC', label: 'AC — Acre' },
+  { valor: 'AL', label: 'AL — Alagoas' },
+  { valor: 'AP', label: 'AP — Amapá' },
+  { valor: 'AM', label: 'AM — Amazonas' },
+  { valor: 'BA', label: 'BA — Bahia' },
+  { valor: 'CE', label: 'CE — Ceará' },
+  { valor: 'DF', label: 'DF — Distrito Federal' },
+  { valor: 'ES', label: 'ES — Espírito Santo' },
+  { valor: 'GO', label: 'GO — Goiás' },
+  { valor: 'MA', label: 'MA — Maranhão' },
+  { valor: 'MT', label: 'MT — Mato Grosso' },
+  { valor: 'MS', label: 'MS — Mato Grosso do Sul' },
+  { valor: 'MG', label: 'MG — Minas Gerais' },
+  { valor: 'PA', label: 'PA — Pará' },
+  { valor: 'PB', label: 'PB — Paraíba' },
+  { valor: 'PR', label: 'PR — Paraná' },
+  { valor: 'PE', label: 'PE — Pernambuco' },
+  { valor: 'PI', label: 'PI — Piauí' },
+  { valor: 'RJ', label: 'RJ — Rio de Janeiro' },
+  { valor: 'RN', label: 'RN — Rio Grande do Norte' },
+  { valor: 'RS', label: 'RS — Rio Grande do Sul' },
+  { valor: 'RO', label: 'RO — Rondônia' },
+  { valor: 'RR', label: 'RR — Roraima' },
+  { valor: 'SC', label: 'SC — Santa Catarina' },
+  { valor: 'SP', label: 'SP — São Paulo' },
+  { valor: 'SE', label: 'SE — Sergipe' },
+  { valor: 'TO', label: 'TO — Tocantins' },
 ] as const;

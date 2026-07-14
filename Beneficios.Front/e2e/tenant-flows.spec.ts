@@ -3,6 +3,7 @@ import {
   loginTenant,
   mockDiasUteisMes,
   mockFuncionarioList,
+  mockAfastamentoList,
   mockPerfilList,
   mockTenantLogin,
   mockTenantLoginSemPerfil,
@@ -52,7 +53,10 @@ test.describe('Fluxos críticos tenant', () => {
         nome: 'Ana Silva',
         cpf: '52998224725',
         matricula: '001',
+        cargo: 'Analista',
         situacao: 'Ativo',
+        motivoAfastamentoAtivo: null,
+        jornada: 'QuarentaHorasSegSex',
         beneficios: [],
       },
     ]);
@@ -61,6 +65,15 @@ test.describe('Fluxos críticos tenant', () => {
     await page.waitForURL('**/funcionarios');
     await expect(page.getByRole('heading', { name: 'Funcionários' })).toBeVisible();
     await expect(page.getByText('Ana Silva')).toBeVisible();
+  });
+
+  test('abrir Afastamentos/Férias exibe listagem', async ({ page }) => {
+    await mockAfastamentoList(page, []);
+    await mockFuncionarioList(page, []);
+    await loginTenant(page);
+    await page.getByRole('link', { name: 'Afastamentos/Férias' }).click();
+    await page.waitForURL('**/afastamentos');
+    await expect(page.getByRole('heading', { name: 'Afastamentos/Férias' })).toBeVisible();
   });
 
   test('criar usuário na tenant', async ({ page }) => {
