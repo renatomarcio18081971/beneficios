@@ -11,4 +11,6 @@ public interface IFuncionarioRepository
     Task<IReadOnlyList<FuncionarioQueryResult>> FiltrarAsync(FuncionarioFiltroParams filtro);
     Task<bool> CpfExisteAsync(string cpf, Guid? excetoId = null);
     Task<bool> MatriculaExisteAsync(string matricula, Guid? excetoId = null);
+    Task AtualizarSituacaoAsync(Guid funcionarioId, string situacaoBanco);
+    Task<IReadOnlyList<(Guid Id, string Situacao)>> ListarIdSituacaoAsync();
 }

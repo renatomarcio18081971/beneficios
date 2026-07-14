@@ -30,7 +30,7 @@ public class FuncionarioQueryResult
     public string? TrabCidade { get; set; }
     public string? TrabUf { get; set; }
     public SituacaoFuncionario Situacao { get; set; }
-    public string? MotivoAfastamento { get; set; }
+    public string? MotivoAfastamentoAtivo { get; set; }
     public JornadaTrabalho Jornada { get; set; }
     public string? JornadaDetalhe { get; set; }
     public DateTime DataInclusao { get; set; }

@@ -30,7 +30,6 @@ public class FuncionarioAtualizarParams
     public string? TrabCidade { get; init; }
     public string? TrabUf { get; init; }
     public SituacaoFuncionario Situacao { get; init; }
-    public string? MotivoAfastamento { get; init; }
     public JornadaTrabalho Jornada { get; init; }
     public string? JornadaDetalhe { get; init; }
     public Guid? UsuarioAlteracaoId { get; init; }
