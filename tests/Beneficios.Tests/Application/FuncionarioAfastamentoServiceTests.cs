@@ -40,6 +40,28 @@ public class FuncionarioAfastamentoServiceTests
     }
 
     [Fact]
+    public async Task SalvarAsync_DataFimMenor_DeveFalhar()
+    {
+        var dto = new AfastamentoSalvarDto(
+            Guid.NewGuid(), TipoAfastamento.Ferias,
+            new DateOnly(2026, 1, 31), new DateOnly(2026, 1, 1), null);
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => _sut.SalvarAsync(dto, null));
+        Assert.Equal(FuncionarioAfastamentoService.MensagemDataFim, ex.Message);
+    }
+
+    [Fact]
+    public async Task SalvarAsync_FuncionarioInexistente_DeveFalhar()
+    {
+        var funcionarioId = Guid.NewGuid();
+        _funcRepo.Setup(r => r.ObterPorIdAsync(funcionarioId))
+            .ReturnsAsync((FuncionarioQueryResult?)null);
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => _sut.SalvarAsync(
+            new AfastamentoSalvarDto(funcionarioId, TipoAfastamento.Outros, new DateOnly(2026, 1, 1), null, null), null));
+        Assert.Equal(FuncionarioAfastamentoService.MensagemFuncionarioNaoEncontrado, ex.Message);
+    }
+
+    [Fact]
     public async Task SalvarAsync_Valido_DevePersistirERecalcAfastado()
     {
         var funcionarioId = Guid.NewGuid();
@@ -64,6 +86,34 @@ public class FuncionarioAfastamentoServiceTests
 
         Assert.NotEqual(Guid.Empty, id);
         _funcRepo.Verify(r => r.AtualizarSituacaoAsync(funcionarioId, "afastado"), Times.Once);
+    }
+
+    [Fact]
+    public async Task AtualizarAsync_Valido_DevePersistir()
+    {
+        var afastamentoId = Guid.NewGuid();
+        var funcionarioId = Guid.NewGuid();
+        _afastRepo.Setup(r => r.ObterPorIdAsync(afastamentoId))
+            .ReturnsAsync(new FuncionarioAfastamentoQueryResult
+            {
+                Id = afastamentoId,
+                FuncionarioId = funcionarioId,
+                Tipo = "ferias",
+                DataInicio = new DateOnly(2026, 1, 1),
+            });
+        _afastRepo.Setup(r => r.ExisteSobreposicaoAsync(funcionarioId, It.IsAny<DateOnly>(), It.IsAny<DateOnly?>(), afastamentoId))
+            .ReturnsAsync(false);
+        _funcRepo.Setup(r => r.ObterPorIdAsync(funcionarioId))
+            .ReturnsAsync(CriarFuncionario(funcionarioId, SituacaoFuncionario.Afastado));
+        _afastRepo.Setup(r => r.ObterAtivoEmAsync(funcionarioId, It.IsAny<DateOnly>()))
+            .ReturnsAsync((FuncionarioAfastamentoQueryResult?)null);
+
+        await _sut.AtualizarAsync(afastamentoId, new AfastamentoAtualizarDto(
+            TipoAfastamento.LicencaMedica, new DateOnly(2026, 2, 1), new DateOnly(2026, 2, 10), "ok"), null);
+
+        _afastRepo.Verify(r => r.AtualizarAsync(It.Is<FuncionarioAfastamentoAtualizarParams>(
+            p => p.Id == afastamentoId && p.Tipo == "licenca_medica")), Times.Once);
+        _funcRepo.Verify(r => r.AtualizarSituacaoAsync(funcionarioId, "ativo"), Times.Once);
     }
 
     [Fact]
@@ -106,6 +156,28 @@ public class FuncionarioAfastamentoServiceTests
             new DateOnly(2026, 3, 1), new DateOnly(2026, 3, 10), null), null);
 
         _funcRepo.Verify(r => r.AtualizarSituacaoAsync(It.IsAny<Guid>(), It.IsAny<string>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task FiltrarAsync_DeveMapearTipo()
+    {
+        _afastRepo.Setup(r => r.FiltrarAsync(It.IsAny<FuncionarioAfastamentoFiltroParams>()))
+            .ReturnsAsync(
+            [
+                new FuncionarioAfastamentoQueryResult
+                {
+                    Id = Guid.NewGuid(),
+                    FuncionarioId = Guid.NewGuid(),
+                    FuncionarioNome = "Ana",
+                    Tipo = "ferias",
+                    DataInicio = new DateOnly(2026, 1, 1),
+                },
+            ]);
+
+        var lista = await _sut.FiltrarAsync(null, TipoAfastamento.Ferias, null, null);
+        Assert.Single(lista);
+        Assert.Equal(TipoAfastamento.Ferias, lista[0].Tipo);
+        Assert.Equal("Ana", lista[0].FuncionarioNome);
     }
 
     private static FuncionarioQueryResult CriarFuncionario(Guid id, SituacaoFuncionario situacao) => new()

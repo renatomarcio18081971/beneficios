@@ -46,6 +46,19 @@ public class AfastamentosControllerTests
     }
 
     [Fact]
+    public async Task Filtrar_Valido_DeveRetornarOk()
+    {
+        _permissao
+            .Setup(x => x.GarantirPermissaoAsync(It.IsAny<Guid>(), "afastamentos", AcaoPermissao.Visualizar))
+            .Returns(Task.CompletedTask);
+        _service.Setup(x => x.FiltrarAsync(null, null, null, null))
+            .ReturnsAsync(Array.Empty<AfastamentoDto>());
+
+        var result = await CreateController().Filtrar(null, null, null, null);
+        Assert.IsType<OkObjectResult>(result);
+    }
+
+    [Fact]
     public async Task Criar_Valido_DeveRetornarCreated()
     {
         var id = Guid.NewGuid();
@@ -62,6 +75,79 @@ public class AfastamentosControllerTests
 
         var created = Assert.IsType<CreatedAtActionResult>(result);
         Assert.Equal(nameof(AfastamentosController.ObterPorId), created.ActionName);
+    }
+
+    [Fact]
+    public async Task Criar_Sobreposicao_DeveRetornarBadRequest()
+    {
+        _permissao
+            .Setup(x => x.GarantirPermissaoAsync(It.IsAny<Guid>(), "afastamentos", AcaoPermissao.Criar))
+            .Returns(Task.CompletedTask);
+        _service
+            .Setup(x => x.SalvarAsync(It.IsAny<AfastamentoSalvarDto>(), It.IsAny<Guid?>()))
+            .ThrowsAsync(new InvalidOperationException("Já existe um afastamento neste período para o funcionário."));
+
+        var result = await CreateController().Criar(new AfastamentoSalvarDto(
+            Guid.NewGuid(), TipoAfastamento.Ferias,
+            new DateOnly(2026, 1, 1), null, null));
+        Assert.IsType<BadRequestObjectResult>(result);
+    }
+
+    [Fact]
+    public async Task ObterPorId_NaoEncontrado_DeveRetornar404()
+    {
+        var id = Guid.NewGuid();
+        _permissao
+            .Setup(x => x.GarantirPermissaoAsync(It.IsAny<Guid>(), "afastamentos", AcaoPermissao.Visualizar))
+            .Returns(Task.CompletedTask);
+        _service.Setup(x => x.ObterPorIdAsync(id)).ReturnsAsync((AfastamentoDto?)null);
+
+        var result = await CreateController().ObterPorId(id);
+        Assert.IsType<NotFoundObjectResult>(result);
+    }
+
+    [Fact]
+    public async Task ObterPorId_Valido_DeveRetornarOk()
+    {
+        var id = Guid.NewGuid();
+        _permissao
+            .Setup(x => x.GarantirPermissaoAsync(It.IsAny<Guid>(), "afastamentos", AcaoPermissao.Visualizar))
+            .Returns(Task.CompletedTask);
+        _service.Setup(x => x.ObterPorIdAsync(id)).ReturnsAsync(new AfastamentoDto(
+            id, Guid.NewGuid(), "Ana", TipoAfastamento.Ferias,
+            new DateOnly(2026, 1, 1), null, null));
+
+        var result = await CreateController().ObterPorId(id);
+        Assert.IsType<OkObjectResult>(result);
+    }
+
+    [Fact]
+    public async Task Atualizar_Valido_DeveRetornarNoContent()
+    {
+        var id = Guid.NewGuid();
+        _permissao
+            .Setup(x => x.GarantirPermissaoAsync(It.IsAny<Guid>(), "afastamentos", AcaoPermissao.Editar))
+            .Returns(Task.CompletedTask);
+
+        var result = await CreateController().Atualizar(id, new AfastamentoAtualizarDto(
+            TipoAfastamento.Ferias, new DateOnly(2026, 1, 1), null, null));
+        Assert.IsType<NoContentResult>(result);
+    }
+
+    [Fact]
+    public async Task Atualizar_NaoEncontrado_DeveRetornar404()
+    {
+        var id = Guid.NewGuid();
+        _permissao
+            .Setup(x => x.GarantirPermissaoAsync(It.IsAny<Guid>(), "afastamentos", AcaoPermissao.Editar))
+            .Returns(Task.CompletedTask);
+        _service
+            .Setup(x => x.AtualizarAsync(id, It.IsAny<AfastamentoAtualizarDto>(), It.IsAny<Guid?>()))
+            .ThrowsAsync(new InvalidOperationException("Afastamento não encontrado."));
+
+        var result = await CreateController().Atualizar(id, new AfastamentoAtualizarDto(
+            TipoAfastamento.Ferias, new DateOnly(2026, 1, 1), null, null));
+        Assert.IsType<NotFoundObjectResult>(result);
     }
 
     [Fact]
