@@ -38,4 +38,11 @@ export const MODULOS_SISTEMA: readonly ModuloSistema[] = [
     icone: 'badge',
     acoesSuportadas: ['visualizar', 'criar', 'editar', 'excluir'],
   },
+  {
+    codigo: 'afastamentos',
+    nomeExibicao: 'Afastamentos/Férias',
+    rota: '/afastamentos',
+    icone: 'event_busy',
+    acoesSuportadas: ['visualizar', 'criar', 'editar', 'excluir'],
+  },
 ] as const;
