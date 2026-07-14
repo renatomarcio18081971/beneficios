@@ -111,6 +111,30 @@ public static class TenantSchemaSql
             """;
     }
 
+    public static string CriarTabelaCalendarioDias(string schemaName)
+    {
+        var quotedSchema = CitarIdentificador(schemaName);
+        var indexPrefix = schemaName.Replace('-', '_');
+
+        return $"""
+            CREATE TABLE IF NOT EXISTS {quotedSchema}.calendario_dias (
+                id UUID PRIMARY KEY,
+                data DATE NOT NULL,
+                eh_dia_util BOOLEAN NOT NULL,
+                tipo_excecao VARCHAR(40) NULL,
+                origem VARCHAR(20) NOT NULL,
+                observacao TEXT NULL,
+                data_inclusao TIMESTAMP NOT NULL DEFAULT NOW(),
+                data_alteracao TIMESTAMP NULL,
+                usuario_alteracao_id UUID NULL,
+                CONSTRAINT uq_{indexPrefix}_calendario_dias_data UNIQUE (data)
+            );
+
+            CREATE INDEX IF NOT EXISTS idx_{indexPrefix}_calendario_dias_data
+                ON {quotedSchema}.calendario_dias(data);
+            """;
+    }
+
     public static string InserirPerfilDono(string schemaName)
     {
         var quotedSchema = CitarIdentificador(schemaName);

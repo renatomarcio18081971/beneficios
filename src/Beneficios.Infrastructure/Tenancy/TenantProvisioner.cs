@@ -41,6 +41,10 @@ public class TenantProvisioner : ITenantProvisioner
         var perfilId = await GarantirPerfisNoSchemaAsync(connection, schemaName, agora, cancellationToken);
 
         await connection.ExecuteAsync(new CommandDefinition(
+            TenantSchemaSql.CriarTabelaCalendarioDias(schemaName),
+            cancellationToken: cancellationToken));
+
+        await connection.ExecuteAsync(new CommandDefinition(
             TenantSchemaSql.InserirUsuarioPadrao(schemaName),
             new
             {
@@ -94,6 +98,10 @@ public class TenantProvisioner : ITenantProvisioner
 
         await connection.ExecuteAsync(new CommandDefinition(
             TenantSchemaSql.AlterarUsuariosAdicionarPerfilId(schemaName),
+            cancellationToken: cancellationToken));
+
+        await connection.ExecuteAsync(new CommandDefinition(
+            TenantSchemaSql.CriarTabelaCalendarioDias(schemaName),
             cancellationToken: cancellationToken));
 
         var quoted = TenantSchemaSql.CitarIdentificador(schemaName);

@@ -95,6 +95,14 @@ public class TenantProvisionerTests(PostgresFixture fixture)
             SELECT perfil_id FROM {quotedSchema}.usuarios WHERE email = @Email
             """, new { Email = TenantDefaultUser.Email });
         Assert.Equal(dono.Id, perfilIdUsuario);
+
+        var calendarioExiste = await fixture.Connection!.ExecuteScalarAsync<bool>(
+            """
+            SELECT EXISTS(
+              SELECT 1 FROM information_schema.tables
+              WHERE table_schema = @SchemaName AND table_name = 'calendario_dias')
+            """, new { SchemaName = schemaName });
+        Assert.True(calendarioExiste);
     }
 
     [SkippableFact]

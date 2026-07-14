@@ -157,6 +157,7 @@ public class PostgresFixture : IDisposable
         await connection.ExecuteAsync(TenantSchemaSql.CriarTabelaPerfis(schemaName));
         await connection.ExecuteAsync(TenantSchemaSql.CriarTabelaPerfilPermissoes(schemaName));
         await connection.ExecuteAsync(TenantSchemaSql.AlterarUsuariosAdicionarPerfilId(schemaName));
+        await connection.ExecuteAsync(TenantSchemaSql.CriarTabelaCalendarioDias(schemaName));
     }
 
     public void Dispose()
