@@ -101,6 +101,45 @@ public class UsuarioRepository : IUsuarioRepository
         return result.ToArray();
     }
 
+    public async Task<UsuarioQueryResult[]> FiltrarAsync(UsuarioFiltroParams filtro)
+    {
+        var conditions = new List<string>();
+        var parameters = new DynamicParameters();
+
+        if (!string.IsNullOrWhiteSpace(filtro.Nome))
+        {
+            conditions.Add("u.nome ILIKE @Nome");
+            parameters.Add("Nome", $"%{filtro.Nome.Trim()}%");
+        }
+
+        if (!string.IsNullOrWhiteSpace(filtro.Email))
+        {
+            conditions.Add("u.email ILIKE @Email");
+            parameters.Add("Email", $"%{filtro.Email.Trim()}%");
+        }
+
+        var whereClause = conditions.Count > 0
+            ? "WHERE " + string.Join(" AND ", conditions)
+            : string.Empty;
+
+        var sql = $@"
+            SELECT 
+                u.id AS Id,
+                u.nome AS Nome,
+                u.email AS Email,
+                u.empresa_id AS EmpresaId,
+                e.razao_social AS EmpresaNome,
+                u.data_inclusao AS DataInclusao,
+                u.data_alteracao AS DataAlteracao
+            FROM usuarios u
+            LEFT JOIN empresas e ON u.empresa_id = e.id
+            {whereClause}
+            ORDER BY u.nome";
+
+        var result = await _dbConnection.QueryAsync<UsuarioQueryResult>(sql, parameters);
+        return result.ToArray();
+    }
+
     public async Task<UsuarioAuthResult?> GetByEmailAsync(string email)
     {
         var sql = @"

@@ -245,6 +245,85 @@ public class UsuarioRepositoryTests(PostgresFixture fixture)
         Assert.Null(await repository.GetByCodigoAlterarSenhaAsync("654321"));
     }
 
+    [SkippableFact]
+    public async Task FiltrarAsync_DeveFiltrarPorNome()
+    {
+        await PostgresTestHelper.PrepareAsync(fixture);
+
+        var empresaId = await SeedEmpresaAsync();
+        await using var tenantConnection = await fixture.CreateTenantConnectionAsync(TenantRazaoSocial);
+        var repository = new UsuarioRepository(tenantConnection);
+
+        await repository.SalvarAsync(new UsuarioSalvarParams
+        {
+            Id = Guid.NewGuid(),
+            Nome = "Joao Silva",
+            Senha = Criptografia.Encrypt("senha123"),
+            Email = "joao@example.com",
+            EmpresaId = empresaId
+        });
+        await repository.SalvarAsync(new UsuarioSalvarParams
+        {
+            Id = Guid.NewGuid(),
+            Nome = "Maria Santos",
+            Senha = Criptografia.Encrypt("senha123"),
+            Email = "maria@example.com",
+            EmpresaId = empresaId
+        });
+
+        var usuarios = await repository.FiltrarAsync(new UsuarioFiltroParams { Nome = "Joao" });
+
+        Assert.Single(usuarios);
+        Assert.Equal("Joao Silva", usuarios[0].Nome);
+    }
+
+    [SkippableFact]
+    public async Task FiltrarAsync_DeveFiltrarPorEmail()
+    {
+        await PostgresTestHelper.PrepareAsync(fixture);
+
+        var empresaId = await SeedEmpresaAsync();
+        await using var tenantConnection = await fixture.CreateTenantConnectionAsync(TenantRazaoSocial);
+        var repository = new UsuarioRepository(tenantConnection);
+
+        await repository.SalvarAsync(new UsuarioSalvarParams
+        {
+            Id = Guid.NewGuid(),
+            Nome = "Joao Silva",
+            Senha = Criptografia.Encrypt("senha123"),
+            Email = "joao@example.com",
+            EmpresaId = empresaId
+        });
+
+        var usuarios = await repository.FiltrarAsync(new UsuarioFiltroParams { Email = "joao@" });
+
+        Assert.Single(usuarios);
+        Assert.Equal("joao@example.com", usuarios[0].Email);
+    }
+
+    [SkippableFact]
+    public async Task FiltrarAsync_DeveRetornarVazioQuandoNenhumResultado()
+    {
+        await PostgresTestHelper.PrepareAsync(fixture);
+
+        var empresaId = await SeedEmpresaAsync();
+        await using var tenantConnection = await fixture.CreateTenantConnectionAsync(TenantRazaoSocial);
+        var repository = new UsuarioRepository(tenantConnection);
+
+        await repository.SalvarAsync(new UsuarioSalvarParams
+        {
+            Id = Guid.NewGuid(),
+            Nome = "Joao Silva",
+            Senha = Criptografia.Encrypt("senha123"),
+            Email = "joao@example.com",
+            EmpresaId = empresaId
+        });
+
+        var usuarios = await repository.FiltrarAsync(new UsuarioFiltroParams { Nome = "Inexistente" });
+
+        Assert.Empty(usuarios);
+    }
+
     private async Task<Guid> SeedEmpresaAsync()
     {
         var empresaRepository = new EmpresaRepository(fixture.Connection!);

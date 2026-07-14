@@ -54,6 +54,45 @@
     </div>
   </div>
 
+  @if (!errorMessage()) {
+    <form class="filter-bar" [formGroup]="filterForm" (ngSubmit)="applyFilter()">
+      <mat-form-field appearance="outline" class="filter-field">
+        <mat-label>Nome</mat-label>
+        <input matInput type="text" formControlName="nome">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="filter-field">
+        <mat-label>E-mail</mat-label>
+        <input matInput type="email" formControlName="email">
+        @if (filterForm.controls.email.hasError('email') && filterForm.controls.email.touched) {
+          <mat-error>E-mail inválido.</mat-error>
+        }
+      </mat-form-field>
+
+      <div class="filter-actions">
+        <button mat-flat-button color="primary" type="submit" class="filter-button" [disabled]="loading()">
+          <mat-icon aria-hidden="true">filter_alt</mat-icon>
+          Filtrar
+        </button>
+
+        <button
+          mat-stroked-button
+          type="button"
+          class="filter-button"
+          [disabled]="loading()"
+          (click)="clearFilter()"
+        >
+          <mat-icon aria-hidden="true">cleaning_services</mat-icon>
+          Limpar
+        </button>
+      </div>
+
+      @if (filterForm.hasError('atLeastOneFilter') && filterForm.touched) {
+        <p class="filter-error">Informe ao menos um filtro.</p>
+      }
+    </form>
+  }
+
   @if (errorMessage()) {
     <p class="error-message">{{ errorMessage() }}</p>
   } @else if (loading() && dataSource.data.length === 0) {
@@ -61,7 +100,9 @@
       <mat-spinner diameter="40"></mat-spinner>
     </div>
   } @else if (dataSource.data.length === 0) {
-    <p class="empty-message">Nenhum usuário cadastrado.</p>
+    <p class="empty-message">
+      {{ hasActiveFilter() ? 'Nenhum usuário encontrado.' : 'Nenhum usuário cadastrado.' }}
+    </p>
   } @else {
     <div class="list-content" [class.is-loading]="loading()">
       @if (loading()) {

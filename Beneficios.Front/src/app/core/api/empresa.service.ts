@@ -1,11 +1,12 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
   Empresa,
   EmpresaAtualizarRequest,
   EmpresaCreateResponse,
+  EmpresaFiltroRequest,
   EmpresaSalvarRequest,
 } from './empresa.models';
 
@@ -16,6 +17,20 @@ export class EmpresaService {
 
   list(): Observable<Empresa[]> {
     return this.http.get<Empresa[]>(this.baseUrl);
+  }
+
+  filtrar(filtro: EmpresaFiltroRequest): Observable<Empresa[]> {
+    let params = new HttpParams();
+
+    if (filtro.razaoSocial?.trim()) {
+      params = params.set('razaoSocial', filtro.razaoSocial.trim());
+    }
+
+    if (filtro.dominio?.trim()) {
+      params = params.set('dominio', filtro.dominio.trim());
+    }
+
+    return this.http.get<Empresa[]>(`${this.baseUrl}/filtrar`, { params });
   }
 
   getById(id: string): Observable<Empresa> {

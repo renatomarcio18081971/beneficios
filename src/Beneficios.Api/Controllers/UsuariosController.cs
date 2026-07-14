@@ -104,6 +104,22 @@ public class UsuariosController : ControllerBase
         }
     }
 
+    [HttpGet("filtrar")]
+    [Authorize]
+    public async Task<IActionResult> Filtrar([FromQuery] string? nome, [FromQuery] string? email)
+    {
+        try
+        {
+            var usuarios = await _usuarioService.FiltrarAsync(new UsuarioFiltroDto(nome, email));
+            return Ok(usuarios);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erro ao filtrar usuários");
+            return StatusCode(500, new { message = "Erro ao filtrar usuários" });
+        }
+    }
+
     [HttpGet("{id}")]
     [Authorize]
     public async Task<IActionResult> GetById(Guid id)

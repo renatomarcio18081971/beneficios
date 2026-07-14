@@ -158,4 +158,65 @@ public class EmpresaServiceTests
         Assert.Equal("Alpha", result[0].RazaoSocial);
         Assert.Equal("Beta", result[1].RazaoSocial);
     }
+
+    [Fact]
+    public async Task FiltrarAsync_DeveRetornarEmpresasFiltradasPorRazaoSocial()
+    {
+        var empresas = new[]
+        {
+            new EmpresaQueryResult { Id = Guid.NewGuid(), RazaoSocial = "Alpha LTDA", Dominio = "alpha" },
+        };
+
+        _repositoryMock.Setup(x => x.FiltrarAsync(It.Is<EmpresaFiltroParams>(f => f.RazaoSocial == "Alpha" && f.Dominio == null)))
+            .ReturnsAsync(empresas);
+
+        var result = await _service.FiltrarAsync(new EmpresaFiltroDto("Alpha", null));
+
+        Assert.Single(result);
+        Assert.Equal("Alpha LTDA", result[0].RazaoSocial);
+    }
+
+    [Fact]
+    public async Task FiltrarAsync_DeveRetornarEmpresasFiltradasPorDominio()
+    {
+        var empresas = new[]
+        {
+            new EmpresaQueryResult { Id = Guid.NewGuid(), RazaoSocial = "Alpha LTDA", Dominio = "alpha" },
+        };
+
+        _repositoryMock.Setup(x => x.FiltrarAsync(It.Is<EmpresaFiltroParams>(f => f.RazaoSocial == null && f.Dominio == "alpha")))
+            .ReturnsAsync(empresas);
+
+        var result = await _service.FiltrarAsync(new EmpresaFiltroDto(null, "alpha"));
+
+        Assert.Single(result);
+        Assert.Equal("alpha", result[0].Dominio);
+    }
+
+    [Fact]
+    public async Task FiltrarAsync_DeveRetornarEmpresasComFiltroCombinado()
+    {
+        var empresas = new[]
+        {
+            new EmpresaQueryResult { Id = Guid.NewGuid(), RazaoSocial = "Alpha LTDA", Dominio = "alpha" },
+        };
+
+        _repositoryMock.Setup(x => x.FiltrarAsync(It.Is<EmpresaFiltroParams>(f => f.RazaoSocial == "Alpha" && f.Dominio == "alpha")))
+            .ReturnsAsync(empresas);
+
+        var result = await _service.FiltrarAsync(new EmpresaFiltroDto("Alpha", "alpha"));
+
+        Assert.Single(result);
+    }
+
+    [Fact]
+    public async Task FiltrarAsync_DeveRetornarListaVaziaQuandoNenhumResultado()
+    {
+        _repositoryMock.Setup(x => x.FiltrarAsync(It.IsAny<EmpresaFiltroParams>()))
+            .ReturnsAsync(Array.Empty<EmpresaQueryResult>());
+
+        var result = await _service.FiltrarAsync(new EmpresaFiltroDto("Inexistente", null));
+
+        Assert.Empty(result);
+    }
 }

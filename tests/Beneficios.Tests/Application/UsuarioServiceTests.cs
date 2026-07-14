@@ -466,4 +466,65 @@ public class UsuarioServiceTests
         Assert.False(result);
         _repositoryMock.Verify(x => x.AtualizarSenhaAsync(It.IsAny<Guid>(), It.IsAny<string>()), Times.Never);
     }
+
+    [Fact]
+    public async Task FiltrarAsync_DeveRetornarUsuariosFiltradosPorNome()
+    {
+        var usuarios = new[]
+        {
+            new UsuarioQueryResult { Id = Guid.NewGuid(), Nome = "João", Email = "joao@example.com" },
+        };
+
+        _repositoryMock.Setup(x => x.FiltrarAsync(It.Is<UsuarioFiltroParams>(f => f.Nome == "João" && f.Email == null)))
+            .ReturnsAsync(usuarios);
+
+        var result = await _service.FiltrarAsync(new UsuarioFiltroDto("João", null));
+
+        Assert.Single(result);
+        Assert.Equal("João", result[0].Nome);
+    }
+
+    [Fact]
+    public async Task FiltrarAsync_DeveRetornarUsuariosFiltradosPorEmail()
+    {
+        var usuarios = new[]
+        {
+            new UsuarioQueryResult { Id = Guid.NewGuid(), Nome = "João", Email = "joao@example.com" },
+        };
+
+        _repositoryMock.Setup(x => x.FiltrarAsync(It.Is<UsuarioFiltroParams>(f => f.Nome == null && f.Email == "joao")))
+            .ReturnsAsync(usuarios);
+
+        var result = await _service.FiltrarAsync(new UsuarioFiltroDto(null, "joao"));
+
+        Assert.Single(result);
+        Assert.Equal("joao@example.com", result[0].Email);
+    }
+
+    [Fact]
+    public async Task FiltrarAsync_DeveRetornarUsuariosComFiltroCombinado()
+    {
+        var usuarios = new[]
+        {
+            new UsuarioQueryResult { Id = Guid.NewGuid(), Nome = "João Silva", Email = "joao@example.com" },
+        };
+
+        _repositoryMock.Setup(x => x.FiltrarAsync(It.Is<UsuarioFiltroParams>(f => f.Nome == "João" && f.Email == "joao")))
+            .ReturnsAsync(usuarios);
+
+        var result = await _service.FiltrarAsync(new UsuarioFiltroDto("João", "joao"));
+
+        Assert.Single(result);
+    }
+
+    [Fact]
+    public async Task FiltrarAsync_DeveRetornarListaVaziaQuandoNenhumResultado()
+    {
+        _repositoryMock.Setup(x => x.FiltrarAsync(It.IsAny<UsuarioFiltroParams>()))
+            .ReturnsAsync(Array.Empty<UsuarioQueryResult>());
+
+        var result = await _service.FiltrarAsync(new UsuarioFiltroDto("Inexistente", null));
+
+        Assert.Empty(result);
+    }
 }

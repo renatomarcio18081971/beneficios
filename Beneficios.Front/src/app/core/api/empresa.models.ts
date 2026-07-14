@@ -19,3 +19,8 @@ export interface EmpresaAtualizarRequest {
 export interface EmpresaCreateResponse {
   id: string;
 }
+
+export interface EmpresaFiltroRequest {
+  razaoSocial?: string;
+  dominio?: string;
+}

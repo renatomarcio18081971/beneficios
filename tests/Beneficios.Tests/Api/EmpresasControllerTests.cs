@@ -197,4 +197,79 @@ public class EmpresasControllerTests
         var statusResult = Assert.IsType<ObjectResult>(result);
         Assert.Equal(500, statusResult.StatusCode);
     }
+
+    [Fact]
+    public async Task Filtrar_DeveRetornarOkComFiltroPorRazaoSocial()
+    {
+        var empresas = new[]
+        {
+            new EmpresaDto { Id = Guid.NewGuid(), RazaoSocial = "Alpha LTDA", Dominio = "alpha" },
+        };
+
+        _serviceMock.Setup(x => x.FiltrarAsync(It.Is<EmpresaFiltroDto>(f => f.RazaoSocial == "Alpha" && f.Dominio == null)))
+            .ReturnsAsync(empresas);
+
+        var result = await _controller.Filtrar("Alpha", null);
+
+        var okResult = Assert.IsType<OkObjectResult>(result);
+        Assert.Single(Assert.IsAssignableFrom<EmpresaDto[]>(okResult.Value));
+    }
+
+    [Fact]
+    public async Task Filtrar_DeveRetornarOkComFiltroPorDominio()
+    {
+        var empresas = new[]
+        {
+            new EmpresaDto { Id = Guid.NewGuid(), RazaoSocial = "Alpha LTDA", Dominio = "alpha" },
+        };
+
+        _serviceMock.Setup(x => x.FiltrarAsync(It.Is<EmpresaFiltroDto>(f => f.RazaoSocial == null && f.Dominio == "alpha")))
+            .ReturnsAsync(empresas);
+
+        var result = await _controller.Filtrar(null, "alpha");
+
+        var okResult = Assert.IsType<OkObjectResult>(result);
+        Assert.Single(Assert.IsAssignableFrom<EmpresaDto[]>(okResult.Value));
+    }
+
+    [Fact]
+    public async Task Filtrar_DeveRetornarOkComFiltroCombinado()
+    {
+        var empresas = new[]
+        {
+            new EmpresaDto { Id = Guid.NewGuid(), RazaoSocial = "Alpha LTDA", Dominio = "alpha" },
+        };
+
+        _serviceMock.Setup(x => x.FiltrarAsync(It.Is<EmpresaFiltroDto>(f => f.RazaoSocial == "Alpha" && f.Dominio == "alpha")))
+            .ReturnsAsync(empresas);
+
+        var result = await _controller.Filtrar("Alpha", "alpha");
+
+        var okResult = Assert.IsType<OkObjectResult>(result);
+        Assert.Single(Assert.IsAssignableFrom<EmpresaDto[]>(okResult.Value));
+    }
+
+    [Fact]
+    public async Task Filtrar_DeveRetornarListaVaziaQuandoNenhumResultado()
+    {
+        _serviceMock.Setup(x => x.FiltrarAsync(It.IsAny<EmpresaFiltroDto>()))
+            .ReturnsAsync(Array.Empty<EmpresaDto>());
+
+        var result = await _controller.Filtrar("Inexistente", null);
+
+        var okResult = Assert.IsType<OkObjectResult>(result);
+        Assert.Empty(Assert.IsAssignableFrom<EmpresaDto[]>(okResult.Value));
+    }
+
+    [Fact]
+    public async Task Filtrar_DeveRetornar500QuandoExcecao()
+    {
+        _serviceMock.Setup(x => x.FiltrarAsync(It.IsAny<EmpresaFiltroDto>()))
+            .ThrowsAsync(new Exception("Erro"));
+
+        var result = await _controller.Filtrar("Alpha", null);
+
+        var statusResult = Assert.IsType<ObjectResult>(result);
+        Assert.Equal(500, statusResult.StatusCode);
+    }
 }

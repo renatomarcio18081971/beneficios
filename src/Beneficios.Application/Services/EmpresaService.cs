@@ -72,4 +72,14 @@ public class EmpresaService : IEmpresaService
         var empresas = await _empresaRepository.ObterTodosAsync();
         return _mapper.Map<EmpresaDto[]>(empresas);
     }
+
+    public async Task<EmpresaDto[]> FiltrarAsync(EmpresaFiltroDto filtro)
+    {
+        var empresas = await _empresaRepository.FiltrarAsync(new EmpresaFiltroParams
+        {
+            RazaoSocial = filtro.RazaoSocial,
+            Dominio = filtro.Dominio,
+        });
+        return _mapper.Map<EmpresaDto[]>(empresas);
+    }
 }
