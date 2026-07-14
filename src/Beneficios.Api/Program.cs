@@ -111,6 +111,17 @@ builder.Services.AddHealthChecks();
 
 var app = builder.Build();
 
+try
+{
+    using var scope = app.Services.CreateScope();
+    var provisioner = scope.ServiceProvider.GetRequiredService<ITenantProvisioner>();
+    await provisioner.EnsurePerfisEmTenantsExistentesAsync();
+}
+catch (Exception ex)
+{
+    Log.Warning(ex, "Não foi possível migrar perfis nos tenants existentes na inicialização.");
+}
+
 app.UseApiForwardedHeaders();
 
 if (!app.Environment.IsDevelopment() && !string.Equals(app.Environment.EnvironmentName, "Docker", StringComparison.OrdinalIgnoreCase))
