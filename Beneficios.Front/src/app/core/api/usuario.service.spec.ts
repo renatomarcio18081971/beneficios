@@ -1,4 +1,4 @@
-import { TestBed } from '@angular/core/testing';
+﻿import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { UsuarioService } from './usuario.service';
 import { environment } from '../../../environments/environment';
@@ -69,6 +69,7 @@ describe('UsuarioService', () => {
       senha: 'senha123',
       email: 'maria@example.com',
       empresaId: '22222222-2222-2222-2222-222222222222',
+      perfilId: '44444444-4444-4444-4444-444444444444',
     };
 
     service.create(payload).subscribe((result) => {
@@ -87,6 +88,7 @@ describe('UsuarioService', () => {
       nome: 'Joao Atualizado',
       email: 'joao.novo@example.com',
       empresaId: '22222222-2222-2222-2222-222222222222',
+      perfilId: '44444444-4444-4444-4444-444444444444',
     };
 
     service.update(id, payload).subscribe();

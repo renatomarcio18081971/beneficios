@@ -1,6 +1,7 @@
-using Beneficios.Domain.Models;
+﻿using Beneficios.Domain.Models;
 using Beneficios.Domain.ValueObjects;
 using Beneficios.Infrastructure.Repositories;
+using Beneficios.Infrastructure.Tenancy;
 using Xunit;
 
 namespace Beneficios.Tests.Infrastructure;
@@ -33,8 +34,8 @@ public class TenantIsolationTests(PostgresFixture fixture)
         await using var connectionA = await fixture.CreateTenantConnectionAsync("Empresa A");
         await using var connectionB = await fixture.CreateTenantConnectionAsync("Empresa B");
 
-        var repositoryA = new UsuarioRepository(connectionA);
-        var repositoryB = new UsuarioRepository(connectionB);
+        var repositoryA = new UsuarioRepository(connectionA, TenantSchemaAccessor.ParaTenant("tenant_test"));
+        var repositoryB = new UsuarioRepository(connectionB, TenantSchemaAccessor.ParaTenant("tenant_test"));
 
         await repositoryA.SalvarAsync(new UsuarioSalvarParams
         {

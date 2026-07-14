@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 
 namespace Beneficios.Domain;
 
@@ -20,8 +20,8 @@ public static class TenantSchemaNames
         return TenantPrefix + sanitized;
     }
 
-    public static string GetCatalogSearchPath() => CatalogSchema;
+    public static string ObterSearchPathCatalogo() => CatalogSchema;
 
-    public static string GetTenantSearchPath(string razaoSocial) =>
+    public static string ObterSearchPathTenant(string razaoSocial) =>
         $"{FromRazaoSocial(razaoSocial)},{CatalogSchema}";
 }

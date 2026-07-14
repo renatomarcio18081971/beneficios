@@ -1,4 +1,4 @@
-using Beneficios.Application.Interfaces;
+﻿using Beneficios.Application.Interfaces;
 using Beneficios.Domain;
 using Beneficios.Domain.Interfaces;
 using Beneficios.Domain.Models;
@@ -27,8 +27,13 @@ public class TenantResolver : ITenantResolver
 
         if (string.Equals(tenant, "admin", StringComparison.OrdinalIgnoreCase))
         {
+            var catalogBuilder = new NpgsqlConnectionStringBuilder(_catalogConnectionString)
+            {
+                SearchPath = TenantSchemaNames.ObterSearchPathCatalogo(),
+            };
+
             return new TenantResolution(
-                _catalogConnectionString,
+                catalogBuilder.ConnectionString,
                 TenantSchemaNames.CatalogSchema,
                 tenant);
         }
@@ -55,7 +60,7 @@ public class TenantResolver : ITenantResolver
     {
         var builder = new NpgsqlConnectionStringBuilder(_catalogConnectionString)
         {
-            SearchPath = TenantSchemaNames.GetTenantSearchPath(razaoSocial),
+            SearchPath = TenantSchemaNames.ObterSearchPathTenant(razaoSocial),
         };
 
         return builder.ConnectionString;

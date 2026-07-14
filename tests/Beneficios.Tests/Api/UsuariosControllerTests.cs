@@ -11,14 +11,19 @@ namespace Beneficios.Tests.Api;
 public class UsuariosControllerTests
 {
     private readonly Mock<IUsuarioService> _serviceMock;
+    private readonly Mock<IPermissaoService> _permissaoMock;
     private readonly Mock<ILogger<UsuariosController>> _loggerMock;
     private readonly UsuariosController _controller;
 
     public UsuariosControllerTests()
     {
         _serviceMock = new Mock<IUsuarioService>();
+        _permissaoMock = new Mock<IPermissaoService>();
         _loggerMock = new Mock<ILogger<UsuariosController>>();
-        _controller = new UsuariosController(_serviceMock.Object, _loggerMock.Object);
+        _controller = new UsuariosController(
+            _serviceMock.Object,
+            _permissaoMock.Object,
+            _loggerMock.Object);
     }
 
     [Fact]
@@ -130,7 +135,7 @@ public class UsuariosControllerTests
     [Fact]
     public async Task Create_DeveRetornarCreatedQuandoSucesso()
     {
-        var dto = new UsuarioSalvarDto("Joao Silva", "senha123", "joao@example.com", Guid.NewGuid());
+        var dto = new UsuarioSalvarDto("Joao Silva", "senha123", "joao@example.com", Guid.NewGuid(), Guid.NewGuid());
         var id = Guid.NewGuid();
 
         _serviceMock.Setup(x => x.SalvarAsync(dto)).ReturnsAsync(id);
@@ -144,7 +149,7 @@ public class UsuariosControllerTests
     [Fact]
     public async Task Create_DeveRetornar500QuandoExcecao()
     {
-        var dto = new UsuarioSalvarDto("Joao Silva", "senha123", "joao@example.com", Guid.NewGuid());
+        var dto = new UsuarioSalvarDto("Joao Silva", "senha123", "joao@example.com", Guid.NewGuid(), Guid.NewGuid());
 
         _serviceMock.Setup(x => x.SalvarAsync(dto)).ThrowsAsync(new Exception("Erro"));
 
@@ -159,7 +164,7 @@ public class UsuariosControllerTests
     {
         var id = Guid.NewGuid();
         var usuarioAlteracaoId = Guid.NewGuid();
-        var dto = new UsuarioAtualizarDto("Joao Silva", "joao@example.com", Guid.NewGuid());
+        var dto = new UsuarioAtualizarDto("Joao Silva", "joao@example.com", Guid.NewGuid(), Guid.NewGuid());
 
         ControllerTestHelper.SetAuthenticatedUser(_controller, usuarioAlteracaoId);
         _serviceMock.Setup(x => x.AtualizarAsync(id, dto, usuarioAlteracaoId)).ReturnsAsync(true);
@@ -173,7 +178,7 @@ public class UsuariosControllerTests
     public async Task Update_DeveRetornarNotFoundQuandoUsuarioNaoExiste()
     {
         var id = Guid.NewGuid();
-        var dto = new UsuarioAtualizarDto("Joao Silva", "joao@example.com", Guid.NewGuid());
+        var dto = new UsuarioAtualizarDto("Joao Silva", "joao@example.com", Guid.NewGuid(), Guid.NewGuid());
 
         ControllerTestHelper.SetAuthenticatedUser(_controller);
         _serviceMock.Setup(x => x.AtualizarAsync(id, dto, It.IsAny<Guid?>())).ReturnsAsync(false);
@@ -187,7 +192,7 @@ public class UsuariosControllerTests
     public async Task Update_DeveRetornar500QuandoExcecao()
     {
         var id = Guid.NewGuid();
-        var dto = new UsuarioAtualizarDto("Joao Silva", "joao@example.com", Guid.NewGuid());
+        var dto = new UsuarioAtualizarDto("Joao Silva", "joao@example.com", Guid.NewGuid(), Guid.NewGuid());
 
         ControllerTestHelper.SetAuthenticatedUser(_controller);
         _serviceMock.Setup(x => x.AtualizarAsync(id, dto, It.IsAny<Guid?>())).ThrowsAsync(new Exception("Erro"));

@@ -1,4 +1,4 @@
-<div class="usuario-list-page">
+﻿<div class="usuario-list-page">
   <div class="usuario-list-header">
     <h1>Usuários</h1>
 
@@ -47,10 +47,12 @@
         </button>
       }
 
-      <a mat-flat-button color="primary" routerLink="/usuarios/novo">
-        <mat-icon aria-hidden="true">add</mat-icon>
-        Novo usuário
-      </a>
+      @if (podeCriar) {
+        <a mat-flat-button color="primary" routerLink="/usuarios/novo">
+          <mat-icon aria-hidden="true">add</mat-icon>
+          Novo usuário
+        </a>
+      }
     </div>
   </div>
 
@@ -125,13 +127,16 @@
 
               <mat-card-actions align="end">
                 @if (!isProtectedUser(usuario)) {
-                  <button type="button" mat-icon-button aria-label="Editar" (click)="edit(usuario)">
-                    <mat-icon aria-hidden="true">edit</mat-icon>
-                  </button>
-
-                  <button type="button" mat-icon-button color="warn" aria-label="Excluir" (click)="confirmDelete(usuario)">
-                    <mat-icon aria-hidden="true">delete</mat-icon>
-                  </button>
+                  @if (podeEditar) {
+                    <button type="button" mat-icon-button aria-label="Editar" (click)="edit(usuario)">
+                      <mat-icon aria-hidden="true">edit</mat-icon>
+                    </button>
+                  }
+                  @if (podeExcluir) {
+                    <button type="button" mat-icon-button color="warn" aria-label="Excluir" (click)="confirmDelete(usuario)">
+                      <mat-icon aria-hidden="true">delete</mat-icon>
+                    </button>
+                  }
                 }
               </mat-card-actions>
             </mat-card>
@@ -161,13 +166,16 @@
               <th mat-header-cell *matHeaderCellDef>Ações</th>
               <td mat-cell *matCellDef="let usuario" class="actions-cell">
                 @if (!isProtectedUser(usuario)) {
-                  <button type="button" mat-icon-button aria-label="Editar" (click)="edit(usuario)">
-                    <mat-icon aria-hidden="true">edit</mat-icon>
-                  </button>
-
-                  <button type="button" mat-icon-button color="warn" aria-label="Excluir" (click)="confirmDelete(usuario)">
-                    <mat-icon aria-hidden="true">delete</mat-icon>
-                  </button>
+                  @if (podeEditar) {
+                    <button type="button" mat-icon-button aria-label="Editar" (click)="edit(usuario)">
+                      <mat-icon aria-hidden="true">edit</mat-icon>
+                    </button>
+                  }
+                  @if (podeExcluir) {
+                    <button type="button" mat-icon-button color="warn" aria-label="Excluir" (click)="confirmDelete(usuario)">
+                      <mat-icon aria-hidden="true">delete</mat-icon>
+                    </button>
+                  }
                 }
               </td>
             </ng-container>

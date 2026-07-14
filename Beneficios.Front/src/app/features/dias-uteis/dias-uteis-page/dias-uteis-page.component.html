@@ -1,0 +1,72 @@
+﻿<div class="dias-uteis-page">
+  <div class="dias-uteis-header">
+    <h1>Dias úteis</h1>
+    <div class="header-actions">
+      @if (podeCriar()) {
+        <button
+          type="button"
+          mat-flat-button
+          color="primary"
+          (click)="gerarAno()"
+          [disabled]="gerando()"
+        >
+          Gerar ano
+        </button>
+      }
+    </div>
+  </div>
+
+  <div class="mes-nav" aria-label="Navegação de mês">
+    <button type="button" mat-icon-button (click)="mesAnterior()" aria-label="Mês anterior">
+      <mat-icon>chevron_left</mat-icon>
+    </button>
+    <h2>{{ tituloMes() }}</h2>
+    <button type="button" mat-icon-button (click)="mesProximo()" aria-label="Próximo mês">
+      <mat-icon>chevron_right</mat-icon>
+    </button>
+  </div>
+
+  <div class="legenda" aria-label="Legenda">
+    <span class="legenda-item"><span class="swatch swatch--util"></span> Útil</span>
+    <span class="legenda-item"><span class="swatch swatch--nao-util"></span> Não útil</span>
+    <span class="legenda-item"><span class="swatch swatch--excecao"></span> Com exceção</span>
+  </div>
+
+  @if (carregando()) {
+    <div class="loading-container">
+      <mat-spinner diameter="40"></mat-spinner>
+    </div>
+  } @else if (dias().length === 0) {
+    <div class="empty-state">
+      <p>Este ano ainda não possui calendário cadastrado.</p>
+      @if (podeCriar()) {
+        <button type="button" mat-stroked-button color="primary" (click)="gerarAno()" [disabled]="gerando()">
+          Gerar ano {{ ano() }}
+        </button>
+      }
+    </div>
+  } @else {
+    <div class="cal-grid" role="grid" aria-label="Calendário do mês">
+      @for (nome of diasSemana; track nome) {
+        <div class="cal-weekday" role="columnheader">{{ nome }}</div>
+      }
+      @for (celula of celulas(); track $index) {
+        @if (celula.vazia || !celula.dia) {
+          <div class="cal-day cal-day--empty" aria-hidden="true"></div>
+        } @else {
+          <button
+            type="button"
+            class="cal-day"
+            [class.cal-day--util]="!celula.dia.tipoExcecao && celula.dia.ehDiaUtil"
+            [class.cal-day--nao-util]="!celula.dia.tipoExcecao && !celula.dia.ehDiaUtil"
+            [class.cal-day--excecao]="!!celula.dia.tipoExcecao"
+            (click)="abrirDia(celula.dia)"
+            [attr.aria-label]="'Dia ' + numeroDia(celula.dia)"
+          >
+            <span class="cal-day__num">{{ numeroDia(celula.dia) }}</span>
+          </button>
+        }
+      }
+    </div>
+  }
+</div>

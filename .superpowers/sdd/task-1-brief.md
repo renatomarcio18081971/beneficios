@@ -1,71 +1,48 @@
-## Task 1: Backend — Campo Perfil (schema + domain)
+﻿### Task 1: Catálogo de feriados nacionais
 
 **Files:**
-- Create: `src/Beneficios.Infrastructure/Scripts/04_Alter_Table_Usuarios_Perfil.sql`
-- Create: `src/Beneficios.Domain/Enums/UsuarioPerfil.cs`
-- Modify: `src/Beneficios.Domain/Entities/Usuario.cs`
-- Modify: `src/Beneficios.Domain/Models/UsuarioAuthResult.cs`
-- Modify: `src/Beneficios.Domain/Models/UsuarioQueryResult.cs`
-- Modify: `src/Beneficios.Domain/Models/UsuarioSalvarParams.cs`
-- Modify: `src/Beneficios.Infrastructure/Scripts/03_Insert_Sample_Data.sql`
-- Test: `tests/Beneficios.Tests/Domain/UsuarioTests.cs`
+- Create: `src/Beneficios.Domain/FeriadosNacionaisCatalog.cs`
+- Test: `tests/Beneficios.Tests/Domain/FeriadosNacionaisCatalogTests.cs`
 
 **Interfaces:**
-- Produces: `UsuarioPerfil` enum (`Admin = 0`, `Empresa = 1`), propriedade `Perfil` nas entidades/models
+- Produces: `FeriadosNacionaisCatalog.ObterParaAno(int ano) → IReadOnlyList<FeriadoNacional>` onde `FeriadoNacional` é `record(DateOnly Data, string Nome)`
+- Produces: datas móveis derivadas da Páscoa (algoritmo de Meeus/Jones/Butcher ou equivalente documentado no teste)
 
 - [ ] **Step 1: Write the failing test**
 
-Adicionar em `tests/Beneficios.Tests/Domain/UsuarioTests.cs`:
-
 ```csharp
 [Fact]
-public void Usuario_DeveTerPropriedadePerfil()
+public void ObterParaAno_2026_DeveConterFeriadosFixosEMoveisConhecidos()
 {
-    var usuario = new Usuario { Perfil = UsuarioPerfil.Admin };
-    Assert.Equal(UsuarioPerfil.Admin, usuario.Perfil);
+    var feriados = FeriadosNacionaisCatalog.ObterParaAno(2026);
+    Assert.Contains(feriados, f => f.Data == new DateOnly(2026, 1, 1) && f.Nome.Contains("Confraterniza", StringComparison.OrdinalIgnoreCase));
+    Assert.Contains(feriados, f => f.Data == new DateOnly(2026, 12, 25));
+    // Carnaval 2026-02-16/17 (segunda/terça) — usar a regra do catálogo (terça de carnaval oficial)
+    Assert.Contains(feriados, f => f.Data == new DateOnly(2026, 4, 3)); // Sexta-feira Santa (Páscoa 2026-04-05 - 2)
+    Assert.Contains(feriados, f => f.Data == new DateOnly(2026, 2, 17)); // Carnaval (terça)
 }
 ```
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `dotnet test tests/Beneficios.Tests/Beneficios.Tests.csproj --filter "Usuario_DeveTerPropriedadePerfil" -v n`
-Expected: FAIL — `UsuarioPerfil` / `Perfil` não existem
+Run: `dotnet test tests/Beneficios.Tests/Beneficios.Tests.csproj --filter "FullyQualifiedName~FeriadosNacionaisCatalogTests" -v n`  
+Expected: FAIL (tipo/catálogo inexistente)
 
 - [ ] **Step 3: Write minimal implementation**
 
-`04_Alter_Table_Usuarios_Perfil.sql`:
-
-```sql
-ALTER TABLE beneficios.usuarios
-    ADD COLUMN perfil VARCHAR(20) NOT NULL DEFAULT 'Empresa';
-
-UPDATE beneficios.usuarios SET perfil = 'Admin' WHERE email = 'admin@exemplo.com';
-```
-
-`UsuarioPerfil.cs`:
-
-```csharp
-namespace Beneficios.Domain.Enums;
-
-public enum UsuarioPerfil
-{
-    Empresa = 0,
-    Admin = 1
-}
-```
-
-Adicionar `public UsuarioPerfil Perfil { get; set; }` em `Usuario`, `UsuarioAuthResult`, `UsuarioQueryResult`, `UsuarioSalvarParams`.
-
-Atualizar `03_Insert_Sample_Data.sql` para incluir coluna `perfil` nos INSERTs (`Admin` para admin@exemplo.com, `Empresa` para teste@exemplo.com).
+Implementar `FeriadosNacionaisCatalog` com:
+- Fixos: 01/01, 21/04, 01/05, 07/09, 12/10, 02/11, 15/11, 25/12 (e 20/11 Dia da Consciência Negra se adotado como nacional no escopo — **incluir** 20/11)
+- Móveis a partir da Páscoa: Carnaval (terça = Páscoa−47), Sexta-feira Santa (Páscoa−2), Corpus Christi (Páscoa+60)
 
 - [ ] **Step 4: Run test to verify it passes**
 
-Run: `dotnet test tests/Beneficios.Tests/Beneficios.Tests.csproj --filter "Usuario_DeveTerPropriedadePerfil" -v n`
-Expected: PASS
+Run: mesmo comando — Expected: PASS
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/Beneficios.Domain src/Beneficios.Infrastructure/Scripts tests/Beneficios.Tests/Domain/UsuarioTests.cs
-git commit -m "feat(domain): add UsuarioPerfil enum and perfil column script"
+git add src/Beneficios.Domain/FeriadosNacionaisCatalog.cs tests/Beneficios.Tests/Domain/FeriadosNacionaisCatalogTests.cs
+git commit -m "feat(domain): add Brazilian national holidays catalog"
 ```
+
+---

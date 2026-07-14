@@ -1,4 +1,12 @@
-export type UsuarioPerfil = 'Admin' | 'Empresa';
+﻿export type UsuarioPerfil = 'Admin' | 'Empresa';
+
+export interface PermissaoMenu {
+  codigoMenu: string;
+  visualizar: boolean;
+  criar: boolean;
+  editar: boolean;
+  excluir: boolean;
+}
 
 export interface LoginResponse {
   token: string;
@@ -8,6 +16,9 @@ export interface LoginResponse {
   perfil: UsuarioPerfil;
   empresaId?: string | null;
   empresaDominio: string;
+  perfilAcessoId?: string | null;
+  perfilAcessoNome?: string;
+  permissoes?: PermissaoMenu[];
 }
 
 export interface UserSession {
@@ -17,6 +28,9 @@ export interface UserSession {
   perfil: UsuarioPerfil;
   empresaId?: string | null;
   empresaDominio: string;
+  perfilAcessoId?: string | null;
+  perfilAcessoNome?: string;
+  permissoes: PermissaoMenu[];
 }
 
 export interface AlterarSenhaRequest {
