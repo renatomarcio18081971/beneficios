@@ -34,10 +34,10 @@ test.describe('Fluxos críticos tenant', () => {
     await expect(page.getByRole('link', { name: 'Perfis' })).toBeVisible();
   });
 
-  test('abrir Dias úteis exibe grade mensal', async ({ page }) => {
+  test('abrir Calendário exibe grade mensal', async ({ page }) => {
     await mockDiasUteisMes(page);
     await loginTenant(page);
-    await page.getByRole('link', { name: 'Dias úteis' }).click();
+    await page.getByRole('link', { name: 'Calendário' }).click();
     await page.waitForURL('**/dias-uteis');
     await expect(page.getByRole('heading', { name: 'Dias úteis' })).toBeVisible();
     await expect(page.getByRole('grid', { name: 'Calendário do mês' })).toBeVisible();
