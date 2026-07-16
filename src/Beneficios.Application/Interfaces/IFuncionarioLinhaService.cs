@@ -8,4 +8,5 @@ public interface IFuncionarioLinhaService
     Task AtualizarAsync(Guid id, FuncionarioLinhaAtualizarDto dto, Guid? usuarioAlteracaoId);
     Task<FuncionarioLinhaDto?> ObterPorIdAsync(Guid id);
     Task<IReadOnlyList<FuncionarioLinhaDto>> FiltrarAsync(Guid? funcionarioId, bool? somenteVigentes);
+    Task EncerrarAbertosPorFuncionarioAsync(Guid funcionarioId, Guid? usuarioAlteracaoId);
 }

@@ -110,6 +110,13 @@ public class FuncionarioLinhaService : IFuncionarioLinhaService
         return _mapper.Map<List<FuncionarioLinhaDto>>(filtrada.ToList());
     }
 
+    public Task EncerrarAbertosPorFuncionarioAsync(Guid funcionarioId, Guid? usuarioAlteracaoId)
+        => _vinculoRepository.EncerrarAbertosPorFuncionarioAsync(
+            funcionarioId,
+            DateOnly.FromDateTime(DateTime.UtcNow),
+            DateTime.UtcNow,
+            usuarioAlteracaoId);
+
     private async Task GarantirFuncionarioComVtAsync(Guid funcionarioId)
     {
         _ = await _funcionarioRepository.ObterPorIdAsync(funcionarioId)
