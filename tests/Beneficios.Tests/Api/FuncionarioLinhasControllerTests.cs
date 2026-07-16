@@ -162,4 +162,77 @@ public class FuncionarioLinhasControllerTests
         var obj = Assert.IsType<ObjectResult>(result);
         Assert.Equal(403, obj.StatusCode);
     }
+
+    [Fact]
+    public async Task Criar_SemPermissao_DeveRetornar403()
+    {
+        _permissao
+            .Setup(x => x.GarantirPermissaoAsync(It.IsAny<Guid>(), "funcionario_linhas", AcaoPermissao.Criar))
+            .ThrowsAsync(new UnauthorizedAccessException("Sem permissão para esta operação."));
+
+        var result = await CreateController().Criar(new FuncionarioLinhaSalvarDto(
+            Guid.NewGuid(), Guid.NewGuid(), 1, new DateOnly(2026, 1, 1), null));
+        var obj = Assert.IsType<ObjectResult>(result);
+        Assert.Equal(403, obj.StatusCode);
+    }
+
+    [Fact]
+    public async Task Filtrar_Excecao_DeveRetornar500()
+    {
+        _permissao
+            .Setup(x => x.GarantirPermissaoAsync(It.IsAny<Guid>(), "funcionario_linhas", AcaoPermissao.Visualizar))
+            .Returns(Task.CompletedTask);
+        _service.Setup(x => x.FiltrarAsync(null, null)).ThrowsAsync(new Exception("boom"));
+
+        var result = await CreateController().Filtrar(null, null);
+        var obj = Assert.IsType<ObjectResult>(result);
+        Assert.Equal(500, obj.StatusCode);
+    }
+
+    [Fact]
+    public async Task ObterPorId_Excecao_DeveRetornar500()
+    {
+        var id = Guid.NewGuid();
+        _permissao
+            .Setup(x => x.GarantirPermissaoAsync(It.IsAny<Guid>(), "funcionario_linhas", AcaoPermissao.Visualizar))
+            .Returns(Task.CompletedTask);
+        _service.Setup(x => x.ObterPorIdAsync(id)).ThrowsAsync(new Exception("boom"));
+
+        var result = await CreateController().ObterPorId(id);
+        var obj = Assert.IsType<ObjectResult>(result);
+        Assert.Equal(500, obj.StatusCode);
+    }
+
+    [Fact]
+    public async Task Criar_Excecao_DeveRetornar500()
+    {
+        _permissao
+            .Setup(x => x.GarantirPermissaoAsync(It.IsAny<Guid>(), "funcionario_linhas", AcaoPermissao.Criar))
+            .Returns(Task.CompletedTask);
+        _service
+            .Setup(x => x.SalvarAsync(It.IsAny<FuncionarioLinhaSalvarDto>(), It.IsAny<Guid?>()))
+            .ThrowsAsync(new Exception("boom"));
+
+        var result = await CreateController().Criar(new FuncionarioLinhaSalvarDto(
+            Guid.NewGuid(), Guid.NewGuid(), 1, new DateOnly(2026, 1, 1), null));
+        var obj = Assert.IsType<ObjectResult>(result);
+        Assert.Equal(500, obj.StatusCode);
+    }
+
+    [Fact]
+    public async Task Atualizar_Excecao_DeveRetornar500()
+    {
+        var id = Guid.NewGuid();
+        _permissao
+            .Setup(x => x.GarantirPermissaoAsync(It.IsAny<Guid>(), "funcionario_linhas", AcaoPermissao.Editar))
+            .Returns(Task.CompletedTask);
+        _service
+            .Setup(x => x.AtualizarAsync(id, It.IsAny<FuncionarioLinhaAtualizarDto>(), It.IsAny<Guid?>()))
+            .ThrowsAsync(new Exception("boom"));
+
+        var result = await CreateController().Atualizar(id, new FuncionarioLinhaAtualizarDto(
+            Guid.NewGuid(), 1, new DateOnly(2026, 1, 1), null));
+        var obj = Assert.IsType<ObjectResult>(result);
+        Assert.Equal(500, obj.StatusCode);
+    }
 }

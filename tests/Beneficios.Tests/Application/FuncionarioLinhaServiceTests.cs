@@ -243,6 +243,76 @@ public class FuncionarioLinhaServiceTests
         Assert.Null(await _sut.ObterPorIdAsync(id));
     }
 
+    [Fact]
+    public async Task ObterPorIdAsync_Encontrado_DeveMapear()
+    {
+        var id = Guid.NewGuid();
+        _vinculoRepo.Setup(r => r.ObterPorIdAsync(id))
+            .ReturnsAsync(new FuncionarioLinhaQueryResult
+            {
+                Id = id,
+                FuncionarioId = _funcionarioId,
+                FuncionarioNome = "Ana",
+                LinhaOnibusId = _linhaId,
+                LinhaDescricao = "Linha 100",
+                Quantidade = 2,
+                DataInicio = new DateOnly(2026, 1, 1),
+            });
+
+        var dto = await _sut.ObterPorIdAsync(id);
+        Assert.NotNull(dto);
+        Assert.Equal("Ana", dto!.FuncionarioNome);
+        Assert.Equal(2, dto.Quantidade);
+    }
+
+    [Fact]
+    public async Task FiltrarAsync_SemSomenteVigentes_DeveRetornarTodos()
+    {
+        _vinculoRepo.Setup(r => r.FiltrarAsync(It.IsAny<FuncionarioLinhaFiltroParams>()))
+            .ReturnsAsync(
+            [
+                new FuncionarioLinhaQueryResult
+                {
+                    Id = Guid.NewGuid(),
+                    FuncionarioId = _funcionarioId,
+                    FuncionarioNome = "Ana",
+                    LinhaOnibusId = _linhaId,
+                    LinhaDescricao = "A",
+                    Quantidade = 1,
+                    DataInicio = new DateOnly(2026, 1, 1),
+                },
+                new FuncionarioLinhaQueryResult
+                {
+                    Id = Guid.NewGuid(),
+                    FuncionarioId = _funcionarioId,
+                    FuncionarioNome = "Ana",
+                    LinhaOnibusId = Guid.NewGuid(),
+                    LinhaDescricao = "B",
+                    Quantidade = 1,
+                    DataInicio = new DateOnly(2025, 1, 1),
+                    DataFim = new DateOnly(2025, 6, 1),
+                },
+            ]);
+
+        var lista = await _sut.FiltrarAsync(_funcionarioId, false);
+        Assert.Equal(2, lista.Count);
+    }
+
+    [Fact]
+    public async Task EncerrarAbertosPorFuncionarioAsync_DeveDelegarRepositorio()
+    {
+        var usuarioId = Guid.NewGuid();
+        await _sut.EncerrarAbertosPorFuncionarioAsync(_funcionarioId, usuarioId);
+
+        _vinculoRepo.Verify(
+            r => r.EncerrarAbertosPorFuncionarioAsync(
+                _funcionarioId,
+                It.IsAny<DateOnly>(),
+                It.IsAny<DateTime>(),
+                usuarioId),
+            Times.Once);
+    }
+
     private FuncionarioLinhaSalvarDto DtoSalvar(
         int quantidade = 1,
         DateOnly? dataInicio = null,

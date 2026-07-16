@@ -166,4 +166,73 @@ public class LinhaOnibusServiceTests
         _linhaRepo.Setup(r => r.ObterPorIdAsync(id)).ReturnsAsync((LinhaOnibusQueryResult?)null);
         Assert.Null(await _sut.ObterPorIdAsync(id));
     }
+
+    [Fact]
+    public async Task ObterPorIdAsync_Encontrada_DeveMapear()
+    {
+        var id = Guid.NewGuid();
+        _linhaRepo.Setup(r => r.ObterPorIdAsync(id))
+            .ReturnsAsync(new LinhaOnibusQueryResult
+            {
+                Id = id,
+                Descricao = "Linha 100",
+                DataInicio = new DateOnly(2026, 1, 1),
+                ValorTarifa = 4.50m,
+            });
+
+        var dto = await _sut.ObterPorIdAsync(id);
+        Assert.NotNull(dto);
+        Assert.Equal("Linha 100", dto!.Descricao);
+        Assert.Equal(4.50m, dto.ValorTarifa);
+    }
+
+    [Fact]
+    public async Task FiltrarAsync_SemSomenteVigentes_DeveRetornarTodas()
+    {
+        _linhaRepo.Setup(r => r.FiltrarAsync(It.IsAny<LinhaOnibusFiltroParams>()))
+            .ReturnsAsync(
+            [
+                new LinhaOnibusQueryResult
+                {
+                    Id = Guid.NewGuid(),
+                    Descricao = "A",
+                    DataInicio = new DateOnly(2026, 1, 1),
+                    ValorTarifa = 1m,
+                },
+                new LinhaOnibusQueryResult
+                {
+                    Id = Guid.NewGuid(),
+                    Descricao = "B",
+                    DataInicio = new DateOnly(2025, 1, 1),
+                    DataFim = new DateOnly(2025, 12, 31),
+                    ValorTarifa = 2m,
+                },
+            ]);
+
+        var lista = await _sut.FiltrarAsync("x", false);
+        Assert.Equal(2, lista.Count);
+    }
+
+    [Fact]
+    public async Task AtualizarAsync_SemDataFim_NaoConsultaVinculos()
+    {
+        var id = Guid.NewGuid();
+        _linhaRepo.Setup(r => r.ObterPorIdAsync(id))
+            .ReturnsAsync(new LinhaOnibusQueryResult
+            {
+                Id = id,
+                Descricao = "Linha 100",
+                DataInicio = new DateOnly(2026, 1, 1),
+                ValorTarifa = 4.50m,
+            });
+
+        await _sut.AtualizarAsync(id, new LinhaOnibusAtualizarDto(
+            "Linha 100",
+            new DateOnly(2026, 1, 1),
+            null,
+            5.00m), null);
+
+        _vinculoRepo.Verify(r => r.ExisteVinculoAbertoPorLinhaAsync(It.IsAny<Guid>()), Times.Never);
+        _linhaRepo.Verify(r => r.AtualizarAsync(It.IsAny<LinhaOnibusAtualizarParams>()), Times.Once);
+    }
 }

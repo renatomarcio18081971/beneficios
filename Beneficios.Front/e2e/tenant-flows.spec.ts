@@ -4,6 +4,8 @@ import {
   mockCalendarioMes,
   mockFuncionarioList,
   mockAfastamentoList,
+  mockLinhaOnibusList,
+  mockFuncionarioLinhaList,
   mockPerfilList,
   mockTenantLogin,
   mockTenantLoginSemPerfil,
@@ -74,6 +76,32 @@ test.describe('Fluxos críticos tenant', () => {
     await page.getByRole('link', { name: 'Afastamentos/Férias' }).click();
     await page.waitForURL('**/afastamentos');
     await expect(page.getByRole('heading', { name: 'Afastamentos/Férias' })).toBeVisible();
+  });
+
+  test('abrir Linhas de Ônibus exibe listagem', async ({ page }) => {
+    await mockLinhaOnibusList(page, [
+      {
+        id: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
+        descricao: 'Linha 100',
+        dataInicio: '2026-01-01',
+        dataFim: null,
+        valorTarifa: 4.5,
+      },
+    ]);
+    await loginTenant(page);
+    await page.getByRole('link', { name: 'Linhas de Ônibus' }).click();
+    await page.waitForURL('**/linhas-onibus');
+    await expect(page.getByRole('heading', { name: 'Linhas de Ônibus' })).toBeVisible();
+    await expect(page.getByText('Linha 100')).toBeVisible();
+  });
+
+  test('abrir Funcionário × Linhas exibe listagem', async ({ page }) => {
+    await mockFuncionarioLinhaList(page, []);
+    await mockFuncionarioList(page, []);
+    await loginTenant(page);
+    await page.getByRole('link', { name: 'Funcionário × Linhas' }).click();
+    await page.waitForURL('**/funcionario-linhas');
+    await expect(page.getByRole('heading', { name: 'Funcionário × Linhas' })).toBeVisible();
   });
 
   test('criar usuário na tenant', async ({ page }) => {
