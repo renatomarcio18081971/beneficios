@@ -1,4 +1,4 @@
-import { PermissaoMenu } from '../auth/auth.models';
+﻿import { PermissaoMenu } from '../auth/auth.models';
 
 export interface Perfil {
   id: string;

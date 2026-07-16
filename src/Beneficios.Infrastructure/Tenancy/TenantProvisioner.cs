@@ -150,6 +150,10 @@ public class TenantProvisioner : ITenantProvisioner
             TenantSchemaSql.RecalcularSituacoesPorAfastamento(schemaName),
             cancellationToken: cancellationToken));
 
+        await connection.ExecuteAsync(new CommandDefinition(
+            TenantSchemaSql.RenomearCodigoMenuDiasUteisParaCalendario(schemaName),
+            cancellationToken: cancellationToken));
+
         var quoted = TenantSchemaSql.CitarIdentificador(schemaName);
         var donoId = await connection.ExecuteScalarAsync<Guid?>(new CommandDefinition(
             $"""
@@ -158,7 +162,26 @@ public class TenantProvisioner : ITenantProvisioner
             cancellationToken: cancellationToken));
 
         if (donoId is Guid existente)
+        {
+            foreach (var modulo in ModulosSistemaCatalog.Todos)
+            {
+                await connection.ExecuteAsync(new CommandDefinition(
+                    TenantSchemaSql.InserirPerfilPermissaoSeAusente(schemaName),
+                    new
+                    {
+                        Id = Guid.NewGuid(),
+                        PerfilId = existente,
+                        CodigoMenu = modulo.Codigo,
+                        Visualizar = true,
+                        Criar = true,
+                        Editar = true,
+                        Excluir = true,
+                    },
+                    cancellationToken: cancellationToken));
+            }
+
             return existente;
+        }
 
         var perfilId = Guid.NewGuid();
         await connection.ExecuteAsync(new CommandDefinition(

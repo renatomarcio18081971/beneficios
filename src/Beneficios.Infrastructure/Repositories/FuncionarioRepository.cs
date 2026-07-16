@@ -2,6 +2,7 @@
 using Beneficios.Domain.Interfaces;
 using Beneficios.Domain.Models;
 using Dapper;
+using Npgsql;
 using System.Data;
 using System.Text;
 
@@ -106,18 +107,17 @@ public class FuncionarioRepository : IFuncionarioRepository
                 trab_numero AS TrabNumero, trab_complemento AS TrabComplemento, trab_bairro AS TrabBairro,
                 trab_cidade AS TrabCidade, trab_uf AS TrabUf,
                 situacao AS SituacaoTexto,
-                (SELECT a.tipo FROM funcionario_afastamentos a
-                 WHERE a.funcionario_id = funcionarios.id
-                   AND a.data_inicio <= CURRENT_DATE
-                   AND (a.data_fim IS NULL OR a.data_fim >= CURRENT_DATE)
-                 LIMIT 1) AS MotivoAfastamentoAtivo,
                 jornada AS JornadaTexto, jornada_detalhe AS JornadaDetalhe,
                 data_inclusao AS DataInclusao, data_alteracao AS DataAlteracao
             FROM funcionarios WHERE id = @Id
             """;
 
         var row = await _dbConnection.QueryFirstOrDefaultAsync<FuncionarioRow>(sql, new { Id = id });
-        return row is null ? null : Mapear(row);
+        if (row is null) return null;
+
+        var result = Mapear(row);
+        result.MotivoAfastamentoAtivo = await ObterTipoAfastamentoAtivoAsync(id);
+        return result;
     }
 
     public async Task<IReadOnlyList<FuncionarioBeneficioQueryResult>> ObterBeneficiosAsync(Guid funcionarioId)
@@ -147,11 +147,6 @@ public class FuncionarioRepository : IFuncionarioRepository
                 trab_numero AS TrabNumero, trab_complemento AS TrabComplemento, trab_bairro AS TrabBairro,
                 trab_cidade AS TrabCidade, trab_uf AS TrabUf,
                 situacao AS SituacaoTexto,
-                (SELECT a.tipo FROM funcionario_afastamentos a
-                 WHERE a.funcionario_id = funcionarios.id
-                   AND a.data_inicio <= CURRENT_DATE
-                   AND (a.data_fim IS NULL OR a.data_fim >= CURRENT_DATE)
-                 LIMIT 1) AS MotivoAfastamentoAtivo,
                 jornada AS JornadaTexto, jornada_detalhe AS JornadaDetalhe,
                 data_inclusao AS DataInclusao, data_alteracao AS DataAlteracao
             FROM funcionarios WHERE 1=1
@@ -176,7 +171,9 @@ public class FuncionarioRepository : IFuncionarioRepository
             Situacao = filtro.Situacao is null ? null : FuncionarioConversao.SituacaoParaBanco(filtro.Situacao.Value),
         });
 
-        return rows.Select(Mapear).ToArray();
+        var lista = rows.Select(Mapear).ToList();
+        await PreencherMotivosAtivosAsync(lista);
+        return lista;
     }
 
     public async Task<bool> CpfExisteAsync(string cpf, Guid? excetoId = null)
@@ -219,6 +216,52 @@ public class FuncionarioRepository : IFuncionarioRepository
         const string sql = "SELECT id AS Id, situacao AS Situacao FROM funcionarios";
         var rows = await _dbConnection.QueryAsync<(Guid Id, string Situacao)>(sql);
         return rows.ToArray();
+    }
+
+    private async Task PreencherMotivosAtivosAsync(List<FuncionarioQueryResult> lista)
+    {
+        if (lista.Count == 0) return;
+
+        var motivos = await ObterTiposAfastamentoAtivosAsync(lista.Select(f => f.Id).ToArray());
+        foreach (var item in lista)
+        {
+            if (motivos.TryGetValue(item.Id, out var tipo))
+                item.MotivoAfastamentoAtivo = tipo;
+        }
+    }
+
+    private async Task<string?> ObterTipoAfastamentoAtivoAsync(Guid funcionarioId)
+    {
+        var map = await ObterTiposAfastamentoAtivosAsync([funcionarioId]);
+        return map.TryGetValue(funcionarioId, out var tipo) ? tipo : null;
+    }
+
+    private async Task<Dictionary<Guid, string>> ObterTiposAfastamentoAtivosAsync(IReadOnlyList<Guid> funcionarioIds)
+    {
+        if (funcionarioIds.Count == 0)
+            return new Dictionary<Guid, string>();
+
+        const string sql = """
+            SELECT DISTINCT ON (funcionario_id)
+                funcionario_id AS FuncionarioId,
+                tipo AS Tipo
+            FROM funcionario_afastamentos
+            WHERE funcionario_id = ANY(@Ids)
+              AND data_inicio <= CURRENT_DATE
+              AND (data_fim IS NULL OR data_fim >= CURRENT_DATE)
+            ORDER BY funcionario_id, data_inicio DESC
+            """;
+
+        try
+        {
+            var rows = await _dbConnection.QueryAsync<(Guid FuncionarioId, string Tipo)>(
+                sql, new { Ids = funcionarioIds.ToArray() });
+            return rows.ToDictionary(r => r.FuncionarioId, r => r.Tipo);
+        }
+        catch (PostgresException ex) when (ex.SqlState == PostgresErrorCodes.UndefinedTable)
+        {
+            return new Dictionary<Guid, string>();
+        }
     }
 
     private async Task SyncBeneficiosAsync(

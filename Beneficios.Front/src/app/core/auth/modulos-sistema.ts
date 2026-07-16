@@ -25,9 +25,9 @@ export const MODULOS_SISTEMA: readonly ModuloSistema[] = [
     acoesSuportadas: ['visualizar', 'criar', 'editar', 'excluir'],
   },
   {
-    codigo: 'dias_uteis',
+    codigo: 'calendario',
     nomeExibicao: 'Calendário',
-    rota: '/dias-uteis',
+    rota: '/calendario',
     icone: 'calendar_month',
     acoesSuportadas: ['visualizar', 'criar', 'editar', 'excluir'],
   },

@@ -1,4 +1,4 @@
-namespace Beneficios.Domain.Models;
+﻿namespace Beneficios.Domain.Models;
 
 public record EmpresaSalvarParams
 {

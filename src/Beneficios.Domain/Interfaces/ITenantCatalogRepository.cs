@@ -1,4 +1,4 @@
-namespace Beneficios.Domain.Interfaces;
+﻿namespace Beneficios.Domain.Interfaces;
 
 public interface ITenantCatalogRepository
 {

@@ -1,4 +1,4 @@
-namespace Beneficios.Tests.Infrastructure;
+﻿namespace Beneficios.Tests.Infrastructure;
 
 internal static class PostgresTestHelper
 {

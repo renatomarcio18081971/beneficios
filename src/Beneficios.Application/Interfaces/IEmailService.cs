@@ -1,4 +1,4 @@
-namespace Beneficios.Application.Interfaces;
+﻿namespace Beneficios.Application.Interfaces;
 
 public interface IEmailService
 {

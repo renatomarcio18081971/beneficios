@@ -13,15 +13,15 @@ public class ModulosSistemaCatalogTests
         Assert.DoesNotContain("dashboard", codigos);
         Assert.Contains("usuarios", codigos);
         Assert.Contains("perfis", codigos);
-        Assert.Contains("dias_uteis", codigos);
+        Assert.Contains("calendario", codigos);
         Assert.Contains("funcionarios", codigos);
         Assert.Contains("afastamentos", codigos);
     }
 
     [Fact]
-    public void Todos_DeveConterDiasUteis()
+    public void Todos_DeveConterCalendario()
     {
-        Assert.Contains(ModulosSistemaCatalog.Todos, m => m.Codigo == "dias_uteis" && m.Rota == "/dias-uteis");
+        Assert.Contains(ModulosSistemaCatalog.Todos, m => m.Codigo == "calendario" && m.Rota == "/calendario");
     }
 
     [Fact]
@@ -39,10 +39,24 @@ public class ModulosSistemaCatalogTests
     [Fact]
     public void ModulosDePerfil_DevemSuportarTodasAsAcoes()
     {
-        foreach (var codigo in new[] { "usuarios", "perfis", "dias_uteis", "funcionarios", "afastamentos" })
+        foreach (var codigo in new[] { "usuarios", "perfis", "calendario", "funcionarios", "afastamentos" })
         {
             var modulo = ModulosSistemaCatalog.Todos.Single(m => m.Codigo == codigo);
             Assert.Equal(AcaoPermissao.Todas, modulo.AcoesSuportadas);
         }
+    }
+
+    [Fact]
+    public void Todos_NaoDeveConterDiasUteis()
+    {
+        Assert.DoesNotContain(ModulosSistemaCatalog.Todos, m => m.Codigo == "dias_uteis");
+        Assert.DoesNotContain(ModulosSistemaCatalog.Todos, m => m.Rota == "/dias-uteis");
+    }
+
+    [Fact]
+    public void ObterPorCodigo_DeveSerCaseInsensitive()
+    {
+        Assert.NotNull(ModulosSistemaCatalog.ObterPorCodigo("CALENDARIO"));
+        Assert.Null(ModulosSistemaCatalog.ObterPorCodigo("inexistente"));
     }
 }

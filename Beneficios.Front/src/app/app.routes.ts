@@ -90,11 +90,11 @@ export const routes: Routes = [
           import('./features/perfis/perfil-form/perfil-form.component').then((m) => m.PerfilFormComponent),
       },
       {
-        path: 'dias-uteis',
-        canActivate: [tenantGuard, permissaoGuard('dias_uteis')],
+        path: 'calendario',
+        canActivate: [tenantGuard, permissaoGuard('calendario')],
         loadComponent: () =>
-          import('./features/dias-uteis/dias-uteis-page/dias-uteis-page.component').then(
-            (m) => m.DiasUteisPageComponent,
+          import('./features/calendario/calendario-page/calendario-page.component').then(
+            (m) => m.CalendarioPageComponent,
           ),
       },
       {

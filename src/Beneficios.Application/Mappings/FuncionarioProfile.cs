@@ -9,7 +9,7 @@ public class FuncionarioProfile : Profile
     public FuncionarioProfile()
     {
         CreateMap<FuncionarioQueryResult, FuncionarioDto>()
-            .ForMember(d => d.Beneficios, o => o.Ignore());
+            .ForCtorParam("Beneficios", opt => opt.MapFrom(_ => Array.Empty<FuncionarioBeneficioDto>()));
         CreateMap<FuncionarioBeneficioQueryResult, FuncionarioBeneficioDto>();
     }
 }

@@ -1,4 +1,4 @@
-import { CurrencyPipe } from '@angular/common';
+﻿import { CurrencyPipe } from '@angular/common';
 import { AfterViewInit, ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';

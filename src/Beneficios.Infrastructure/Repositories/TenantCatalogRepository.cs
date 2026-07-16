@@ -1,4 +1,4 @@
-using Beneficios.Domain.Interfaces;
+﻿using Beneficios.Domain.Interfaces;
 using Beneficios.Infrastructure.Configurations;
 using Dapper;
 using Microsoft.Extensions.Configuration;

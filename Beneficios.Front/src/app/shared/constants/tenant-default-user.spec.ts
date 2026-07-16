@@ -1,4 +1,4 @@
-import { isTenantDefaultUser } from '../constants/tenant-default-user';
+﻿import { isTenantDefaultUser } from '../constants/tenant-default-user';
 
 describe('isTenantDefaultUser', () => {
   it('deve identificar o email do usuário padrão', () => {

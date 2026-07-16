@@ -1,4 +1,4 @@
-using Beneficios.Domain.Enums;
+﻿using Beneficios.Domain.Enums;
 
 namespace Beneficios.Application.DTOs;
 

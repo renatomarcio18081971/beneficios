@@ -1,4 +1,4 @@
-/** Formato de exibição da data de inclusão nas listagens (pt-BR). */
+﻿/** Formato de exibição da data de inclusão nas listagens (pt-BR). */
 export const DATA_INCLUSAO_DATE_PIPE_FORMAT = 'dd/MM/yyyy HH:mm:ss';
 
 export function formatDataInclusao(value: unknown): string {

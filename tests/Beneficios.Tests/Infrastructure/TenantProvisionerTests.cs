@@ -205,6 +205,101 @@ public class TenantProvisionerTests(PostgresFixture fixture)
         Assert.Equal(donoId, perfilIdUsuario);
     }
 
+    [SkippableFact]
+    public async Task GarantirPerfisEmTenantsExistentesAsync_DeveRenomearDiasUteisECompletarModulos()
+    {
+        await PostgresTestHelper.PrepareAsync(fixture);
+
+        var empresaId = Guid.NewGuid();
+        var empresaRepository = new EmpresaRepository(fixture.Connection!);
+        await empresaRepository.SalvarAsync(new EmpresaSalvarParams
+        {
+            Id = empresaId,
+            RazaoSocial = "Empresa Mig Calendario LTDA",
+            Dominio = "migcalendario",
+        });
+
+        var schemaName = TenantSchemaNames.FromRazaoSocial("Empresa Mig Calendario LTDA");
+        var quotedSchema = TenantSchemaSql.CitarIdentificador(schemaName);
+        var agora = DateTime.UtcNow;
+        var donoIdSeed = Guid.NewGuid();
+
+        await fixture.Connection!.ExecuteAsync(TenantSchemaSql.CriarSchema(schemaName));
+        await fixture.Connection.ExecuteAsync(TenantSchemaSql.CriarTabelaUsuarios(schemaName));
+        await fixture.Connection.ExecuteAsync(TenantSchemaSql.CriarTabelaPerfis(schemaName));
+        await fixture.Connection.ExecuteAsync(TenantSchemaSql.CriarTabelaPerfilPermissoes(schemaName));
+        await fixture.Connection.ExecuteAsync(TenantSchemaSql.AlterarUsuariosAdicionarPerfilId(schemaName));
+
+        await fixture.Connection.ExecuteAsync(
+            TenantSchemaSql.InserirPerfilDono(schemaName),
+            new { Id = donoIdSeed, Nome = "Dono", DataInclusao = agora });
+
+        await fixture.Connection.ExecuteAsync(
+            TenantSchemaSql.InserirPerfilPermissao(schemaName),
+            new
+            {
+                Id = Guid.NewGuid(),
+                PerfilId = donoIdSeed,
+                CodigoMenu = "dias_uteis",
+                Visualizar = true,
+                Criar = true,
+                Editar = true,
+                Excluir = true,
+            });
+
+        await fixture.Connection.ExecuteAsync(
+            $"""
+            INSERT INTO {quotedSchema}.usuarios
+                (id, nome, senha, email, perfil, empresa_id, perfil_id, data_inclusao)
+            VALUES
+                (@Id, @Nome, @Senha, @Email, 'Empresa', @EmpresaId, @PerfilId, @DataInclusao)
+            """,
+            new
+            {
+                Id = Guid.NewGuid(),
+                Nome = TenantDefaultUser.Nome,
+                Senha = Criptografia.Encrypt(TenantDefaultUser.Senha),
+                Email = TenantDefaultUser.Email,
+                EmpresaId = empresaId,
+                PerfilId = donoIdSeed,
+                DataInclusao = agora,
+            });
+
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["ConnectionStrings:DefaultConnection"] = fixture.CatalogConnectionString,
+            })
+            .Build();
+
+        await new TenantProvisioner(configuration).GarantirPerfisEmTenantsExistentesAsync();
+
+        var diasUteisRestantes = await fixture.Connection.ExecuteScalarAsync<int>(
+            $"SELECT COUNT(*) FROM {quotedSchema}.perfil_permissoes WHERE codigo_menu = 'dias_uteis'");
+        Assert.Equal(0, diasUteisRestantes);
+
+        var temCalendario = await fixture.Connection.ExecuteScalarAsync<bool>(
+            $"""
+            SELECT EXISTS(
+              SELECT 1 FROM {quotedSchema}.perfil_permissoes
+              WHERE perfil_id = @Id AND codigo_menu = 'calendario')
+            """, new { Id = donoIdSeed });
+        Assert.True(temCalendario);
+
+        var permCount = await fixture.Connection.ExecuteScalarAsync<int>(
+            $"SELECT COUNT(*) FROM {quotedSchema}.perfil_permissoes WHERE perfil_id = @Id",
+            new { Id = donoIdSeed });
+        Assert.Equal(ModulosSistemaCatalog.Todos.Count, permCount);
+
+        var afastamentosExiste = await fixture.Connection.ExecuteScalarAsync<bool>(
+            """
+            SELECT EXISTS(
+              SELECT 1 FROM information_schema.tables
+              WHERE table_schema = @SchemaName AND table_name = 'funcionario_afastamentos')
+            """, new { SchemaName = schemaName });
+        Assert.True(afastamentosExiste);
+    }
+
     private sealed class DonoProvisionadoResult
     {
         public Guid Id { get; init; }

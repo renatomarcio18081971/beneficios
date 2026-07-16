@@ -1,11 +1,11 @@
-﻿.dias-uteis-page {
+﻿.calendario-page {
   padding: 16px;
   width: 100%;
   max-width: 720px;
   box-sizing: border-box;
 }
 
-.dias-uteis-header {
+.calendario-header {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -14,7 +14,7 @@
   margin-bottom: 16px;
 }
 
-.dias-uteis-header h1 {
+.calendario-header h1 {
   margin: 0;
   font-size: 1.5rem;
   font-weight: 500;

@@ -1,6 +1,7 @@
 ﻿using Beneficios.Domain.Interfaces;
 using Beneficios.Domain.Models;
 using Dapper;
+using Npgsql;
 using System.Data;
 using System.Text;
 
@@ -98,14 +99,21 @@ public class FuncionarioAfastamentoRepository : IFuncionarioAfastamentoRepositor
 
         sql.Append(" ORDER BY a.data_inicio DESC, f.nome");
 
-        var rows = await _dbConnection.QueryAsync<AfastamentoRow>(sql.ToString(), new
+        try
         {
-            filtro.FuncionarioId,
-            Tipo = filtro.Tipo,
-            DataInicioFiltro = filtro.DataInicio?.ToDateTime(TimeOnly.MinValue),
-            DataFimFiltro = filtro.DataFim?.ToDateTime(TimeOnly.MinValue),
-        });
-        return rows.Select(Mapear).ToArray();
+            var rows = await _dbConnection.QueryAsync<AfastamentoRow>(sql.ToString(), new
+            {
+                filtro.FuncionarioId,
+                Tipo = filtro.Tipo,
+                DataInicioFiltro = filtro.DataInicio?.ToDateTime(TimeOnly.MinValue),
+                DataFimFiltro = filtro.DataFim?.ToDateTime(TimeOnly.MinValue),
+            });
+            return rows.Select(Mapear).ToArray();
+        }
+        catch (PostgresException ex) when (ex.SqlState == PostgresErrorCodes.UndefinedTable)
+        {
+            return Array.Empty<FuncionarioAfastamentoQueryResult>();
+        }
     }
 
     public async Task<IReadOnlyList<FuncionarioAfastamentoQueryResult>> ListarPorFuncionarioAsync(Guid funcionarioId)

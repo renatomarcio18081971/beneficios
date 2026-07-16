@@ -11,19 +11,19 @@ namespace Beneficios.Api.Controllers;
 
 [ApiController]
 [Authorize]
-[Route("api/dias-uteis")]
-public class DiasUteisController : ControllerBase
+[Route("api/calendario")]
+public class CalendarioController : ControllerBase
 {
-    private const string CodigoMenu = "dias_uteis";
+    private const string CodigoMenu = "calendario";
 
     private readonly ICalendarioDiaService _calendarioDiaService;
     private readonly IPermissaoService _permissaoService;
-    private readonly ILogger<DiasUteisController> _logger;
+    private readonly ILogger<CalendarioController> _logger;
 
-    public DiasUteisController(
+    public CalendarioController(
         ICalendarioDiaService calendarioDiaService,
         IPermissaoService permissaoService,
-        ILogger<DiasUteisController> logger)
+        ILogger<CalendarioController> logger)
     {
         _calendarioDiaService = calendarioDiaService;
         _permissaoService = permissaoService;
@@ -50,8 +50,8 @@ public class DiasUteisController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao listar dias úteis {Ano}/{Mes}", ano, mes);
-            return StatusCode(500, new { message = "Erro ao listar dias úteis" });
+            _logger.LogError(ex, "Erro ao listar calendário {Ano}/{Mes}", ano, mes);
+            return StatusCode(500, new { message = "Erro ao listar calendário" });
         }
     }
 
@@ -75,8 +75,8 @@ public class DiasUteisController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao obter dia útil {Id}", id);
-            return StatusCode(500, new { message = "Erro ao obter dia útil" });
+            _logger.LogError(ex, "Erro ao obter dia do calendário {Id}", id);
+            return StatusCode(500, new { message = "Erro ao obter dia do calendário" });
         }
     }
 
@@ -103,8 +103,8 @@ public class DiasUteisController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao atualizar dia útil {Id}", id);
-            return StatusCode(500, new { message = "Erro ao atualizar dia útil" });
+            _logger.LogError(ex, "Erro ao atualizar dia do calendário {Id}", id);
+            return StatusCode(500, new { message = "Erro ao atualizar dia do calendário" });
         }
     }
 

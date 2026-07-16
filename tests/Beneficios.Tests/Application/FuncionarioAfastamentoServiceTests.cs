@@ -180,6 +180,79 @@ public class FuncionarioAfastamentoServiceTests
         Assert.Equal("Ana", lista[0].FuncionarioNome);
     }
 
+    [Fact]
+    public async Task AtualizarAsync_NaoEncontrado_DeveFalhar()
+    {
+        var id = Guid.NewGuid();
+        _afastRepo.Setup(r => r.ObterPorIdAsync(id)).ReturnsAsync((FuncionarioAfastamentoQueryResult?)null);
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => _sut.AtualizarAsync(
+            id, new AfastamentoAtualizarDto(TipoAfastamento.Ferias, new DateOnly(2026, 1, 1), null, null), null));
+        Assert.Equal(FuncionarioAfastamentoService.MensagemAfastamentoNaoEncontrado, ex.Message);
+    }
+
+    [Fact]
+    public async Task AtualizarAsync_Sobreposicao_DeveFalhar()
+    {
+        var afastamentoId = Guid.NewGuid();
+        var funcionarioId = Guid.NewGuid();
+        _afastRepo.Setup(r => r.ObterPorIdAsync(afastamentoId))
+            .ReturnsAsync(new FuncionarioAfastamentoQueryResult
+            {
+                Id = afastamentoId,
+                FuncionarioId = funcionarioId,
+                Tipo = "ferias",
+                DataInicio = new DateOnly(2026, 1, 1),
+            });
+        _afastRepo.Setup(r => r.ExisteSobreposicaoAsync(funcionarioId, It.IsAny<DateOnly>(), It.IsAny<DateOnly?>(), afastamentoId))
+            .ReturnsAsync(true);
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => _sut.AtualizarAsync(
+            afastamentoId,
+            new AfastamentoAtualizarDto(TipoAfastamento.Ferias, new DateOnly(2026, 2, 1), null, null),
+            null));
+        Assert.Equal(FuncionarioAfastamentoService.MensagemSobreposicao, ex.Message);
+    }
+
+    [Fact]
+    public async Task ExcluirAsync_NaoEncontrado_DeveFalhar()
+    {
+        var id = Guid.NewGuid();
+        _afastRepo.Setup(r => r.ObterPorIdAsync(id)).ReturnsAsync((FuncionarioAfastamentoQueryResult?)null);
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => _sut.ExcluirAsync(id));
+        Assert.Equal(FuncionarioAfastamentoService.MensagemAfastamentoNaoEncontrado, ex.Message);
+    }
+
+    [Fact]
+    public async Task ObterPorIdAsync_NaoEncontrado_DeveRetornarNull()
+    {
+        var id = Guid.NewGuid();
+        _afastRepo.Setup(r => r.ObterPorIdAsync(id)).ReturnsAsync((FuncionarioAfastamentoQueryResult?)null);
+        Assert.Null(await _sut.ObterPorIdAsync(id));
+    }
+
+    [Fact]
+    public async Task SalvarAsync_DataFimIgualInicio_DevePermitir()
+    {
+        var funcionarioId = Guid.NewGuid();
+        _funcRepo.Setup(r => r.ObterPorIdAsync(funcionarioId))
+            .ReturnsAsync(CriarFuncionario(funcionarioId, SituacaoFuncionario.Ativo));
+        _afastRepo.Setup(r => r.ExisteSobreposicaoAsync(funcionarioId, It.IsAny<DateOnly>(), It.IsAny<DateOnly?>(), null))
+            .ReturnsAsync(false);
+        _afastRepo.Setup(r => r.SalvarAsync(It.IsAny<FuncionarioAfastamentoSalvarParams>()))
+            .ReturnsAsync((FuncionarioAfastamentoSalvarParams p) => p.Id);
+        _afastRepo.Setup(r => r.ObterAtivoEmAsync(funcionarioId, It.IsAny<DateOnly>()))
+            .ReturnsAsync((FuncionarioAfastamentoQueryResult?)null);
+
+        var id = await _sut.SalvarAsync(new AfastamentoSalvarDto(
+            funcionarioId, TipoAfastamento.Outros,
+            new DateOnly(2026, 5, 10), new DateOnly(2026, 5, 10), null), null);
+
+        Assert.NotEqual(Guid.Empty, id);
+        _funcRepo.Verify(r => r.AtualizarSituacaoAsync(funcionarioId, "ativo"), Times.Once);
+    }
+
     private static FuncionarioQueryResult CriarFuncionario(Guid id, SituacaoFuncionario situacao) => new()
     {
         Id = id,

@@ -31,4 +31,16 @@ public class TipoAfastamentoCatalogTests
     {
         Assert.Equal(6, TipoAfastamentoCatalog.Todos.Count);
     }
+
+    [Fact]
+    public void DeBanco_Maiusculo_DeveAceitar()
+    {
+        Assert.Equal(TipoAfastamento.Ferias, TipoAfastamentoCatalog.DeBanco("FERIAS"));
+    }
+
+    [Fact]
+    public void DeBanco_Invalido_DeveLancar()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() => TipoAfastamentoCatalog.DeBanco("xyz"));
+    }
 }

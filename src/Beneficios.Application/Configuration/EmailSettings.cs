@@ -1,4 +1,4 @@
-namespace Beneficios.Application.Configuration;
+﻿namespace Beneficios.Application.Configuration;
 
 public class EmailSettings
 {

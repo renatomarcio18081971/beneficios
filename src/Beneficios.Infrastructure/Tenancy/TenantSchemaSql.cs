@@ -266,6 +266,25 @@ public static class TenantSchemaSql
             """;
     }
 
+    public static string RenomearCodigoMenuDiasUteisParaCalendario(string schemaName)
+    {
+        var quotedSchema = CitarIdentificador(schemaName);
+        return $"""
+            UPDATE {quotedSchema}.perfil_permissoes AS d
+            SET codigo_menu = 'calendario'
+            WHERE d.codigo_menu = 'dias_uteis'
+              AND NOT EXISTS (
+                  SELECT 1
+                  FROM {quotedSchema}.perfil_permissoes c
+                  WHERE c.perfil_id = d.perfil_id
+                    AND c.codigo_menu = 'calendario'
+              );
+
+            DELETE FROM {quotedSchema}.perfil_permissoes
+            WHERE codigo_menu = 'dias_uteis';
+            """;
+    }
+
     public static string InserirPerfilDono(string schemaName)
     {
         var quotedSchema = CitarIdentificador(schemaName);
@@ -287,6 +306,24 @@ public static class TenantSchemaSql
                 (id, perfil_id, codigo_menu, visualizar, criar, editar, excluir)
             VALUES
                 (@Id, @PerfilId, @CodigoMenu, @Visualizar, @Criar, @Editar, @Excluir)
+            """;
+    }
+
+    public static string InserirPerfilPermissaoSeAusente(string schemaName)
+    {
+        var quotedSchema = CitarIdentificador(schemaName);
+
+        return $"""
+            INSERT INTO {quotedSchema}.perfil_permissoes
+                (id, perfil_id, codigo_menu, visualizar, criar, editar, excluir)
+            SELECT
+                @Id, @PerfilId, @CodigoMenu, @Visualizar, @Criar, @Editar, @Excluir
+            WHERE NOT EXISTS (
+                SELECT 1
+                FROM {quotedSchema}.perfil_permissoes
+                WHERE perfil_id = @PerfilId
+                  AND codigo_menu = @CodigoMenu
+            )
             """;
     }
 

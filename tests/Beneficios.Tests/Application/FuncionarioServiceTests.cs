@@ -99,6 +99,142 @@ public class FuncionarioServiceTests
             It.IsAny<IReadOnlyList<FuncionarioBeneficioSalvarParams>>()), Times.Once);
     }
 
+    [Fact]
+    public async Task SalvarAsync_CpfDuplicado_DeveFalhar()
+    {
+        _repo.Setup(r => r.CpfExisteAsync(It.IsAny<string>(), null)).ReturnsAsync(true);
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => _sut.SalvarAsync(CriarDto(), null));
+        Assert.Equal(FuncionarioService.MensagemCpfDuplicado, ex.Message);
+    }
+
+    [Fact]
+    public async Task SalvarAsync_MatriculaDuplicada_DeveFalhar()
+    {
+        _repo.Setup(r => r.CpfExisteAsync(It.IsAny<string>(), null)).ReturnsAsync(false);
+        _repo.Setup(r => r.MatriculaExisteAsync("M1", null)).ReturnsAsync(true);
+
+        var dto = CriarDto() with { Matricula = "M1" };
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => _sut.SalvarAsync(dto, null));
+        Assert.Equal(FuncionarioService.MensagemMatriculaDuplicada, ex.Message);
+    }
+
+    [Fact]
+    public async Task SalvarAsync_BeneficioNaoSuportado_DeveFalhar()
+    {
+        _repo.Setup(r => r.CpfExisteAsync(It.IsAny<string>(), null)).ReturnsAsync(false);
+        var dto = CriarDto() with
+        {
+            Beneficios =
+            [
+                new FuncionarioBeneficioSalvarDto("vale_refeicao", true, new DateOnly(2024, 1, 10), null, true),
+            ],
+        };
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => _sut.SalvarAsync(dto, null));
+        Assert.Equal(FuncionarioService.MensagemBeneficioNaoSuportado, ex.Message);
+    }
+
+    [Fact]
+    public async Task AtualizarAsync_NaoEncontrado_DeveFalhar()
+    {
+        var id = Guid.NewGuid();
+        _repo.Setup(r => r.ObterPorIdAsync(id)).ReturnsAsync((FuncionarioQueryResult?)null);
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => _sut.AtualizarAsync(id, CriarAtualizarDto(SituacaoFuncionario.Ativo), null));
+        Assert.Equal(FuncionarioService.MensagemNaoEncontrado, ex.Message);
+    }
+
+    [Fact]
+    public async Task AtualizarAsync_Valido_DevePersistir()
+    {
+        var id = Guid.NewGuid();
+        _repo.Setup(r => r.ObterPorIdAsync(id)).ReturnsAsync(new FuncionarioQueryResult
+        {
+            Id = id,
+            Nome = "Ana",
+            Cpf = "52998224725",
+            Cargo = "Analista",
+            SalarioBase = 1,
+            TipoContrato = TipoContrato.Clt,
+            Situacao = SituacaoFuncionario.Ativo,
+            Jornada = JornadaTrabalho.QuarentaHorasSegSex,
+            DataAdmissao = new DateOnly(2024, 1, 1),
+            DataInclusao = DateTime.UtcNow,
+        });
+        _afastRepo.Setup(r => r.ObterAtivoEmAsync(id, It.IsAny<DateOnly>()))
+            .ReturnsAsync((FuncionarioAfastamentoQueryResult?)null);
+        _repo.Setup(r => r.CpfExisteAsync(It.IsAny<string>(), id)).ReturnsAsync(false);
+
+        await _sut.AtualizarAsync(id, CriarAtualizarDto(SituacaoFuncionario.Ativo), null);
+
+        _repo.Verify(r => r.AtualizarAsync(
+            It.Is<FuncionarioAtualizarParams>(p => p.Id == id),
+            It.IsAny<IReadOnlyList<FuncionarioBeneficioSalvarParams>>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task ObterPorIdAsync_DeveCarregarBeneficios()
+    {
+        var id = Guid.NewGuid();
+        _repo.Setup(r => r.ObterPorIdAsync(id)).ReturnsAsync(new FuncionarioQueryResult
+        {
+            Id = id,
+            Nome = "Ana",
+            Cpf = "52998224725",
+            Cargo = "Analista",
+            SalarioBase = 1,
+            TipoContrato = TipoContrato.Clt,
+            Situacao = SituacaoFuncionario.Ativo,
+            Jornada = JornadaTrabalho.QuarentaHorasSegSex,
+            DataAdmissao = new DateOnly(2024, 1, 1),
+            DataInclusao = DateTime.UtcNow,
+        });
+        _repo.Setup(r => r.ObterBeneficiosAsync(id)).ReturnsAsync(
+        [
+            new FuncionarioBeneficioQueryResult
+            {
+                Id = Guid.NewGuid(),
+                FuncionarioId = id,
+                CodigoBeneficio = "vale_transporte",
+                Ativo = true,
+                OptIn = true,
+            },
+        ]);
+
+        var dto = await _sut.ObterPorIdAsync(id);
+        Assert.NotNull(dto);
+        Assert.Single(dto!.Beneficios);
+        Assert.Equal("vale_transporte", dto.Beneficios[0].CodigoBeneficio);
+    }
+
+    [Fact]
+    public async Task FiltrarAsync_DeveZerarBeneficios()
+    {
+        _repo.Setup(r => r.FiltrarAsync(It.IsAny<FuncionarioFiltroParams>())).ReturnsAsync(
+        [
+            new FuncionarioQueryResult
+            {
+                Id = Guid.NewGuid(),
+                Nome = "Ana",
+                Cpf = "52998224725",
+                Cargo = "Analista",
+                SalarioBase = 1,
+                TipoContrato = TipoContrato.Clt,
+                Situacao = SituacaoFuncionario.Ativo,
+                MotivoAfastamentoAtivo = "ferias",
+                Jornada = JornadaTrabalho.QuarentaHorasSegSex,
+                DataAdmissao = new DateOnly(2024, 1, 1),
+                DataInclusao = DateTime.UtcNow,
+            },
+        ]);
+
+        var lista = await _sut.FiltrarAsync(new FuncionarioFiltroDto(null, null, null, null));
+        Assert.Single(lista);
+        Assert.Empty(lista[0].Beneficios);
+        Assert.Equal("ferias", lista[0].MotivoAfastamentoAtivo);
+    }
+
     private static FuncionarioSalvarDto CriarDto(
         string cpf = "529.982.247-25",
         SituacaoFuncionario situacao = SituacaoFuncionario.Ativo,

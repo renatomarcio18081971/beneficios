@@ -1,4 +1,4 @@
-export interface Empresa {
+﻿export interface Empresa {
   id: string;
   razaoSocial: string;
   dominio: string;

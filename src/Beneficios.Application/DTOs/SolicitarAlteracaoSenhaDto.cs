@@ -1,3 +1,3 @@
-namespace Beneficios.Application.DTOs;
+﻿namespace Beneficios.Application.DTOs;
 
 public record SolicitarAlteracaoSenhaDto(string Email);

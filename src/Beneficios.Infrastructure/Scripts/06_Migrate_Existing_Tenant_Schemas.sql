@@ -1,4 +1,4 @@
--- Provisiona schemas de tenant para empresas já cadastradas e migra usuários operacionais
+﻿-- Provisiona schemas de tenant para empresas já cadastradas e migra usuários operacionais
 -- do catálogo (beneficios.usuarios) para o schema do respectivo tenant.
 -- O nome do schema segue a razão social: tenant_{razao_social_sanitizada}.
 -- Execute após 05_Drop_Empresa_Db_Credentials.sql em ambientes com dados existentes.

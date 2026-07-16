@@ -1,4 +1,4 @@
--- Adiciona coluna codigo_alterar_senha na tabela de usuários do catálogo e nos schemas de tenant.
+﻿-- Adiciona coluna codigo_alterar_senha na tabela de usuários do catálogo e nos schemas de tenant.
 -- Execute em ambientes com dados existentes após 06_Migrate_Existing_Tenant_Schemas.sql.
 
 ALTER TABLE beneficios.usuarios

@@ -1,4 +1,4 @@
-using Beneficios.Domain.Interfaces;
+﻿using Beneficios.Domain.Interfaces;
 using Beneficios.Domain.Models;
 using Dapper;
 using System.Data;

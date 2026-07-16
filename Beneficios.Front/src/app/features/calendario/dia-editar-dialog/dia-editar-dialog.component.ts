@@ -10,7 +10,7 @@ import {
   CalendarioDia,
   CalendarioDiaAtualizarRequest,
   TIPOS_EXCECAO_CALENDARIO,
-} from '../../../core/api/dias-uteis.models';
+} from '../../../core/api/calendario.models';
 
 export const DIA_EDITAR_DIALOG_WIDTH = '420px';
 
