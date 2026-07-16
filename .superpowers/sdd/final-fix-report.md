@@ -39,3 +39,7 @@ npx ng build (Beneficios.Front)
 ```
 
 UTF-8 BOM (`EF BB BF`) applied on all touched source/test/front files.
+
+## Commit
+
+`ca1bf80` — fix: align linha vigencia and VT gate on close
