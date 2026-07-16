@@ -2,7 +2,18 @@
   padding: 16px;
   width: 100%;
   max-width: 720px;
+  margin: 0 auto;
   box-sizing: border-box;
+}
+
+.legenda {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px 16px;
+  margin-bottom: 16px;
+  font-size: 0.8125rem;
+  color: var(--beneficios-text);
 }
 
 .calendario-header {
@@ -39,15 +50,6 @@
   text-align: center;
   font-size: 1.125rem;
   font-weight: 500;
-  color: var(--beneficios-text);
-}
-
-.legenda {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px 16px;
-  margin-bottom: 16px;
-  font-size: 0.8125rem;
   color: var(--beneficios-text);
 }
 
