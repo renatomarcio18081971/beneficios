@@ -15,6 +15,9 @@ import { LinhaOnibusService } from '../../../core/api/linha-onibus.service';
 import { LinhaOnibusDto } from '../../../core/api/linha-onibus.models';
 import { PermissaoService } from '../../../core/auth/permissao.service';
 
+const MSG_VT_INATIVO =
+  'Funcionário sem vale transporte ativo; não é possível vincular linhas.';
+
 @Component({
   selector: 'app-funcionario-linha-form',
   standalone: true,
@@ -43,6 +46,8 @@ export class FuncionarioLinhaFormComponent implements OnInit {
 
   readonly carregando = signal(false);
   readonly salvando = signal(false);
+  readonly verificandoVt = signal(false);
+  readonly mensagemVtInativo = signal<string | null>(null);
   readonly id = signal<string | null>(null);
   readonly funcionarios = signal<Funcionario[]>([]);
   readonly linhas = signal<LinhaOnibusDto[]>([]);
@@ -52,7 +57,7 @@ export class FuncionarioLinhaFormComponent implements OnInit {
   readonly form = this.fb.nonNullable.group({
     funcionarioId: ['', Validators.required],
     linhaOnibusId: ['', Validators.required],
-    quantidade: [1, [Validators.required, Validators.min(1)]],
+    quantidade: [1, [Validators.required, Validators.min(1), Validators.pattern(/^\d+$/)]],
     dataInicio: ['', Validators.required],
     dataFim: [''],
   });
@@ -65,10 +70,18 @@ export class FuncionarioLinhaFormComponent implements OnInit {
     return this.id() ? this.podeEditar : this.podeCriar;
   }
 
+  get submitDesabilitado(): boolean {
+    return this.salvando() || this.verificandoVt() || !!this.mensagemVtInativo();
+  }
+
   ngOnInit(): void {
     this.funcionarioService.filtrar().subscribe({
       next: (lista) => this.funcionarios.set(lista),
       error: () => this.funcionarios.set([]),
+    });
+
+    this.form.controls.funcionarioId.valueChanges.subscribe((funcionarioId) => {
+      this.verificarVtAtivo(funcionarioId);
     });
 
     const id = this.route.snapshot.paramMap.get('id');
@@ -108,8 +121,11 @@ export class FuncionarioLinhaFormComponent implements OnInit {
   }
 
   salvar(): void {
-    if (this.form.invalid || !this.podeSalvar) {
+    if (this.form.invalid || !this.podeSalvar || this.submitDesabilitado) {
       this.form.markAllAsTouched();
+      if (this.mensagemVtInativo()) {
+        this.snack.open(this.mensagemVtInativo()!, 'Fechar', { duration: 5000 });
+      }
       return;
     }
     const v = this.form.getRawValue();
@@ -146,6 +162,30 @@ export class FuncionarioLinhaFormComponent implements OnInit {
         .pipe(finalize(done))
         .subscribe({ next: onOk, error: onErr });
     }
+  }
+
+  private verificarVtAtivo(funcionarioId: string | null | undefined): void {
+    if (!funcionarioId) {
+      this.mensagemVtInativo.set(null);
+      this.verificandoVt.set(false);
+      return;
+    }
+
+    this.verificandoVt.set(true);
+    this.funcionarioService
+      .obterPorId(funcionarioId)
+      .pipe(finalize(() => this.verificandoVt.set(false)))
+      .subscribe({
+        next: (f) => {
+          const vtAtivo = f.beneficios?.some(
+            (b) => b.codigoBeneficio === 'vale_transporte' && b.ativo,
+          );
+          this.mensagemVtInativo.set(vtAtivo ? null : MSG_VT_INATIVO);
+        },
+        error: () => {
+          this.mensagemVtInativo.set(MSG_VT_INATIVO);
+        },
+      });
   }
 
   private carregarLinhasVigentes(incluir?: { id: string; descricao: string }): void {

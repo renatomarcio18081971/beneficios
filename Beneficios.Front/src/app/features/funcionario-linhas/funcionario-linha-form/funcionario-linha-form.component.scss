@@ -24,3 +24,12 @@
   justify-content: center;
   padding: 2rem;
 }
+.vt-warning {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 0.75rem 1rem;
+  border-radius: 4px;
+  background: #fdecea;
+  color: #b71c1c;
+  font-size: 0.875rem;
+}

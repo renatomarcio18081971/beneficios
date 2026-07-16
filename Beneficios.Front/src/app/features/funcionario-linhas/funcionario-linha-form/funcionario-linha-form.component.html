@@ -29,6 +29,9 @@
       <mat-form-field appearance="outline">
         <mat-label>Quantidade</mat-label>
         <input matInput type="number" min="1" step="1" formControlName="quantidade" />
+        @if (form.controls.quantidade.touched && form.controls.quantidade.hasError('pattern')) {
+          <mat-error>Informe um número inteiro.</mat-error>
+        }
       </mat-form-field>
 
       <mat-form-field appearance="outline">
@@ -41,9 +44,13 @@
         <input matInput type="date" formControlName="dataFim" />
       </mat-form-field>
 
+      @if (mensagemVtInativo(); as msg) {
+        <p class="vt-warning" role="alert">{{ msg }}</p>
+      }
+
       <div class="actions">
         @if (podeSalvar) {
-          <button mat-flat-button color="primary" type="submit" [disabled]="salvando()">
+          <button mat-flat-button color="primary" type="submit" [disabled]="submitDesabilitado">
             {{ salvando() ? 'Salvando…' : 'Salvar' }}
           </button>
         }
