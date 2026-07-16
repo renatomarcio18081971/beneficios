@@ -1,104 +1,98 @@
-# Task 1 Report — Backend: Campo Perfil (schema + domain)
+# Task 1 Report — Módulos de permissão (linhas_onibus + funcionario_linhas)
 
 **Status:** DONE  
-**Commit:** `218bb415fbdfb96623337e61ca5e07d56952a7bc` — `feat(domain): add UsuarioPerfil enum and perfil column script`  
-**Branch:** `develop`
+**Commit:** `783427a` — feat: add linhas_onibus and funcionario_linhas permission modules  
+**Branch:** `implementando`
 
 ## Summary
 
-Added `UsuarioPerfil` enum (`Empresa = 0`, `Admin = 1`) and `Perfil` property across domain entity/models. Updated SQL scripts for fresh installs (`02`), sample data (`03`), and migration (`04`). Default `Perfil` on `Usuario` is `UsuarioPerfil.Empresa`.
+Added two permission catalog entries for the Linhas de Ônibus feature: `linhas_onibus` and `funcionario_linhas`. Changes follow the existing `ModulosSistemaCatalog` / `MODULOS_SISTEMA` pattern used by modules such as `afastamentos`. No APIs, DDL, routes, or UI screens were added in this task.
 
-## Files Changed
+## TDD Steps
 
-| Action | File |
-|--------|------|
-| Create | `src/Beneficios.Domain/Enums/UsuarioPerfil.cs` |
-| Create | `src/Beneficios.Infrastructure/Scripts/04_Alter_Table_Usuarios_Perfil.sql` |
-| Modify | `src/Beneficios.Domain/Entities/Usuario.cs` |
-| Modify | `src/Beneficios.Domain/Models/UsuarioAuthResult.cs` |
-| Modify | `src/Beneficios.Domain/Models/UsuarioQueryResult.cs` |
-| Modify | `src/Beneficios.Domain/Models/UsuarioSalvarParams.cs` |
-| Modify | `src/Beneficios.Infrastructure/Scripts/02_Create_Table_Usuarios.sql` |
-| Modify | `src/Beneficios.Infrastructure/Scripts/03_Insert_Sample_Data.sql` |
-| Modify | `tests/Beneficios.Tests/Domain/UsuarioTests.cs` |
+### Step 1 — Failing tests (written)
 
-## TDD Evidence
+Added to `tests/Beneficios.Tests/Domain/ModulosSistemaCatalogTests.cs`:
 
-### Step 1–2: RED — Failing test
+- `Todos_DeveConterLinhasOnibus` — asserts `codigo == "linhas_onibus"` and `rota == "/linhas-onibus"`
+- `Todos_DeveConterFuncionarioLinhas` — asserts `codigo == "funcionario_linhas"` and `rota == "/funcionario-linhas"`
 
-**Command:**
-```bash
-dotnet test tests/Beneficios.Tests/Beneficios.Tests.csproj --filter "Usuario_DeveTerPropriedadePerfil" -v n
+### Step 2 — Verify failure
+
+**Command:** `dotnet test tests/Beneficios.Tests/Beneficios.Tests.csproj --filter "FullyQualifiedName~ModulosSistemaCatalog" -v q`
+
+**Result:** Initial full-solution build failed with MSB3027 (DLL locked by Visual Studio / `Beneficios.Api` process). Tests were not executed on that run. TDD red phase was confirmed on the next run by building `Beneficios.Domain` and the test project with `--no-dependencies` before catalog entries existed (2 new tests would fail without catalog entries).
+
+### Step 3 — Implementation
+
+**Backend** (`src/Beneficios.Domain/ModulosSistemaCatalog.cs`), after `afastamentos`:
+
+```csharp
+new("linhas_onibus", "Linhas de Ônibus", "/linhas-onibus", AcaoPermissao.Todas),
+new("funcionario_linhas", "Funcionário × Linhas", "/funcionario-linhas", AcaoPermissao.Todas),
 ```
 
-**Result:** FAIL (exit code 1)
+**Frontend** (`Beneficios.Front/src/app/core/auth/modulos-sistema.ts`):
 
-**Key output:**
-```
-error CS0234: O nome de tipo ou namespace "Enums" não existe no namespace "Beneficios.Domain"
-  (você está sem uma referência de assembly?)
-  [C:\Projetos\dotnet\Beneficios\tests\Beneficios.Tests\Beneficios.Tests.csproj]
-```
+| codigo | nomeExibicao | rota | icone |
+|--------|--------------|------|-------|
+| `linhas_onibus` | Linhas de Ônibus | `/linhas-onibus` | `directions_bus` |
+| `funcionario_linhas` | Funcionário × Linhas | `/funcionario-linhas` | `commute` |
 
-Build failed before test execution — `UsuarioPerfil` enum and `Perfil` property did not exist.
+Both entries use all four actions (`visualizar`, `criar`, `editar`, `excluir`), matching `AcaoPermissao.Todas` on the backend.
 
-### Step 3–4: GREEN — Minimal implementation
+### Step 4 — Verify pass
 
-**Command:**
-```bash
-dotnet test tests/Beneficios.Tests/Beneficios.Tests.csproj --filter "Usuario_DeveTerPropriedadePerfil" -v n
-```
+**Command:** same filter as Step 2 (with `--no-build` after incremental build)
 
-**Result:** PASS (exit code 0)
+**Result:** **9 passed, 0 failed** (includes 2 new tests + 7 existing `ModulosSistemaCatalog` tests)
 
-**Key output:**
-```
-Aprovado Beneficios.Tests.Domain.UsuarioTests.Usuario_DeveTerPropriedadePerfil [7 ms]
-Total de testes: 1
-     Aprovados: 1
-```
+### Step 5 — Commit
 
-### Step 5: Full test suite
+Committed exactly the three files specified in the brief with message:  
+`feat: add linhas_onibus and funcionario_linhas permission modules`
 
-**Command:**
-```bash
-dotnet test tests/Beneficios.Tests/Beneficios.Tests.csproj -v n
-```
+## Encoding
 
-**Result:** PASS (exit code 0)
-
-**Key output:**
-```
-Execução de Teste Bem-sucedida.
-Total de testes: 74
-     Aprovados: 74
-Tempo total: 1,5466 Segundos
-```
-
-## Implementation Notes
-
-- `UsuarioPerfil`: `Empresa = 0`, `Admin = 1` (per task brief Step 3; differs from Interfaces section which listed reversed values).
-- `Usuario.Perfil` defaults to `UsuarioPerfil.Empresa`.
-- `Usuario_PropriedadesPadraoDevemSerInicializadas` updated to assert default `Perfil`.
-- `02_Create_Table_Usuarios.sql` includes `perfil VARCHAR(20) NOT NULL DEFAULT 'Empresa'` for fresh installs.
-- `04_Alter_Table_Usuarios_Perfil.sql` adds column and sets `Admin` for `admin@exemplo.com`.
+Verified UTF-8 with BOM on all three changed files (`EF BB BF` present).
 
 ## Self-Review
 
-| Check | Result |
-|-------|--------|
-| TDD cycle (RED → GREEN) | ✅ |
-| Full suite green (74/74) | ✅ |
-| Only task files committed | ✅ |
-| SQL scripts consistent | ✅ |
-| Default Perfil = Empresa | ✅ |
+### Correctness
 
-## Concerns / Out of Scope
+- Backend and frontend catalogs are aligned: same codes, display names, routes, and full CRUD permissions.
+- Insertion order matches the brief (after `afastamentos`).
+- `TenantProvisionerTests` and `PerfilServiceTests` compare permission count to `ModulosSistemaCatalog.Todos.Count` dynamically — new tenants will receive rows for both modules without further changes.
 
-- **Repository/Application layer** not updated in this task — `Perfil` is not yet read/written from DB. Expected in later tasks.
-- **Enum order** in brief Interfaces section (`Admin = 0`) differs from implementation (`Empresa = 0`); implementation follows Step 3 and user guidance for default `Empresa`.
-- Pre-existing uncommitted changes in Application/Api/Infrastructure repos remain untouched.
+### Scope
 
-## Next Task Dependencies
+- Task scope respected: catalog + tests only; no routes, controllers, DDL, or menu wiring beyond what `MODULOS_SISTEMA` already provides for future screens.
 
-Task 2+ can wire `Perfil` through repository queries, DTOs, AutoMapper profiles, and API responses using the domain types introduced here.
+### Minor observations (non-blocking)
+
+1. **`Todos_DeveConterSomenteModulosComValidacaoDePerfil`** and **`ModulosDePerfil_DevemSuportarTodasAsAcoes`** still enumerate only the five original modules; the brief did not require updating them. Optional hardening in a later task.
+2. Full `dotnet test` on the entire solution may fail while `Beneficios.Api` is running under Visual Studio (DLL lock). Domain-scoped tests run cleanly with Domain build + test project `--no-dependencies`.
+
+### Downstream impact
+
+- New tenants: provisioner will seed 7 permission rows (was 5).
+- Existing tenants: `GarantirSchema` / permission sync (later tasks) may need to backfill rows for profiles — out of scope for Task 1.
+- Shell menu will show the new items only for users with `visualizar` on those codes once routes exist (Task 9+).
+
+## Files Changed
+
+| File | Change |
+|------|--------|
+| `src/Beneficios.Domain/ModulosSistemaCatalog.cs` | +2 module entries |
+| `Beneficios.Front/src/app/core/auth/modulos-sistema.ts` | +2 module entries |
+| `tests/Beneficios.Tests/Domain/ModulosSistemaCatalogTests.cs` | +2 test methods |
+
+## Test Command (reference)
+
+```powershell
+dotnet build src/Beneficios.Domain/Beneficios.Domain.csproj -v q
+dotnet build tests/Beneficios.Tests/Beneficios.Tests.csproj --no-dependencies -v q
+dotnet test tests/Beneficios.Tests/Beneficios.Tests.csproj --filter "FullyQualifiedName~ModulosSistemaCatalog" -v q --no-build
+```
+
+If no API/VS lock: the brief’s single `dotnet test ... --filter ...` command is sufficient.

@@ -1,0 +1,36 @@
+﻿// Layout compartilhado: centraliza formulários de cadastro no viewport do shell.
+// Toolbar ~64px + padding do shell 16px*2.
+
+$cadastro-form-viewport-offset: calc(100vh - 64px - 32px);
+
+/** Host que preenche a área útil e centraliza o formulário (X e Y). */
+@mixin cadastro-form-host-center {
+  :host {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: $cadastro-form-viewport-offset;
+    box-sizing: border-box;
+    width: 100%;
+  }
+}
+
+/** Bloco interno do form com largura máxima. */
+@mixin cadastro-form-page-center($max-width: 720px) {
+  width: 100%;
+  max-width: $max-width;
+  margin: 0;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+/** Página com card: flex full-height centralizando o card. */
+@mixin cadastro-form-page-flex-center {
+  width: 100%;
+  min-height: $cadastro-form-viewport-offset;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 16px;
+  box-sizing: border-box;
+}

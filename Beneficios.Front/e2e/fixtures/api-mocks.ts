@@ -8,6 +8,8 @@ const fullPermissoes = [
   { codigoMenu: 'calendario', visualizar: true, criar: true, editar: true, excluir: true },
   { codigoMenu: 'funcionarios', visualizar: true, criar: true, editar: true, excluir: true },
   { codigoMenu: 'afastamentos', visualizar: true, criar: true, editar: true, excluir: true },
+  { codigoMenu: 'linhas_onibus', visualizar: true, criar: true, editar: true, excluir: true },
+  { codigoMenu: 'funcionario_linhas', visualizar: true, criar: true, editar: true, excluir: true },
 ];
 
 export const perfilDonoId = '44444444-4444-4444-4444-444444444444';
@@ -229,6 +231,34 @@ export async function mockAfastamentoList(page: Page, afastamentos: unknown[] = 
         status: 200,
         contentType: 'application/json',
         body: JSON.stringify(afastamentos),
+      });
+      return;
+    }
+    await route.continue();
+  });
+}
+
+export async function mockLinhaOnibusList(page: Page, linhas: unknown[] = []): Promise<void> {
+  await page.route(`${API_BASE}/linhas-onibus**`, async (route: Route) => {
+    if (route.request().method() === 'GET') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(linhas),
+      });
+      return;
+    }
+    await route.continue();
+  });
+}
+
+export async function mockFuncionarioLinhaList(page: Page, vinculos: unknown[] = []): Promise<void> {
+  await page.route(`${API_BASE}/funcionario-linhas**`, async (route: Route) => {
+    if (route.request().method() === 'GET') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(vinculos),
       });
       return;
     }

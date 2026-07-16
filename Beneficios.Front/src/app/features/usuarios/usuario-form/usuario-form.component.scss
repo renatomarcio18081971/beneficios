@@ -1,12 +1,13 @@
-﻿.usuario-form-page {
-  padding: 16px;
-  display: flex;
-  justify-content: center;
+﻿@use '../../../shared/styles/cadastro-form-layout' as layout;
+
+@include layout.cadastro-form-host-center;
+
+.usuario-form-page {
+  @include layout.cadastro-form-page-center(520px);
 }
 
 .usuario-form-card {
   width: 100%;
-  max-width: 520px;
 }
 
 .usuario-form-card mat-card-content {

@@ -1,25 +1,75 @@
 ﻿<div class="funcionario-list-page">
-  <div class="header">
+  <div class="funcionario-list-header">
     <h1>Funcionários</h1>
-    @if (podeCriar) {
-      <a mat-flat-button color="primary" routerLink="/funcionarios/novo">Novo funcionário</a>
-    }
+
+    <div class="header-actions">
+      @if (isMobile) {
+        <button
+          type="button"
+          mat-icon-button
+          matTooltip="Exportar Excel"
+          aria-label="Exportar Excel"
+          (click)="exportExcel()"
+          [disabled]="carregando() || dataSource().length === 0"
+        >
+          <mat-icon aria-hidden="true">table_view</mat-icon>
+        </button>
+
+        <button
+          type="button"
+          mat-icon-button
+          matTooltip="Exportar PDF"
+          aria-label="Exportar PDF"
+          (click)="exportPdf()"
+          [disabled]="carregando() || dataSource().length === 0"
+        >
+          <mat-icon aria-hidden="true">picture_as_pdf</mat-icon>
+        </button>
+      } @else {
+        <button
+          type="button"
+          mat-stroked-button
+          (click)="exportExcel()"
+          [disabled]="carregando() || dataSource().length === 0"
+        >
+          <mat-icon aria-hidden="true">table_view</mat-icon>
+          Excel
+        </button>
+
+        <button
+          type="button"
+          mat-stroked-button
+          (click)="exportPdf()"
+          [disabled]="carregando() || dataSource().length === 0"
+        >
+          <mat-icon aria-hidden="true">picture_as_pdf</mat-icon>
+          PDF
+        </button>
+      }
+
+      @if (podeCriar) {
+        <a mat-flat-button color="primary" routerLink="/funcionarios/novo">
+          <mat-icon aria-hidden="true">add</mat-icon>
+          Novo funcionário
+        </a>
+      }
+    </div>
   </div>
 
-  <form class="filtros" [formGroup]="filtro" (ngSubmit)="buscar()">
-    <mat-form-field appearance="outline">
+  <form class="filter-bar" [formGroup]="filtro" (ngSubmit)="buscar()">
+    <mat-form-field appearance="outline" class="filter-field">
       <mat-label>Nome</mat-label>
       <input matInput formControlName="nome" />
     </mat-form-field>
-    <mat-form-field appearance="outline">
+    <mat-form-field appearance="outline" class="filter-field">
       <mat-label>CPF</mat-label>
       <input matInput formControlName="cpf" />
     </mat-form-field>
-    <mat-form-field appearance="outline">
+    <mat-form-field appearance="outline" class="filter-field">
       <mat-label>Matrícula</mat-label>
       <input matInput formControlName="matricula" />
     </mat-form-field>
-    <mat-form-field appearance="outline">
+    <mat-form-field appearance="outline" class="filter-field">
       <mat-label>Situação</mat-label>
       <mat-select formControlName="situacao">
         <mat-option value="">Todas</mat-option>
@@ -28,8 +78,23 @@
         }
       </mat-select>
     </mat-form-field>
-    <button mat-stroked-button type="submit">Buscar</button>
-    <button mat-button type="button" (click)="limpar()">Limpar</button>
+
+    <div class="filter-actions">
+      <button mat-flat-button color="primary" type="submit" class="filter-button" [disabled]="carregando()">
+        <mat-icon aria-hidden="true">filter_alt</mat-icon>
+        Filtrar
+      </button>
+      <button
+        mat-stroked-button
+        type="button"
+        class="filter-button"
+        [disabled]="carregando()"
+        (click)="limpar()"
+      >
+        <mat-icon aria-hidden="true">cleaning_services</mat-icon>
+        Limpar
+      </button>
+    </div>
   </form>
 
   @if (carregando()) {
@@ -62,7 +127,7 @@
       </ng-container>
       <ng-container matColumnDef="acoes">
         <th mat-header-cell *matHeaderCellDef></th>
-        <td mat-cell *matCellDef="let row">
+        <td mat-cell *matCellDef="let row" class="actions-cell">
           @if (podeEditar) {
             <a mat-button [routerLink]="['/funcionarios', row.id, 'editar']">Editar</a>
           }
@@ -74,6 +139,16 @@
               title="Afastamentos/Férias"
             >
               <mat-icon>event_busy</mat-icon>
+            </a>
+          }
+          @if (podeVerLinhas) {
+            <a
+              mat-button
+              [routerLink]="['/funcionario-linhas']"
+              [queryParams]="{ funcionarioId: row.id }"
+              title="Linhas de ônibus"
+            >
+              <mat-icon>directions_bus</mat-icon>
             </a>
           }
         </td>
