@@ -1,12 +1,13 @@
-﻿.empresa-form-page {
-  padding: 16px;
-  display: flex;
-  justify-content: center;
+﻿@use '../../../shared/styles/cadastro-form-layout' as layout;
+
+@include layout.cadastro-form-host-center;
+
+.empresa-form-page {
+  @include layout.cadastro-form-page-center(560px);
 }
 
 .empresa-form-card {
   width: 100%;
-  max-width: 560px;
 }
 
 .empresa-form-card mat-card-content {
