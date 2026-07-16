@@ -1,4 +1,6 @@
-﻿import { Component, OnInit, inject, signal } from '@angular/core';
+﻿import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
+import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -8,6 +10,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTableModule } from '@angular/material/table';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { finalize } from 'rxjs';
 import { AfastamentoService } from '../../../core/api/afastamento.service';
 import {
@@ -19,6 +22,9 @@ import {
 import { FuncionarioService } from '../../../core/api/funcionario.service';
 import { Funcionario } from '../../../core/api/funcionario.models';
 import { PermissaoService } from '../../../core/auth/permissao.service';
+import { TenantService } from '../../../core/tenant/tenant.service';
+import { ExportColumn } from '../../../shared/utils/export.models';
+import { ExportService } from '../../../shared/utils/export.service';
 
 @Component({
   selector: 'app-afastamento-list',
@@ -33,6 +39,7 @@ import { PermissaoService } from '../../../core/auth/permissao.service';
     MatProgressSpinnerModule,
     MatSelectModule,
     MatTableModule,
+    MatTooltipModule,
   ],
   templateUrl: './afastamento-list.component.html',
   styleUrl: './afastamento-list.component.scss',
@@ -43,6 +50,10 @@ export class AfastamentoListComponent implements OnInit {
   private readonly funcionarioService = inject(FuncionarioService);
   private readonly route = inject(ActivatedRoute);
   private readonly permissao = inject(PermissaoService);
+  private readonly exportService = inject(ExportService);
+  private readonly tenantService = inject(TenantService);
+  private readonly breakpointObserver = inject(BreakpointObserver);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly tipos = TIPOS_AFASTAMENTO;
   readonly labelTipo = labelTipoAfastamento;
@@ -53,6 +64,7 @@ export class AfastamentoListComponent implements OnInit {
   readonly podeCriar = this.permissao.possuiPermissao('afastamentos', 'criar');
   readonly podeEditar = this.permissao.possuiPermissao('afastamentos', 'editar');
   readonly podeExcluir = this.permissao.possuiPermissao('afastamentos', 'excluir');
+  isMobile = false;
 
   readonly filtro = this.fb.nonNullable.group({
     funcionarioId: [''],
@@ -60,6 +72,35 @@ export class AfastamentoListComponent implements OnInit {
     dataInicio: [''],
     dataFim: [''],
   });
+
+  private readonly exportColumns: ExportColumn[] = [
+    { key: 'funcionarioNome', label: 'Funcionário' },
+    {
+      key: 'tipo',
+      label: 'Tipo',
+      format: (value) => labelTipoAfastamento(value as string),
+    },
+    { key: 'dataInicio', label: 'Início' },
+    {
+      key: 'dataFim',
+      label: 'Fim',
+      format: (value) => (value ? String(value) : 'Em aberto'),
+    },
+    {
+      key: 'observacao',
+      label: 'Observação',
+      format: (value) => (value ? String(value) : '—'),
+    },
+  ];
+
+  constructor() {
+    this.breakpointObserver
+      .observe([Breakpoints.XSmall])
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((result) => {
+        this.isMobile = result.matches;
+      });
+  }
 
   ngOnInit(): void {
     this.funcionarioService.filtrar().subscribe({
@@ -111,5 +152,22 @@ export class AfastamentoListComponent implements OnInit {
   novoQueryParams(): Record<string, string> | null {
     const id = this.filtro.controls.funcionarioId.value;
     return id ? { funcionarioId: id } : null;
+  }
+
+  exportExcel(): void {
+    const subdomain = this.tenantService.getSubdomain();
+    const filename = this.exportService.buildFilename('afastamentos', subdomain, 'xlsx');
+    void this.exportService.exportToExcel(this.dataSource(), this.exportColumns, filename);
+  }
+
+  exportPdf(): void {
+    const subdomain = this.tenantService.getSubdomain();
+    const filename = this.exportService.buildFilename('afastamentos', subdomain, 'pdf');
+    void this.exportService.exportToPdf(
+      this.dataSource(),
+      this.exportColumns,
+      filename,
+      'Afastamentos/Férias',
+    );
   }
 }
