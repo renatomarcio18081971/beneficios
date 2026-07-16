@@ -19,7 +19,7 @@
         }
 
         <form [formGroup]="form" (ngSubmit)="submit()">
-          <mat-form-field appearance="outline" class="full-width">
+          <mat-form-field appearance="outline" class="full-width nome-field">
             <mat-label>Nome</mat-label>
             <input matInput formControlName="nome">
             @if (form.controls.nome.hasError('required') && form.controls.nome.touched) {
@@ -27,7 +27,8 @@
             }
           </mat-form-field>
 
-          <h3>Permissões por módulo</h3>
+          <h3 class="permissoes-title">Permissões por módulo</h3>
+
           <div class="matriz-table" role="table">
             <div class="matriz-header" role="row">
               <span role="columnheader">Módulo</span>
@@ -37,47 +38,49 @@
               <span role="columnheader">Excluir</span>
             </div>
 
-            @for (linha of matriz(); track linha.codigo) {
-              <div class="matriz-row" role="row">
-                <span role="cell">{{ linha.nome }}</span>
-                <span role="cell">
-                  @if (linha.suporta.visualizar) {
-                    <mat-checkbox
-                      [checked]="linha.visualizar"
-                      [disabled]="ehSistema"
-                      (change)="toggle(linha.codigo, 'visualizar', $event.checked)"
-                    ></mat-checkbox>
-                  }
-                </span>
-                <span role="cell">
-                  @if (linha.suporta.criar) {
-                    <mat-checkbox
-                      [checked]="linha.criar"
-                      [disabled]="ehSistema"
-                      (change)="toggle(linha.codigo, 'criar', $event.checked)"
-                    ></mat-checkbox>
-                  }
-                </span>
-                <span role="cell">
-                  @if (linha.suporta.editar) {
-                    <mat-checkbox
-                      [checked]="linha.editar"
-                      [disabled]="ehSistema"
-                      (change)="toggle(linha.codigo, 'editar', $event.checked)"
-                    ></mat-checkbox>
-                  }
-                </span>
-                <span role="cell">
-                  @if (linha.suporta.excluir) {
-                    <mat-checkbox
-                      [checked]="linha.excluir"
-                      [disabled]="ehSistema"
-                      (change)="toggle(linha.codigo, 'excluir', $event.checked)"
-                    ></mat-checkbox>
-                  }
-                </span>
-              </div>
-            }
+            <div class="matriz-body">
+              @for (linha of matriz(); track linha.codigo) {
+                <div class="matriz-row" role="row">
+                  <span role="cell">{{ linha.nome }}</span>
+                  <span role="cell">
+                    @if (linha.suporta.visualizar) {
+                      <mat-checkbox
+                        [checked]="linha.visualizar"
+                        [disabled]="ehSistema"
+                        (change)="toggle(linha.codigo, 'visualizar', $event.checked)"
+                      ></mat-checkbox>
+                    }
+                  </span>
+                  <span role="cell">
+                    @if (linha.suporta.criar) {
+                      <mat-checkbox
+                        [checked]="linha.criar"
+                        [disabled]="ehSistema"
+                        (change)="toggle(linha.codigo, 'criar', $event.checked)"
+                      ></mat-checkbox>
+                    }
+                  </span>
+                  <span role="cell">
+                    @if (linha.suporta.editar) {
+                      <mat-checkbox
+                        [checked]="linha.editar"
+                        [disabled]="ehSistema"
+                        (change)="toggle(linha.codigo, 'editar', $event.checked)"
+                      ></mat-checkbox>
+                    }
+                  </span>
+                  <span role="cell">
+                    @if (linha.suporta.excluir) {
+                      <mat-checkbox
+                        [checked]="linha.excluir"
+                        [disabled]="ehSistema"
+                        (change)="toggle(linha.codigo, 'excluir', $event.checked)"
+                      ></mat-checkbox>
+                    }
+                  </span>
+                </div>
+              }
+            </div>
           </div>
 
           <div class="form-actions">
