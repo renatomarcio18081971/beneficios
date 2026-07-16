@@ -1,34 +1,42 @@
-﻿### Task 7: Provisionamento + garantia de ano (startup + hosted service)
+﻿### Task 7: Desativar VT encerra vínculos abertos
 
 **Files:**
-- Create: `src/Beneficios.Domain/Interfaces/ICalendarioAnoGarantia.cs`
-- Create: `src/Beneficios.Infrastructure/Tenancy/CalendarioAnoGarantia.cs`
-- Create: `src/Beneficios.Api/Background/CalendarioAnoHostedService.cs`
-- Modify: `TenantProvisioner.cs` — após DDL calendário, gerar ano corrente no schema (via SQL/lote no mesmo connection **ou** helper estático compartilhado com a garantia)
-- Modify: `Program.cs` — `AddHostedService` + try/catch startup `GarantirAnoCorrenteEmTenantsExistentesAsync`
-- Test: `tests/Beneficios.Tests/Infrastructure/CalendarioAnoGarantiaTests.cs` e/ou extensão `TenantProvisionerTests`
+- Modify: `src/Beneficios.Application/Services/FuncionarioService.cs`
+- Modify: `tests/Beneficios.Tests/Application/FuncionarioServiceTests.cs` (ou criar se insuficiente)
+- Consumes: `IFuncionarioLinhaRepository.EncerrarAbertosPorFuncionarioAsync`
 
 **Interfaces:**
-- Produces: `Task GarantirAnoCorrenteEmTenantsExistentesAsync(CancellationToken ct = default)`  
-  - Lista `tenant_%`  
-  - Para cada schema: `search_path` / SQL qualified: se não há dias no ano UTC corrente → gerar  
-- HostedService: delay inicial curto + loop a cada 24h; falhas logadas
+- Após `AtualizarAsync`/`SalvarAsync` persistir benefícios: se a lista normalizada **não** contém VT ativo (ausente ou `Ativo == false`), chamar:
 
-**Nota de design:** Gerar ano no provisioner pode duplicar lógica do service. Preferir extrair `CalendarioAnoGerador` interno (Infrastructure) usado por provisioner (connection explícita + schema) **e** por `CalendarioAnoGarantia`, enquanto `CalendarioDiaService` usa o gerador via repository do request scope. Alternativa aceitável: no provisioner abrir connection com SearchPath do tenant e resolver `ICalendarioDiaService` não funciona facilmente — então **gerador estático/infra** compartilhado é a opção recomendada nesta task.
+```csharp
+await _funcionarioLinhaRepository.EncerrarAbertosPorFuncionarioAsync(
+    funcionarioId,
+    DateOnly.FromDateTime(DateTime.UtcNow),
+    DateTime.UtcNow,
+    usuarioAlteracaoId);
+```
 
-- [ ] **Step 1: Write failing tests** (tenant sem tabela dias do ano → garantia cria; segundo run não duplica)
+Injetar `IFuncionarioLinhaRepository` no `FuncionarioService` (ou método no `IFuncionarioLinhaService` `EncerrarAbertosPorFuncionarioAsync` se preferir não acoplar Application→repo de outro agregado — **preferir** método no `IFuncionarioLinhaService` para manter o padrão de serviços).
 
-- [ ] **Step 2: Run — FAIL**
+Se usar service:
 
-- [ ] **Step 3: Implement gerador compartilhado + provisioner + garantia + hosted service + Program.cs**
+```csharp
+Task EncerrarAbertosPorFuncionarioAsync(Guid funcionarioId, Guid? usuarioAlteracaoId);
+```
 
-- [ ] **Step 4: Run tests — PASS**
+- [ ] **Step 1: Write failing test** — atualizar funcionário com VT `ativo: false` → verifica chamada a encerrar vínculos
+
+- [ ] **Step 2: Run — expect FAIL**
+
+- [ ] **Step 3: Implement hook no `FuncionarioService`**
+
+- [ ] **Step 4: Run FuncionarioService + FuncionarioLinha tests — expect PASS**
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git commit -m "feat: provision and yearly job for tenant calendars"
+git add src/Beneficios.Application/Services/FuncionarioService.cs src/Beneficios.Application/Services/FuncionarioLinhaService.cs src/Beneficios.Application/Interfaces/IFuncionarioLinhaService.cs tests/Beneficios.Tests/Application/FuncionarioServiceTests.cs
+git commit -m "feat: close open bus-line links when VT is deactivated"
 ```
 
 ---
-

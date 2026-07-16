@@ -1,26 +1,34 @@
-﻿# SDD Progress — dias-uteis (2026-07-14)
+﻿# SDD Progress - linhas-onibus (2026-07-16)
 
-Plan: `docs/superpowers/plans/2026-07-14-dias-uteis.md`
+Plan: `docs/superpowers/plans/2026-07-16-linhas-onibus.md`
 Branch: `implementando`
-Started from: d06a36e
+Started from: 2f6194f
 
 ## Tasks
 
-Task 1: complete (commit 68d8750)
 
-Task 2: complete (commit b9e3e18)
+Task 1: complete (commits 2f6194f..783427a, review clean)
 
-Task 3: complete (commit f2faac7)
+Task 2: complete (commits 783427a..16059e1, review clean)
 
-Task 4: complete (commit 33e3d2c)
+Task 3: complete (commits 16059e1..d3deb3a)
 
-Task 5: complete (commit 7ed45c2)
+Task 3: complete (commits 16059e1..d3deb3a, review clean)
 
-Task 6–7: complete (commit 230450e — API + provision + yearly job; subagents unavailable, inline)
+Task 4: complete (commits d3deb3a..f9c8dcd, review clean)
 
-Task 8–10: complete (commit d7de5f4 — module/route/API client, monthly UI, E2E; `dotnet test` 168 passed; `ng build` OK; Playwright dias-uteis OK)
+Task 5: complete (commits f9c8dcd..e4afaf3, review clean; DI handoff to Task 6)
 
-## Notes
+Task 6: complete (commits e4afaf3..3963f0f, review clean)
 
-- Chosen approach was Subagent-Driven (#1); usage limit forced inline executing-plans continuation.
-- Minor: GerarAno returns HTTP 409 Conflict (plan text said 400; tests/spec allow 409/400).
+Task 7: complete (commits 3963f0f..184fe3b, review clean)
+
+Task 8: complete (commits 184fe3b..87ef916, review clean)
+
+Task 9: complete (commits 87ef916..c6d7fdd incl VT fix, review clean)
+
+Task 10: complete (commits c6d7fdd..ccf2349, review clean)
+
+All tasks complete.
+
+Final review: Important fixes ca1bf80; ready for finishing.
