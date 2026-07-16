@@ -1,0 +1,2 @@
+﻿-- Referência: tabela linhas_onibus no schema tenant
+-- Aplicado via TenantSchemaSql.CriarTabelaLinhasOnibus

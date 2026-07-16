@@ -138,6 +138,22 @@ public class TenantProvisionerTests(PostgresFixture fixture)
             """, new { SchemaName = schemaName });
         Assert.True(afastamentosExiste);
 
+        var linhasOnibusExiste = await fixture.Connection!.ExecuteScalarAsync<bool>(
+            """
+            SELECT EXISTS(
+              SELECT 1 FROM information_schema.tables
+              WHERE table_schema = @SchemaName AND table_name = 'linhas_onibus')
+            """, new { SchemaName = schemaName });
+        Assert.True(linhasOnibusExiste);
+
+        var funcionarioLinhasExiste = await fixture.Connection!.ExecuteScalarAsync<bool>(
+            """
+            SELECT EXISTS(
+              SELECT 1 FROM information_schema.tables
+              WHERE table_schema = @SchemaName AND table_name = 'funcionario_linhas')
+            """, new { SchemaName = schemaName });
+        Assert.True(funcionarioLinhasExiste);
+
         var motivoExiste = await fixture.Connection!.ExecuteScalarAsync<bool>(
             """
             SELECT EXISTS(
@@ -298,6 +314,22 @@ public class TenantProvisionerTests(PostgresFixture fixture)
               WHERE table_schema = @SchemaName AND table_name = 'funcionario_afastamentos')
             """, new { SchemaName = schemaName });
         Assert.True(afastamentosExiste);
+
+        var linhasOnibusExiste = await fixture.Connection.ExecuteScalarAsync<bool>(
+            """
+            SELECT EXISTS(
+              SELECT 1 FROM information_schema.tables
+              WHERE table_schema = @SchemaName AND table_name = 'linhas_onibus')
+            """, new { SchemaName = schemaName });
+        Assert.True(linhasOnibusExiste);
+
+        var funcionarioLinhasExiste = await fixture.Connection.ExecuteScalarAsync<bool>(
+            """
+            SELECT EXISTS(
+              SELECT 1 FROM information_schema.tables
+              WHERE table_schema = @SchemaName AND table_name = 'funcionario_linhas')
+            """, new { SchemaName = schemaName });
+        Assert.True(funcionarioLinhasExiste);
     }
 
     private sealed class DonoProvisionadoResult
