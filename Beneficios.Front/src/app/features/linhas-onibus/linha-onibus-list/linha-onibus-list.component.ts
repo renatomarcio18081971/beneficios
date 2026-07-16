@@ -1,5 +1,5 @@
 ﻿import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
-import { DecimalPipe } from '@angular/common';
+import { CurrencyPipe } from '@angular/common';
 import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
@@ -26,7 +26,7 @@ import { ExportService } from '../../../shared/utils/export.service';
   imports: [
     ReactiveFormsModule,
     RouterLink,
-    DecimalPipe,
+    CurrencyPipe,
     MatButtonModule,
     MatFormFieldModule,
     MatIconModule,

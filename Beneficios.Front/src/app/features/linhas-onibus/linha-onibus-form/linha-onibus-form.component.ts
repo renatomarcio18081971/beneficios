@@ -9,6 +9,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { finalize } from 'rxjs';
 import { LinhaOnibusService } from '../../../core/api/linha-onibus.service';
 import { PermissaoService } from '../../../core/auth/permissao.service';
+import { CurrencyBrlInputDirective } from '../../../shared/utils/currency-brl-input.directive';
 
 @Component({
   selector: 'app-linha-onibus-form',
@@ -21,6 +22,7 @@ import { PermissaoService } from '../../../core/auth/permissao.service';
     MatInputModule,
     MatSnackBarModule,
     MatProgressSpinnerModule,
+    CurrencyBrlInputDirective,
   ],
   templateUrl: './linha-onibus-form.component.html',
   styleUrl: './linha-onibus-form.component.scss',

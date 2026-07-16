@@ -21,6 +21,7 @@ import {
   UFS_BRASIL,
 } from '../../../core/api/funcionario.models';
 import { PermissaoService } from '../../../core/auth/permissao.service';
+import { CurrencyBrlInputDirective } from '../../../shared/utils/currency-brl-input.directive';
 
 @Component({
   selector: 'app-funcionario-form',
@@ -35,6 +36,7 @@ import { PermissaoService } from '../../../core/auth/permissao.service';
     MatSlideToggleModule,
     MatSnackBarModule,
     MatProgressSpinnerModule,
+    CurrencyBrlInputDirective,
   ],
   templateUrl: './funcionario-form.component.html',
   styleUrl: './funcionario-form.component.scss',
