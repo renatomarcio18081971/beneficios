@@ -1,8 +1,8 @@
 ﻿import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
-import { Component, DestroyRef, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -12,16 +12,17 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { finalize } from 'rxjs';
+import { FuncionarioLinhaService } from '../../../core/api/funcionario-linha.service';
+import { FuncionarioLinhaDto } from '../../../core/api/funcionario-linha.models';
 import { FuncionarioService } from '../../../core/api/funcionario.service';
-import { Funcionario, SITUACOES } from '../../../core/api/funcionario.models';
-import { labelTipoAfastamento } from '../../../core/api/afastamento.models';
+import { Funcionario } from '../../../core/api/funcionario.models';
 import { PermissaoService } from '../../../core/auth/permissao.service';
 import { TenantService } from '../../../core/tenant/tenant.service';
 import { ExportColumn } from '../../../shared/utils/export.models';
 import { ExportService } from '../../../shared/utils/export.service';
 
 @Component({
-  selector: 'app-funcionario-list',
+  selector: 'app-funcionario-linha-list',
   standalone: true,
   imports: [
     ReactiveFormsModule,
@@ -35,48 +36,50 @@ import { ExportService } from '../../../shared/utils/export.service';
     MatTableModule,
     MatTooltipModule,
   ],
-  templateUrl: './funcionario-list.component.html',
-  styleUrl: './funcionario-list.component.scss',
+  templateUrl: './funcionario-linha-list.component.html',
+  styleUrl: './funcionario-linha-list.component.scss',
 })
-export class FuncionarioListComponent {
+export class FuncionarioLinhaListComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
-  private readonly service = inject(FuncionarioService);
+  private readonly service = inject(FuncionarioLinhaService);
+  private readonly funcionarioService = inject(FuncionarioService);
+  private readonly route = inject(ActivatedRoute);
   private readonly permissao = inject(PermissaoService);
   private readonly exportService = inject(ExportService);
   private readonly tenantService = inject(TenantService);
   private readonly breakpointObserver = inject(BreakpointObserver);
   private readonly destroyRef = inject(DestroyRef);
 
-  readonly situacoes = SITUACOES;
-  readonly labelMotivo = labelTipoAfastamento;
   readonly carregando = signal(false);
-  readonly dataSource = signal<Funcionario[]>([]);
-  readonly displayedColumns = ['nome', 'cpf', 'cargo', 'situacao', 'motivo', 'jornada', 'acoes'];
-  readonly podeCriar = this.permissao.possuiPermissao('funcionarios', 'criar');
-  readonly podeEditar = this.permissao.possuiPermissao('funcionarios', 'editar');
-  readonly podeVerAfastamentos = this.permissao.possuiPermissao('afastamentos', 'visualizar');
-  readonly podeVerLinhas = this.permissao.possuiPermissao('funcionario_linhas', 'visualizar');
+  readonly dataSource = signal<FuncionarioLinhaDto[]>([]);
+  readonly funcionarios = signal<Funcionario[]>([]);
+  readonly displayedColumns = [
+    'funcionarioNome',
+    'linhaDescricao',
+    'quantidade',
+    'dataInicio',
+    'dataFim',
+    'acoes',
+  ];
+  readonly podeCriar = this.permissao.possuiPermissao('funcionario_linhas', 'criar');
+  readonly podeEditar = this.permissao.possuiPermissao('funcionario_linhas', 'editar');
   isMobile = false;
 
   readonly filtro = this.fb.nonNullable.group({
-    nome: [''],
-    cpf: [''],
-    matricula: [''],
-    situacao: ['' as string],
+    funcionarioId: [''],
+    vigencia: ['' as '' | 'vigentes'],
   });
 
   private readonly exportColumns: ExportColumn[] = [
-    { key: 'nome', label: 'Nome' },
-    { key: 'cpf', label: 'CPF' },
-    { key: 'matricula', label: 'Matrícula' },
-    { key: 'cargo', label: 'Cargo' },
-    { key: 'situacao', label: 'Situação' },
+    { key: 'funcionarioNome', label: 'Funcionário' },
+    { key: 'linhaDescricao', label: 'Linha' },
+    { key: 'quantidade', label: 'Quantidade' },
+    { key: 'dataInicio', label: 'Início' },
     {
-      key: 'motivoAfastamentoAtivo',
-      label: 'Motivo',
-      format: (value) => labelTipoAfastamento(value as string | null),
+      key: 'dataFim',
+      label: 'Fim',
+      format: (value) => (value ? String(value) : 'Em aberto'),
     },
-    { key: 'jornada', label: 'Jornada' },
   ];
 
   constructor() {
@@ -86,7 +89,18 @@ export class FuncionarioListComponent {
       .subscribe((result) => {
         this.isMobile = result.matches;
       });
+  }
 
+  ngOnInit(): void {
+    this.funcionarioService.filtrar().subscribe({
+      next: (lista) => this.funcionarios.set(lista),
+      error: () => this.funcionarios.set([]),
+    });
+
+    const funcionarioId = this.route.snapshot.queryParamMap.get('funcionarioId');
+    if (funcionarioId) {
+      this.filtro.patchValue({ funcionarioId });
+    }
     this.buscar();
   }
 
@@ -95,10 +109,8 @@ export class FuncionarioListComponent {
     const v = this.filtro.getRawValue();
     this.service
       .filtrar({
-        nome: v.nome || undefined,
-        cpf: v.cpf || undefined,
-        matricula: v.matricula || undefined,
-        situacao: (v.situacao || undefined) as Funcionario['situacao'] | undefined,
+        funcionarioId: v.funcionarioId || undefined,
+        somenteVigentes: v.vigencia === 'vigentes' ? true : undefined,
       })
       .pipe(finalize(() => this.carregando.set(false)))
       .subscribe({
@@ -108,19 +120,33 @@ export class FuncionarioListComponent {
   }
 
   limpar(): void {
-    this.filtro.reset({ nome: '', cpf: '', matricula: '', situacao: '' });
+    this.filtro.reset({ funcionarioId: '', vigencia: '' });
     this.buscar();
+  }
+
+  novoLink(): string[] {
+    return ['/funcionario-linhas/novo'];
+  }
+
+  novoQueryParams(): Record<string, string> | null {
+    const id = this.filtro.controls.funcionarioId.value;
+    return id ? { funcionarioId: id } : null;
   }
 
   exportExcel(): void {
     const subdomain = this.tenantService.getSubdomain();
-    const filename = this.exportService.buildFilename('funcionarios', subdomain, 'xlsx');
+    const filename = this.exportService.buildFilename('funcionario-linhas', subdomain, 'xlsx');
     void this.exportService.exportToExcel(this.dataSource(), this.exportColumns, filename);
   }
 
   exportPdf(): void {
     const subdomain = this.tenantService.getSubdomain();
-    const filename = this.exportService.buildFilename('funcionarios', subdomain, 'pdf');
-    void this.exportService.exportToPdf(this.dataSource(), this.exportColumns, filename, 'Funcionários');
+    const filename = this.exportService.buildFilename('funcionario-linhas', subdomain, 'pdf');
+    void this.exportService.exportToPdf(
+      this.dataSource(),
+      this.exportColumns,
+      filename,
+      'Funcionário × Linhas',
+    );
   }
 }

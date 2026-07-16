@@ -173,6 +173,11 @@
             <mat-label>Data fim</mat-label>
             <input matInput type="date" formControlName="vtDataFim" />
           </mat-form-field>
+          @if (id() && podeVerLinhas) {
+            <p class="span-2">
+              <a [routerLink]="['/funcionario-linhas']" [queryParams]="{ funcionarioId: id() }">Ver linhas de ônibus</a>
+            </p>
+          }
         </div>
       </section>
 

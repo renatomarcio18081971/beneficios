@@ -57,6 +57,7 @@ export class FuncionarioFormComponent implements OnInit {
   readonly id = signal<string | null>(null);
   readonly podeEditar = this.permissao.possuiPermissao('funcionarios', 'editar');
   readonly podeCriar = this.permissao.possuiPermissao('funcionarios', 'criar');
+  readonly podeVerLinhas = this.permissao.possuiPermissao('funcionario_linhas', 'visualizar');
 
   readonly form = this.fb.nonNullable.group({
     nome: ['', Validators.required],

@@ -1,0 +1,54 @@
+﻿<div class="funcionario-linha-form-page">
+  <div class="header">
+    <h1>{{ titulo }}</h1>
+    <a mat-button routerLink="/funcionario-linhas">Voltar</a>
+  </div>
+
+  @if (carregando()) {
+    <div class="loading"><mat-spinner diameter="40"></mat-spinner></div>
+  } @else {
+    <form [formGroup]="form" (ngSubmit)="salvar()" class="form">
+      <mat-form-field appearance="outline">
+        <mat-label>Funcionário</mat-label>
+        <mat-select formControlName="funcionarioId" [disabled]="!!id()">
+          @for (f of funcionarios(); track f.id) {
+            <mat-option [value]="f.id">{{ f.nome }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Linha</mat-label>
+        <mat-select formControlName="linhaOnibusId">
+          @for (l of linhas(); track l.id) {
+            <mat-option [value]="l.id">{{ l.descricao }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Quantidade</mat-label>
+        <input matInput type="number" min="1" step="1" formControlName="quantidade" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Data início</mat-label>
+        <input matInput type="date" formControlName="dataInicio" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Data fim</mat-label>
+        <input matInput type="date" formControlName="dataFim" />
+      </mat-form-field>
+
+      <div class="actions">
+        @if (podeSalvar) {
+          <button mat-flat-button color="primary" type="submit" [disabled]="salvando()">
+            {{ salvando() ? 'Salvando…' : 'Salvar' }}
+          </button>
+        }
+        <a mat-button routerLink="/funcionario-linhas">Cancelar</a>
+      </div>
+    </form>
+  }
+</div>

@@ -169,6 +169,30 @@ export const routes: Routes = [
             (m) => m.LinhaOnibusFormComponent,
           ),
       },
+      {
+        path: 'funcionario-linhas',
+        canActivate: [tenantGuard, permissaoGuard('funcionario_linhas')],
+        loadComponent: () =>
+          import('./features/funcionario-linhas/funcionario-linha-list/funcionario-linha-list.component').then(
+            (m) => m.FuncionarioLinhaListComponent,
+          ),
+      },
+      {
+        path: 'funcionario-linhas/novo',
+        canActivate: [tenantGuard, permissaoGuard('funcionario_linhas')],
+        loadComponent: () =>
+          import('./features/funcionario-linhas/funcionario-linha-form/funcionario-linha-form.component').then(
+            (m) => m.FuncionarioLinhaFormComponent,
+          ),
+      },
+      {
+        path: 'funcionario-linhas/:id/editar',
+        canActivate: [tenantGuard, permissaoGuard('funcionario_linhas')],
+        loadComponent: () =>
+          import('./features/funcionario-linhas/funcionario-linha-form/funcionario-linha-form.component').then(
+            (m) => m.FuncionarioLinhaFormComponent,
+          ),
+      },
       { path: '', pathMatch: 'full', redirectTo: 'login' },
     ],
   },

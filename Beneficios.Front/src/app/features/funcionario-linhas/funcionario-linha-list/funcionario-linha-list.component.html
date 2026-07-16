@@ -1,6 +1,6 @@
-﻿<div class="funcionario-list-page">
-  <div class="funcionario-list-header">
-    <h1>Funcionários</h1>
+﻿<div class="funcionario-linha-list-page">
+  <div class="funcionario-linha-list-header">
+    <h1>Funcionário × Linhas</h1>
 
     <div class="header-actions">
       @if (isMobile) {
@@ -48,9 +48,9 @@
       }
 
       @if (podeCriar) {
-        <a mat-flat-button color="primary" routerLink="/funcionarios/novo">
+        <a mat-flat-button color="primary" [routerLink]="novoLink()" [queryParams]="novoQueryParams()">
           <mat-icon aria-hidden="true">add</mat-icon>
-          Novo funcionário
+          Novo vínculo
         </a>
       }
     </div>
@@ -58,24 +58,19 @@
 
   <form class="filter-bar" [formGroup]="filtro" (ngSubmit)="buscar()">
     <mat-form-field appearance="outline" class="filter-field">
-      <mat-label>Nome</mat-label>
-      <input matInput formControlName="nome" />
-    </mat-form-field>
-    <mat-form-field appearance="outline" class="filter-field">
-      <mat-label>CPF</mat-label>
-      <input matInput formControlName="cpf" />
-    </mat-form-field>
-    <mat-form-field appearance="outline" class="filter-field">
-      <mat-label>Matrícula</mat-label>
-      <input matInput formControlName="matricula" />
-    </mat-form-field>
-    <mat-form-field appearance="outline" class="filter-field">
-      <mat-label>Situação</mat-label>
-      <mat-select formControlName="situacao">
-        <mat-option value="">Todas</mat-option>
-        @for (s of situacoes; track s.valor) {
-          <mat-option [value]="s.valor">{{ s.label }}</mat-option>
+      <mat-label>Funcionário</mat-label>
+      <mat-select formControlName="funcionarioId">
+        <mat-option value="">Todos</mat-option>
+        @for (f of funcionarios(); track f.id) {
+          <mat-option [value]="f.id">{{ f.nome }}</mat-option>
         }
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="filter-field">
+      <mat-label>Vigência</mat-label>
+      <mat-select formControlName="vigencia">
+        <mat-option value="">Todas</mat-option>
+        <mat-option value="vigentes">Somente vigentes</mat-option>
       </mat-select>
     </mat-form-field>
 
@@ -101,48 +96,31 @@
     <div class="loading"><mat-spinner diameter="40"></mat-spinner></div>
   } @else {
     <table mat-table [dataSource]="dataSource()" class="mat-elevation-z1">
-      <ng-container matColumnDef="nome">
-        <th mat-header-cell *matHeaderCellDef>Nome</th>
-        <td mat-cell *matCellDef="let row">{{ row.nome }}</td>
+      <ng-container matColumnDef="funcionarioNome">
+        <th mat-header-cell *matHeaderCellDef>Funcionário</th>
+        <td mat-cell *matCellDef="let row">{{ row.funcionarioNome }}</td>
       </ng-container>
-      <ng-container matColumnDef="cpf">
-        <th mat-header-cell *matHeaderCellDef>CPF</th>
-        <td mat-cell *matCellDef="let row">{{ row.cpf }}</td>
+      <ng-container matColumnDef="linhaDescricao">
+        <th mat-header-cell *matHeaderCellDef>Linha</th>
+        <td mat-cell *matCellDef="let row">{{ row.linhaDescricao }}</td>
       </ng-container>
-      <ng-container matColumnDef="cargo">
-        <th mat-header-cell *matHeaderCellDef>Cargo</th>
-        <td mat-cell *matCellDef="let row">{{ row.cargo }}</td>
+      <ng-container matColumnDef="quantidade">
+        <th mat-header-cell *matHeaderCellDef>Qtd</th>
+        <td mat-cell *matCellDef="let row">{{ row.quantidade }}</td>
       </ng-container>
-      <ng-container matColumnDef="situacao">
-        <th mat-header-cell *matHeaderCellDef>Situação</th>
-        <td mat-cell *matCellDef="let row">{{ row.situacao }}</td>
+      <ng-container matColumnDef="dataInicio">
+        <th mat-header-cell *matHeaderCellDef>Início</th>
+        <td mat-cell *matCellDef="let row">{{ row.dataInicio }}</td>
       </ng-container>
-      <ng-container matColumnDef="motivo">
-        <th mat-header-cell *matHeaderCellDef>Motivo</th>
-        <td mat-cell *matCellDef="let row">{{ labelMotivo(row.motivoAfastamentoAtivo) }}</td>
-      </ng-container>
-      <ng-container matColumnDef="jornada">
-        <th mat-header-cell *matHeaderCellDef>Jornada</th>
-        <td mat-cell *matCellDef="let row">{{ row.jornada }}</td>
+      <ng-container matColumnDef="dataFim">
+        <th mat-header-cell *matHeaderCellDef>Fim</th>
+        <td mat-cell *matCellDef="let row">{{ row.dataFim || 'Em aberto' }}</td>
       </ng-container>
       <ng-container matColumnDef="acoes">
         <th mat-header-cell *matHeaderCellDef></th>
         <td mat-cell *matCellDef="let row" class="actions-cell">
           @if (podeEditar) {
-            <a mat-button [routerLink]="['/funcionarios', row.id, 'editar']">Editar</a>
-          }
-          @if (podeVerAfastamentos) {
-            <a
-              mat-button
-              [routerLink]="['/afastamentos']"
-              [queryParams]="{ funcionarioId: row.id }"
-              title="Afastamentos/Férias"
-            >
-              <mat-icon>event_busy</mat-icon>
-            </a>
-          }
-          @if (podeVerLinhas) {
-            <a mat-button [routerLink]="['/funcionario-linhas']" [queryParams]="{ funcionarioId: row.id }">Linhas</a>
+            <a mat-button [routerLink]="['/funcionario-linhas', row.id, 'editar']">Editar</a>
           }
         </td>
       </ng-container>
