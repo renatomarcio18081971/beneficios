@@ -1,4 +1,4 @@
-using Beneficios.Api.Configuration;
+﻿using Beneficios.Api.Configuration;
 
 namespace Beneficios.Api.DependencyInjection;
 

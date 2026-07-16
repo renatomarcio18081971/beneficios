@@ -1,4 +1,4 @@
-export function buildTenantSchemaName(razaoSocial: string): string {
+﻿export function buildTenantSchemaName(razaoSocial: string): string {
   const normalized = razaoSocial.trim().toLowerCase();
   const sanitized = [...normalized]
     .map((character) => (/^[a-z0-9]$/.test(character) ? character : '_'))

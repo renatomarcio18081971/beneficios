@@ -1,7 +1,9 @@
 ﻿import { expect, test } from '@playwright/test';
 import {
   loginTenant,
-  mockDiasUteisMes,
+  mockCalendarioMes,
+  mockFuncionarioList,
+  mockAfastamentoList,
   mockPerfilList,
   mockTenantLogin,
   mockTenantLoginSemPerfil,
@@ -35,13 +37,43 @@ test.describe('Fluxos críticos tenant', () => {
   });
 
   test('abrir Calendário exibe grade mensal', async ({ page }) => {
-    await mockDiasUteisMes(page);
+    await mockCalendarioMes(page);
     await loginTenant(page);
     await page.getByRole('link', { name: 'Calendário' }).click();
-    await page.waitForURL('**/dias-uteis');
-    await expect(page.getByRole('heading', { name: 'Dias úteis' })).toBeVisible();
+    await page.waitForURL('**/calendario');
+    await expect(page.getByRole('heading', { name: 'Calendário' })).toBeVisible();
     await expect(page.getByRole('grid', { name: 'Calendário do mês' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Dia 01' })).toBeVisible();
+  });
+
+  test('abrir Funcionários exibe listagem', async ({ page }) => {
+    await mockFuncionarioList(page, [
+      {
+        id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+        nome: 'Ana Silva',
+        cpf: '52998224725',
+        matricula: '001',
+        cargo: 'Analista',
+        situacao: 'Ativo',
+        motivoAfastamentoAtivo: null,
+        jornada: 'QuarentaHorasSegSex',
+        beneficios: [],
+      },
+    ]);
+    await loginTenant(page);
+    await page.getByRole('link', { name: 'Funcionários' }).click();
+    await page.waitForURL('**/funcionarios');
+    await expect(page.getByRole('heading', { name: 'Funcionários' })).toBeVisible();
+    await expect(page.getByText('Ana Silva')).toBeVisible();
+  });
+
+  test('abrir Afastamentos/Férias exibe listagem', async ({ page }) => {
+    await mockAfastamentoList(page, []);
+    await mockFuncionarioList(page, []);
+    await loginTenant(page);
+    await page.getByRole('link', { name: 'Afastamentos/Férias' }).click();
+    await page.waitForURL('**/afastamentos');
+    await expect(page.getByRole('heading', { name: 'Afastamentos/Férias' })).toBeVisible();
   });
 
   test('criar usuário na tenant', async ({ page }) => {

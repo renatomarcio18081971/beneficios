@@ -11,38 +11,39 @@ namespace Beneficios.Api.Controllers;
 
 [ApiController]
 [Authorize]
-[Route("api/dias-uteis")]
-public class DiasUteisController : ControllerBase
+[Route("api/afastamentos")]
+public class AfastamentosController : ControllerBase
 {
-    private const string CodigoMenu = "dias_uteis";
+    private const string CodigoMenu = "afastamentos";
 
-    private readonly ICalendarioDiaService _calendarioDiaService;
+    private readonly IFuncionarioAfastamentoService _service;
     private readonly IPermissaoService _permissaoService;
-    private readonly ILogger<DiasUteisController> _logger;
+    private readonly ILogger<AfastamentosController> _logger;
 
-    public DiasUteisController(
-        ICalendarioDiaService calendarioDiaService,
+    public AfastamentosController(
+        IFuncionarioAfastamentoService service,
         IPermissaoService permissaoService,
-        ILogger<DiasUteisController> logger)
+        ILogger<AfastamentosController> logger)
     {
-        _calendarioDiaService = calendarioDiaService;
+        _service = service;
         _permissaoService = permissaoService;
         _logger = logger;
     }
 
     [HttpGet]
-    public async Task<IActionResult> ObterPorMes([FromQuery] int ano, [FromQuery] int mes)
+    public async Task<IActionResult> Filtrar(
+        [FromQuery] Guid? funcionarioId,
+        [FromQuery] TipoAfastamento? tipo,
+        [FromQuery] DateOnly? dataInicio,
+        [FromQuery] DateOnly? dataFim)
     {
         try
         {
             if (await DenyIfUnauthorizedAsync(AcaoPermissao.Visualizar) is { } denied)
                 return denied;
 
-            if (ano < 1900 || mes is < 1 or > 12)
-                return BadRequest(new { message = "Ano ou mês inválido." });
-
-            var dias = await _calendarioDiaService.ObterPorMesAsync(ano, mes);
-            return Ok(dias);
+            var lista = await _service.FiltrarAsync(funcionarioId, tipo, dataInicio, dataFim);
+            return Ok(lista);
         }
         catch (UnauthorizedAccessException ex)
         {
@@ -50,8 +51,8 @@ public class DiasUteisController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao listar dias úteis {Ano}/{Mes}", ano, mes);
-            return StatusCode(500, new { message = "Erro ao listar dias úteis" });
+            _logger.LogError(ex, "Erro ao listar afastamentos");
+            return StatusCode(500, new { message = "Erro ao listar afastamentos" });
         }
     }
 
@@ -63,11 +64,11 @@ public class DiasUteisController : ControllerBase
             if (await DenyIfUnauthorizedAsync(AcaoPermissao.Visualizar) is { } denied)
                 return denied;
 
-            var dia = await _calendarioDiaService.ObterPorIdAsync(id);
-            if (dia is null)
-                return NotFound(new { message = CalendarioDiaService.MensagemDiaNaoEncontrado });
+            var item = await _service.ObterPorIdAsync(id);
+            if (item is null)
+                return NotFound(new { message = FuncionarioAfastamentoService.MensagemAfastamentoNaoEncontrado });
 
-            return Ok(dia);
+            return Ok(item);
         }
         catch (UnauthorizedAccessException ex)
         {
@@ -75,20 +76,48 @@ public class DiasUteisController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao obter dia útil {Id}", id);
-            return StatusCode(500, new { message = "Erro ao obter dia útil" });
+            _logger.LogError(ex, "Erro ao obter afastamento {Id}", id);
+            return StatusCode(500, new { message = "Erro ao obter afastamento" });
+        }
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Criar([FromBody] AfastamentoSalvarDto dto)
+    {
+        try
+        {
+            if (await DenyIfUnauthorizedAsync(AcaoPermissao.Criar) is { } denied)
+                return denied;
+
+            var id = await _service.SalvarAsync(dto, GetUsuarioIdFromToken());
+            return CreatedAtAction(nameof(ObterPorId), new { id }, new { id });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            if (ex.Message.Contains("não encontrado", StringComparison.OrdinalIgnoreCase))
+                return NotFound(new { message = ex.Message });
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erro ao criar afastamento");
+            return StatusCode(500, new { message = "Erro ao criar afastamento" });
         }
     }
 
     [HttpPut("{id:guid}")]
-    public async Task<IActionResult> Atualizar(Guid id, [FromBody] CalendarioDiaAtualizarDto dto)
+    public async Task<IActionResult> Atualizar(Guid id, [FromBody] AfastamentoAtualizarDto dto)
     {
         try
         {
             if (await DenyIfUnauthorizedAsync(AcaoPermissao.Editar) is { } denied)
                 return denied;
 
-            await _calendarioDiaService.AtualizarAsync(id, dto, GetUsuarioIdFromToken());
+            await _service.AtualizarAsync(id, dto, GetUsuarioIdFromToken());
             return NoContent();
         }
         catch (UnauthorizedAccessException ex)
@@ -103,21 +132,21 @@ public class DiasUteisController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao atualizar dia útil {Id}", id);
-            return StatusCode(500, new { message = "Erro ao atualizar dia útil" });
+            _logger.LogError(ex, "Erro ao atualizar afastamento {Id}", id);
+            return StatusCode(500, new { message = "Erro ao atualizar afastamento" });
         }
     }
 
-    [HttpPost("gerar-ano")]
-    public async Task<IActionResult> GerarAno([FromBody] GerarAnoCalendarioDto dto)
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> Excluir(Guid id)
     {
         try
         {
-            if (await DenyIfUnauthorizedAsync(AcaoPermissao.Criar) is { } denied)
+            if (await DenyIfUnauthorizedAsync(AcaoPermissao.Excluir) is { } denied)
                 return denied;
 
-            await _calendarioDiaService.GerarAnoAsync(dto.Ano);
-            return Ok(new { message = "Ano gerado com sucesso." });
+            await _service.ExcluirAsync(id);
+            return NoContent();
         }
         catch (UnauthorizedAccessException ex)
         {
@@ -125,12 +154,14 @@ public class DiasUteisController : ControllerBase
         }
         catch (InvalidOperationException ex)
         {
-            return Conflict(new { message = ex.Message });
+            if (ex.Message.Contains("não encontrado", StringComparison.OrdinalIgnoreCase))
+                return NotFound(new { message = ex.Message });
+            return BadRequest(new { message = ex.Message });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao gerar ano {Ano}", dto.Ano);
-            return StatusCode(500, new { message = "Erro ao gerar ano do calendário" });
+            _logger.LogError(ex, "Erro ao excluir afastamento {Id}", id);
+            return StatusCode(500, new { message = "Erro ao excluir afastamento" });
         }
     }
 

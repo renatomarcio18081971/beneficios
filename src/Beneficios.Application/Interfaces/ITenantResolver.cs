@@ -1,4 +1,4 @@
-using Beneficios.Domain.Models;
+﻿using Beneficios.Domain.Models;
 
 namespace Beneficios.Application.Interfaces;
 

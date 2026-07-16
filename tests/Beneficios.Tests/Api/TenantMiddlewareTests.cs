@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using Beneficios.Application.Interfaces;
 using Beneficios.Domain.Models;
 using Microsoft.AspNetCore.Mvc.Testing;

@@ -2,12 +2,12 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { CalendarioDia, CalendarioDiaAtualizarRequest } from './dias-uteis.models';
+import { CalendarioDia, CalendarioDiaAtualizarRequest } from './calendario.models';
 
 @Injectable({ providedIn: 'root' })
-export class DiasUteisService {
+export class CalendarioService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = `${environment.apiUrl}/dias-uteis`;
+  private readonly baseUrl = `${environment.apiUrl}/calendario`;
 
   listarPorMes(ano: number, mes: number): Observable<CalendarioDia[]> {
     const params = new HttpParams().set('ano', ano).set('mes', mes);

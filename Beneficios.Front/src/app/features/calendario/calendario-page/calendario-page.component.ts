@@ -5,8 +5,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { finalize } from 'rxjs';
-import { DiasUteisService } from '../../../core/api/dias-uteis.service';
-import { CalendarioDia } from '../../../core/api/dias-uteis.models';
+import { CalendarioService } from '../../../core/api/calendario.service';
+import { CalendarioDia } from '../../../core/api/calendario.models';
 import { PermissaoService } from '../../../core/auth/permissao.service';
 import {
   DIA_EDITAR_DIALOG_WIDTH,
@@ -37,14 +37,14 @@ export interface CelulaCalendario {
 }
 
 @Component({
-  selector: 'app-dias-uteis-page',
+  selector: 'app-calendario-page',
   standalone: true,
   imports: [MatButtonModule, MatIconModule, MatProgressSpinnerModule, MatSnackBarModule],
-  templateUrl: './dias-uteis-page.component.html',
-  styleUrl: './dias-uteis-page.component.scss',
+  templateUrl: './calendario-page.component.html',
+  styleUrl: './calendario-page.component.scss',
 })
-export class DiasUteisPageComponent {
-  private readonly service = inject(DiasUteisService);
+export class CalendarioPageComponent {
+  private readonly service = inject(CalendarioService);
   private readonly permissao = inject(PermissaoService);
   private readonly dialog = inject(MatDialog);
   private readonly snackBar = inject(MatSnackBar);
@@ -56,8 +56,8 @@ export class DiasUteisPageComponent {
   readonly ano = signal(new Date().getFullYear());
   readonly mes = signal(new Date().getMonth() + 1);
 
-  readonly podeCriar = computed(() => this.permissao.possuiPermissao('dias_uteis', 'criar'));
-  readonly podeEditar = computed(() => this.permissao.possuiPermissao('dias_uteis', 'editar'));
+  readonly podeCriar = computed(() => this.permissao.possuiPermissao('calendario', 'criar'));
+  readonly podeEditar = computed(() => this.permissao.possuiPermissao('calendario', 'editar'));
 
   readonly tituloMes = computed(() => `${MESES[this.mes() - 1]} de ${this.ano()}`);
 
@@ -115,7 +115,7 @@ export class DiasUteisPageComponent {
         next: (dias) => this.dias.set(dias),
         error: () => {
           this.dias.set([]);
-          this.snackBar.open('Erro ao carregar dias úteis.', 'Fechar', { duration: 4000 });
+          this.snackBar.open('Erro ao carregar calendário.', 'Fechar', { duration: 4000 });
         },
       });
   }

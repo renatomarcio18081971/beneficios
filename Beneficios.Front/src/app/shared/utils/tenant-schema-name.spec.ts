@@ -1,4 +1,4 @@
-import { buildTenantSchemaName } from './tenant-schema-name';
+﻿import { buildTenantSchemaName } from './tenant-schema-name';
 
 describe('buildTenantSchemaName', () => {
   it('deve gerar schema a partir da razao social', () => {

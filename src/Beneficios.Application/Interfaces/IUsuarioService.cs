@@ -1,4 +1,4 @@
-using Beneficios.Application.DTOs;
+﻿using Beneficios.Application.DTOs;
 
 namespace Beneficios.Application.Interfaces;
 

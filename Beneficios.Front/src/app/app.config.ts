@@ -1,4 +1,4 @@
-import { ApplicationConfig, LOCALE_ID, provideZoneChangeDetection } from '@angular/core';
+﻿import { ApplicationConfig, LOCALE_ID, provideZoneChangeDetection } from '@angular/core';
 
 import { provideHttpClient, withInterceptors, withXhr } from '@angular/common/http';
 

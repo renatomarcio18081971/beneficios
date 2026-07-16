@@ -1,0 +1,79 @@
+﻿<div class="afastamento-list-page">
+  <div class="header">
+    <h1>Afastamentos/Férias</h1>
+    @if (podeCriar) {
+      <a mat-flat-button color="primary" [routerLink]="novoLink()" [queryParams]="novoQueryParams()">Novo afastamento</a>
+    }
+  </div>
+
+  <form class="filtros" [formGroup]="filtro" (ngSubmit)="buscar()">
+    <mat-form-field appearance="outline">
+      <mat-label>Funcionário</mat-label>
+      <mat-select formControlName="funcionarioId">
+        <mat-option value="">Todos</mat-option>
+        @for (f of funcionarios(); track f.id) {
+          <mat-option [value]="f.id">{{ f.nome }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>Tipo</mat-label>
+      <mat-select formControlName="tipo">
+        <mat-option value="">Todos</mat-option>
+        @for (t of tipos; track t.valor) {
+          <mat-option [value]="t.valor">{{ t.label }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>Período início</mat-label>
+      <input matInput type="date" formControlName="dataInicio" />
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>Período fim</mat-label>
+      <input matInput type="date" formControlName="dataFim" />
+    </mat-form-field>
+    <button mat-stroked-button type="submit">Buscar</button>
+    <button mat-button type="button" (click)="limpar()">Limpar</button>
+  </form>
+
+  @if (carregando()) {
+    <div class="loading"><mat-spinner diameter="40"></mat-spinner></div>
+  } @else {
+    <table mat-table [dataSource]="dataSource()" class="mat-elevation-z1">
+      <ng-container matColumnDef="funcionarioNome">
+        <th mat-header-cell *matHeaderCellDef>Funcionário</th>
+        <td mat-cell *matCellDef="let row">{{ row.funcionarioNome }}</td>
+      </ng-container>
+      <ng-container matColumnDef="tipo">
+        <th mat-header-cell *matHeaderCellDef>Tipo</th>
+        <td mat-cell *matCellDef="let row">{{ labelTipo(row.tipo) }}</td>
+      </ng-container>
+      <ng-container matColumnDef="dataInicio">
+        <th mat-header-cell *matHeaderCellDef>Início</th>
+        <td mat-cell *matCellDef="let row">{{ row.dataInicio }}</td>
+      </ng-container>
+      <ng-container matColumnDef="dataFim">
+        <th mat-header-cell *matHeaderCellDef>Fim</th>
+        <td mat-cell *matCellDef="let row">{{ row.dataFim || 'Em aberto' }}</td>
+      </ng-container>
+      <ng-container matColumnDef="observacao">
+        <th mat-header-cell *matHeaderCellDef>Observação</th>
+        <td mat-cell *matCellDef="let row">{{ row.observacao || '—' }}</td>
+      </ng-container>
+      <ng-container matColumnDef="acoes">
+        <th mat-header-cell *matHeaderCellDef></th>
+        <td mat-cell *matCellDef="let row">
+          @if (podeEditar) {
+            <a mat-button [routerLink]="['/afastamentos', row.id, 'editar']">Editar</a>
+          }
+          @if (podeExcluir) {
+            <button mat-button type="button" color="warn" (click)="excluir(row)">Excluir</button>
+          }
+        </td>
+      </ng-container>
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+    </table>
+  }
+</div>

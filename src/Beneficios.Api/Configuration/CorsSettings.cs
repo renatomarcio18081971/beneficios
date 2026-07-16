@@ -1,4 +1,4 @@
-namespace Beneficios.Api.Configuration;
+﻿namespace Beneficios.Api.Configuration;
 
 public class CorsSettings
 {

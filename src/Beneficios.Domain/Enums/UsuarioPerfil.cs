@@ -1,4 +1,4 @@
-namespace Beneficios.Domain.Enums;
+﻿namespace Beneficios.Domain.Enums;
 
 public enum UsuarioPerfil
 {
