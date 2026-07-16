@@ -1,0 +1,122 @@
+﻿<div class="linha-onibus-list-page">
+  <div class="linha-onibus-list-header">
+    <h1>Linhas de Ônibus</h1>
+
+    <div class="header-actions">
+      @if (isMobile) {
+        <button
+          type="button"
+          mat-icon-button
+          matTooltip="Exportar Excel"
+          aria-label="Exportar Excel"
+          (click)="exportExcel()"
+          [disabled]="carregando() || dataSource().length === 0"
+        >
+          <mat-icon aria-hidden="true">table_view</mat-icon>
+        </button>
+
+        <button
+          type="button"
+          mat-icon-button
+          matTooltip="Exportar PDF"
+          aria-label="Exportar PDF"
+          (click)="exportPdf()"
+          [disabled]="carregando() || dataSource().length === 0"
+        >
+          <mat-icon aria-hidden="true">picture_as_pdf</mat-icon>
+        </button>
+      } @else {
+        <button
+          type="button"
+          mat-stroked-button
+          (click)="exportExcel()"
+          [disabled]="carregando() || dataSource().length === 0"
+        >
+          <mat-icon aria-hidden="true">table_view</mat-icon>
+          Excel
+        </button>
+
+        <button
+          type="button"
+          mat-stroked-button
+          (click)="exportPdf()"
+          [disabled]="carregando() || dataSource().length === 0"
+        >
+          <mat-icon aria-hidden="true">picture_as_pdf</mat-icon>
+          PDF
+        </button>
+      }
+
+      @if (podeCriar) {
+        <a mat-flat-button color="primary" routerLink="/linhas-onibus/nova">
+          <mat-icon aria-hidden="true">add</mat-icon>
+          Nova linha
+        </a>
+      }
+    </div>
+  </div>
+
+  <form class="filter-bar" [formGroup]="filtro" (ngSubmit)="buscar()">
+    <mat-form-field appearance="outline" class="filter-field">
+      <mat-label>Descrição</mat-label>
+      <input matInput type="text" formControlName="descricao" />
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="filter-field">
+      <mat-label>Vigência</mat-label>
+      <mat-select formControlName="vigencia">
+        <mat-option value="">Todas</mat-option>
+        <mat-option value="vigentes">Só vigentes</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <div class="filter-actions">
+      <button mat-flat-button color="primary" type="submit" class="filter-button" [disabled]="carregando()">
+        <mat-icon aria-hidden="true">filter_alt</mat-icon>
+        Filtrar
+      </button>
+      <button
+        mat-stroked-button
+        type="button"
+        class="filter-button"
+        [disabled]="carregando()"
+        (click)="limpar()"
+      >
+        <mat-icon aria-hidden="true">cleaning_services</mat-icon>
+        Limpar
+      </button>
+    </div>
+  </form>
+
+  @if (carregando()) {
+    <div class="loading"><mat-spinner diameter="40"></mat-spinner></div>
+  } @else {
+    <table mat-table [dataSource]="dataSource()" class="mat-elevation-z1">
+      <ng-container matColumnDef="descricao">
+        <th mat-header-cell *matHeaderCellDef>Descrição</th>
+        <td mat-cell *matCellDef="let row">{{ row.descricao }}</td>
+      </ng-container>
+      <ng-container matColumnDef="dataInicio">
+        <th mat-header-cell *matHeaderCellDef>Data início</th>
+        <td mat-cell *matCellDef="let row">{{ row.dataInicio }}</td>
+      </ng-container>
+      <ng-container matColumnDef="dataFim">
+        <th mat-header-cell *matHeaderCellDef>Data fim</th>
+        <td mat-cell *matCellDef="let row">{{ row.dataFim || 'Em aberto' }}</td>
+      </ng-container>
+      <ng-container matColumnDef="valorTarifa">
+        <th mat-header-cell *matHeaderCellDef>Tarifa</th>
+        <td mat-cell *matCellDef="let row">{{ row.valorTarifa | number: '1.2-2' }}</td>
+      </ng-container>
+      <ng-container matColumnDef="acoes">
+        <th mat-header-cell *matHeaderCellDef></th>
+        <td mat-cell *matCellDef="let row" class="actions-cell">
+          @if (podeEditar) {
+            <a mat-button [routerLink]="['/linhas-onibus', row.id, 'editar']">Editar</a>
+          }
+        </td>
+      </ng-container>
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+    </table>
+  }
+</div>

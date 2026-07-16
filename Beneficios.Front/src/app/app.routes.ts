@@ -145,6 +145,30 @@ export const routes: Routes = [
             (m) => m.AfastamentoFormComponent,
           ),
       },
+      {
+        path: 'linhas-onibus',
+        canActivate: [tenantGuard, permissaoGuard('linhas_onibus')],
+        loadComponent: () =>
+          import('./features/linhas-onibus/linha-onibus-list/linha-onibus-list.component').then(
+            (m) => m.LinhaOnibusListComponent,
+          ),
+      },
+      {
+        path: 'linhas-onibus/nova',
+        canActivate: [tenantGuard, permissaoGuard('linhas_onibus')],
+        loadComponent: () =>
+          import('./features/linhas-onibus/linha-onibus-form/linha-onibus-form.component').then(
+            (m) => m.LinhaOnibusFormComponent,
+          ),
+      },
+      {
+        path: 'linhas-onibus/:id/editar',
+        canActivate: [tenantGuard, permissaoGuard('linhas_onibus')],
+        loadComponent: () =>
+          import('./features/linhas-onibus/linha-onibus-form/linha-onibus-form.component').then(
+            (m) => m.LinhaOnibusFormComponent,
+          ),
+      },
       { path: '', pathMatch: 'full', redirectTo: 'login' },
     ],
   },
