@@ -1,4 +1,4 @@
-using Beneficios.Infrastructure.Configurations;
+﻿using Beneficios.Infrastructure.Configurations;
 using Npgsql;
 using Xunit;
 

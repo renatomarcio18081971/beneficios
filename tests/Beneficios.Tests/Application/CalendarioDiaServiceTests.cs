@@ -75,6 +75,64 @@ public class CalendarioDiaServiceTests
         Assert.True(capturado.EhDiaUtil);
     }
 
+    [Fact]
+    public async Task ObterPorIdAsync_NaoEncontrado_DeveRetornarNull()
+    {
+        var id = Guid.NewGuid();
+        _repositoryMock.Setup(x => x.ObterPorIdAsync(id)).ReturnsAsync((CalendarioDiaQueryResult?)null);
+        Assert.Null(await _service.ObterPorIdAsync(id));
+    }
+
+    [Fact]
+    public async Task ObterPorMesAsync_DeveMapear()
+    {
+        var id = Guid.NewGuid();
+        _repositoryMock.Setup(x => x.ObterPorMesAsync(2026, 7)).ReturnsAsync(
+        [
+            new CalendarioDiaQueryResult
+            {
+                Id = id,
+                Data = new DateOnly(2026, 7, 1),
+                EhDiaUtil = true,
+                Origem = OrigemCalendarioDia.Geracao,
+            },
+        ]);
+
+        var dias = await _service.ObterPorMesAsync(2026, 7);
+        Assert.Single(dias);
+        Assert.Equal(id, dias[0].Id);
+        Assert.True(dias[0].EhDiaUtil);
+    }
+
+    [Fact]
+    public async Task AtualizarAsync_NaoEncontrado_DeveLancar()
+    {
+        var id = Guid.NewGuid();
+        _repositoryMock.Setup(x => x.ObterPorIdAsync(id)).ReturnsAsync((CalendarioDiaQueryResult?)null);
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => _service.AtualizarAsync(id, new CalendarioDiaAtualizarDto(true, null, null), null));
+        Assert.Equal(CalendarioDiaService.MensagemDiaNaoEncontrado, ex.Message);
+    }
+
+    [Fact]
+    public async Task AtualizarAsync_QuandoRepoRetornaFalse_DeveLancar()
+    {
+        var id = Guid.NewGuid();
+        _repositoryMock.Setup(x => x.ObterPorIdAsync(id)).ReturnsAsync(new CalendarioDiaQueryResult
+        {
+            Id = id,
+            Data = new DateOnly(2026, 5, 1),
+            EhDiaUtil = true,
+            Origem = OrigemCalendarioDia.Geracao,
+        });
+        _repositoryMock.Setup(x => x.AtualizarAsync(It.IsAny<CalendarioDiaAtualizarParams>())).ReturnsAsync(false);
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => _service.AtualizarAsync(id, new CalendarioDiaAtualizarDto(false, null, null), null));
+        Assert.Equal(CalendarioDiaService.MensagemDiaNaoEncontrado, ex.Message);
+    }
+
     [Theory]
     [InlineData(2024, 366)]
     [InlineData(2025, 365)]

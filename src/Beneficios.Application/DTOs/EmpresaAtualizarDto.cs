@@ -1,4 +1,4 @@
-namespace Beneficios.Application.DTOs;
+﻿namespace Beneficios.Application.DTOs;
 
 public record EmpresaAtualizarDto(
     string RazaoSocial,

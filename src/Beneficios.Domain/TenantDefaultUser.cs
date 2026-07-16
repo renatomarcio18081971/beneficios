@@ -1,4 +1,4 @@
-namespace Beneficios.Domain;
+﻿namespace Beneficios.Domain;
 
 public static class TenantDefaultUser
 {

@@ -1,0 +1,57 @@
+﻿<div class="afastamento-form-page">
+  <div class="header">
+    <h1>{{ titulo }}</h1>
+    <a mat-button routerLink="/afastamentos">Voltar</a>
+  </div>
+
+  @if (carregando()) {
+    <div class="loading"><mat-spinner diameter="40"></mat-spinner></div>
+  } @else {
+    <form [formGroup]="form" (ngSubmit)="salvar()" class="form">
+      <mat-form-field appearance="outline">
+        <mat-label>Funcionário</mat-label>
+        <mat-select formControlName="funcionarioId" [disabled]="!!id()">
+          @for (f of funcionarios(); track f.id) {
+            <mat-option [value]="f.id">{{ f.nome }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Tipo</mat-label>
+        <mat-select formControlName="tipo">
+          @for (t of tipos; track t.valor) {
+            <mat-option [value]="t.valor">{{ t.label }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Data início</mat-label>
+        <input matInput type="date" formControlName="dataInicio" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Data fim</mat-label>
+        <input matInput type="date" formControlName="dataFim" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full">
+        <mat-label>Observação</mat-label>
+        <textarea matInput rows="3" formControlName="observacao"></textarea>
+      </mat-form-field>
+
+      <div class="actions">
+        @if (podeSalvar) {
+          <button mat-flat-button color="primary" type="submit" [disabled]="salvando()">
+            {{ salvando() ? 'Salvando…' : 'Salvar' }}
+          </button>
+        }
+        @if (id() && podeExcluir) {
+          <button mat-stroked-button color="warn" type="button" (click)="excluir()">Excluir</button>
+        }
+        <a mat-button routerLink="/afastamentos">Cancelar</a>
+      </div>
+    </form>
+  }
+</div>

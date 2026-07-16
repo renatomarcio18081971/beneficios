@@ -1,4 +1,4 @@
-namespace Beneficios.Api.Middleware;
+﻿namespace Beneficios.Api.Middleware;
 
 public static class TenantContextKeys
 {

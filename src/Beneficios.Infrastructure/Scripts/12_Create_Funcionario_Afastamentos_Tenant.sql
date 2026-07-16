@@ -1,0 +1,2 @@
+﻿-- Referência: tabela funcionario_afastamentos no schema tenant
+-- Aplicado via TenantSchemaSql.CriarTabelaFuncionarioAfastamentos

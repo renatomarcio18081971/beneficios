@@ -25,10 +25,24 @@ export const MODULOS_SISTEMA: readonly ModuloSistema[] = [
     acoesSuportadas: ['visualizar', 'criar', 'editar', 'excluir'],
   },
   {
-    codigo: 'dias_uteis',
+    codigo: 'calendario',
     nomeExibicao: 'Calendário',
-    rota: '/dias-uteis',
+    rota: '/calendario',
     icone: 'calendar_month',
+    acoesSuportadas: ['visualizar', 'criar', 'editar', 'excluir'],
+  },
+  {
+    codigo: 'funcionarios',
+    nomeExibicao: 'Funcionários',
+    rota: '/funcionarios',
+    icone: 'badge',
+    acoesSuportadas: ['visualizar', 'criar', 'editar', 'excluir'],
+  },
+  {
+    codigo: 'afastamentos',
+    nomeExibicao: 'Afastamentos/Férias',
+    rota: '/afastamentos',
+    icone: 'event_busy',
     acoesSuportadas: ['visualizar', 'criar', 'editar', 'excluir'],
   },
 ] as const;

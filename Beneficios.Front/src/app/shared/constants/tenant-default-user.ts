@@ -1,4 +1,4 @@
-export const TENANT_DEFAULT_USER = {
+﻿export const TENANT_DEFAULT_USER = {
   nome: 'Usuário cadastrar',
   email: 'user@123.com',
   senha: 'user@123',

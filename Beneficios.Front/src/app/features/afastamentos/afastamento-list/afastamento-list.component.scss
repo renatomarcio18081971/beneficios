@@ -1,0 +1,24 @@
+﻿.afastamento-list-page {
+  padding: 1.5rem;
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+.loading {
+  display: flex;
+  justify-content: center;
+  padding: 2rem;
+}
+table {
+  width: 100%;
+}

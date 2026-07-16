@@ -90,11 +90,59 @@ export const routes: Routes = [
           import('./features/perfis/perfil-form/perfil-form.component').then((m) => m.PerfilFormComponent),
       },
       {
-        path: 'dias-uteis',
-        canActivate: [tenantGuard, permissaoGuard('dias_uteis')],
+        path: 'calendario',
+        canActivate: [tenantGuard, permissaoGuard('calendario')],
         loadComponent: () =>
-          import('./features/dias-uteis/dias-uteis-page/dias-uteis-page.component').then(
-            (m) => m.DiasUteisPageComponent,
+          import('./features/calendario/calendario-page/calendario-page.component').then(
+            (m) => m.CalendarioPageComponent,
+          ),
+      },
+      {
+        path: 'funcionarios',
+        canActivate: [tenantGuard, permissaoGuard('funcionarios')],
+        loadComponent: () =>
+          import('./features/funcionarios/funcionario-list/funcionario-list.component').then(
+            (m) => m.FuncionarioListComponent,
+          ),
+      },
+      {
+        path: 'funcionarios/novo',
+        canActivate: [tenantGuard, permissaoGuard('funcionarios')],
+        loadComponent: () =>
+          import('./features/funcionarios/funcionario-form/funcionario-form.component').then(
+            (m) => m.FuncionarioFormComponent,
+          ),
+      },
+      {
+        path: 'funcionarios/:id/editar',
+        canActivate: [tenantGuard, permissaoGuard('funcionarios')],
+        loadComponent: () =>
+          import('./features/funcionarios/funcionario-form/funcionario-form.component').then(
+            (m) => m.FuncionarioFormComponent,
+          ),
+      },
+      {
+        path: 'afastamentos',
+        canActivate: [tenantGuard, permissaoGuard('afastamentos')],
+        loadComponent: () =>
+          import('./features/afastamentos/afastamento-list/afastamento-list.component').then(
+            (m) => m.AfastamentoListComponent,
+          ),
+      },
+      {
+        path: 'afastamentos/novo',
+        canActivate: [tenantGuard, permissaoGuard('afastamentos')],
+        loadComponent: () =>
+          import('./features/afastamentos/afastamento-form/afastamento-form.component').then(
+            (m) => m.AfastamentoFormComponent,
+          ),
+      },
+      {
+        path: 'afastamentos/:id/editar',
+        canActivate: [tenantGuard, permissaoGuard('afastamentos')],
+        loadComponent: () =>
+          import('./features/afastamentos/afastamento-form/afastamento-form.component').then(
+            (m) => m.AfastamentoFormComponent,
           ),
       },
       { path: '', pathMatch: 'full', redirectTo: 'login' },

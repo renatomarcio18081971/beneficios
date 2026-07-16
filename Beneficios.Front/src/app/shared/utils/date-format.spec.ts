@@ -1,4 +1,4 @@
-import { DATA_INCLUSAO_DATE_PIPE_FORMAT, formatDataInclusao } from './date-format';
+﻿import { DATA_INCLUSAO_DATE_PIPE_FORMAT, formatDataInclusao } from './date-format';
 
 describe('date-format', () => {
   it('deve expor formato com data e hora', () => {

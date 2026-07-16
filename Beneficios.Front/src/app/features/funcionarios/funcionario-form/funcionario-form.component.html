@@ -1,0 +1,207 @@
+﻿<div class="funcionario-form-page">
+  <h1>{{ titulo }}</h1>
+
+  @if (carregando()) {
+    <div class="loading"><mat-spinner diameter="40"></mat-spinner></div>
+  } @else {
+    <form [formGroup]="form" (ngSubmit)="salvar()">
+      <section>
+        <h2>Identificação</h2>
+        <div class="grid">
+          <mat-form-field appearance="outline" class="span-2">
+            <mat-label>Nome completo</mat-label>
+            <input matInput formControlName="nome" />
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>CPF</mat-label>
+            <input matInput formControlName="cpf" (input)="onCpfInput($event)" />
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Matrícula</mat-label>
+            <input matInput formControlName="matricula" />
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Data de admissão</mat-label>
+            <input matInput type="date" formControlName="dataAdmissao" />
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Data de desligamento</mat-label>
+            <input matInput type="date" formControlName="dataDesligamento" />
+          </mat-form-field>
+        </div>
+      </section>
+
+      <section>
+        <h2>Dados contratuais</h2>
+        <div class="grid">
+          <mat-form-field appearance="outline">
+            <mat-label>Cargo</mat-label>
+            <input matInput formControlName="cargo" />
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Salário base</mat-label>
+            <input matInput type="number" step="0.01" formControlName="salarioBase" />
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Tipo de contrato</mat-label>
+            <mat-select formControlName="tipoContrato">
+              @for (t of tipos; track t.valor) {
+                <mat-option [value]="t.valor">{{ t.label }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Centro de custo</mat-label>
+            <input matInput formControlName="centroCusto" />
+          </mat-form-field>
+        </div>
+      </section>
+
+      <section>
+        <h2>Endereço residencial</h2>
+        <div class="grid">
+          <mat-form-field appearance="outline">
+            <mat-label>CEP</mat-label>
+            <input matInput formControlName="resCep" (input)="onCepInput('resCep', $event)" maxlength="9" />
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="span-2">
+            <mat-label>Logradouro</mat-label>
+            <input matInput formControlName="resLogradouro" />
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Número</mat-label>
+            <input matInput formControlName="resNumero" />
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Complemento</mat-label>
+            <input matInput formControlName="resComplemento" />
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Bairro</mat-label>
+            <input matInput formControlName="resBairro" />
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Cidade</mat-label>
+            <input matInput formControlName="resCidade" />
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>UF</mat-label>
+            <mat-select formControlName="resUf">
+              <mat-option value="">—</mat-option>
+              @for (uf of ufs; track uf.valor) {
+                <mat-option [value]="uf.valor">{{ uf.label }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </section>
+
+      <section>
+        <h2>Local de trabalho</h2>
+        <div class="grid">
+          <mat-form-field appearance="outline" class="span-2">
+            <mat-label>Empresa / filial</mat-label>
+            <input matInput formControlName="trabNomeLocal" />
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>CEP</mat-label>
+            <input matInput formControlName="trabCep" (input)="onCepInput('trabCep', $event)" maxlength="9" />
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="span-2">
+            <mat-label>Logradouro</mat-label>
+            <input matInput formControlName="trabLogradouro" />
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Número</mat-label>
+            <input matInput formControlName="trabNumero" />
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Complemento</mat-label>
+            <input matInput formControlName="trabComplemento" />
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Bairro</mat-label>
+            <input matInput formControlName="trabBairro" />
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Cidade</mat-label>
+            <input matInput formControlName="trabCidade" />
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>UF</mat-label>
+            <mat-select formControlName="trabUf">
+              <mat-option value="">—</mat-option>
+              @for (uf of ufs; track uf.valor) {
+                <mat-option [value]="uf.valor">{{ uf.label }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </section>
+
+      <section>
+        <h2>Situação</h2>
+        <div class="grid">
+          <mat-form-field appearance="outline">
+            <mat-label>Status</mat-label>
+            <mat-select formControlName="situacao">
+              @for (s of situacoes; track s.valor) {
+                <mat-option [value]="s.valor">{{ s.label }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          @if (situacaoDerivada() === 'Afastado') {
+            <p class="afastado-hint span-2">
+              Situação atual: <strong>Afastado</strong>
+              (derivada do histórico).
+              <a [routerLink]="['/afastamentos']" [queryParams]="{ funcionarioId: id() }">Ver afastamentos/férias</a>
+            </p>
+          }
+        </div>
+      </section>
+
+      <section>
+        <h2>Benefícios — Vale transporte</h2>
+        <div class="grid vt">
+          <mat-slide-toggle formControlName="vtAtivo">Ativo</mat-slide-toggle>
+          <mat-slide-toggle formControlName="vtOptIn">Opt-in do funcionário</mat-slide-toggle>
+          <mat-form-field appearance="outline">
+            <mat-label>Data início</mat-label>
+            <input matInput type="date" formControlName="vtDataInicio" />
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Data fim</mat-label>
+            <input matInput type="date" formControlName="vtDataFim" />
+          </mat-form-field>
+        </div>
+      </section>
+
+      <section>
+        <h2>Jornada de trabalho</h2>
+        <div class="grid">
+          <mat-form-field appearance="outline" class="span-2">
+            <mat-label>Jornada</mat-label>
+            <mat-select formControlName="jornada">
+              @for (j of jornadas; track j.valor) {
+                <mat-option [value]="j.valor">{{ j.label }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          @if (exigeDetalhe) {
+            <mat-form-field appearance="outline" class="span-2">
+              <mat-label>Detalhe da categoria</mat-label>
+              <input matInput formControlName="jornadaDetalhe" />
+            </mat-form-field>
+          }
+        </div>
+      </section>
+
+      <div class="actions">
+        <a mat-button routerLink="/funcionarios">Cancelar</a>
+        @if ((id() && podeEditar) || (!id() && podeCriar)) {
+          <button mat-flat-button color="primary" type="submit" [disabled]="salvando()">Salvar</button>
+        }
+      </div>
+    </form>
+  }
+</div>
