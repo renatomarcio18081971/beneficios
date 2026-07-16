@@ -240,6 +240,62 @@ public static class TenantSchemaSql
             """;
     }
 
+    public static string CriarTabelaLinhasOnibus(string schemaName)
+    {
+        var quotedSchema = CitarIdentificador(schemaName);
+        var indexPrefix = schemaName.Replace('-', '_');
+
+        return $"""
+            CREATE TABLE IF NOT EXISTS {quotedSchema}.linhas_onibus (
+                id UUID PRIMARY KEY,
+                descricao VARCHAR NOT NULL,
+                data_inicio DATE NOT NULL,
+                data_fim DATE NULL,
+                valor_tarifa NUMERIC(18,2) NOT NULL,
+                data_inclusao TIMESTAMP NOT NULL DEFAULT NOW(),
+                data_alteracao TIMESTAMP NULL,
+                usuario_alteracao_id UUID NULL
+            );
+
+            CREATE INDEX IF NOT EXISTS idx_{indexPrefix}_linhas_onibus_descricao
+                ON {quotedSchema}.linhas_onibus(descricao);
+
+            CREATE INDEX IF NOT EXISTS idx_{indexPrefix}_linhas_onibus_datas
+                ON {quotedSchema}.linhas_onibus(data_inicio, data_fim);
+            """;
+    }
+
+    public static string CriarTabelaFuncionarioLinhas(string schemaName)
+    {
+        var quotedSchema = CitarIdentificador(schemaName);
+        var indexPrefix = schemaName.Replace('-', '_');
+
+        return $"""
+            CREATE TABLE IF NOT EXISTS {quotedSchema}.funcionario_linhas (
+                id UUID PRIMARY KEY,
+                funcionario_id UUID NOT NULL,
+                linha_onibus_id UUID NOT NULL,
+                quantidade INT NOT NULL,
+                data_inicio DATE NOT NULL,
+                data_fim DATE NULL,
+                data_inclusao TIMESTAMP NOT NULL DEFAULT NOW(),
+                data_alteracao TIMESTAMP NULL,
+                usuario_alteracao_id UUID NULL,
+                CONSTRAINT fk_{indexPrefix}_func_linha_funcionario
+                    FOREIGN KEY (funcionario_id) REFERENCES {quotedSchema}.funcionarios(id),
+                CONSTRAINT fk_{indexPrefix}_func_linha_linha
+                    FOREIGN KEY (linha_onibus_id) REFERENCES {quotedSchema}.linhas_onibus(id),
+                CONSTRAINT uq_{indexPrefix}_func_linha UNIQUE (funcionario_id, linha_onibus_id)
+            );
+
+            CREATE INDEX IF NOT EXISTS idx_{indexPrefix}_func_linha_funcionario
+                ON {quotedSchema}.funcionario_linhas(funcionario_id);
+
+            CREATE INDEX IF NOT EXISTS idx_{indexPrefix}_func_linha_linha
+                ON {quotedSchema}.funcionario_linhas(linha_onibus_id);
+            """;
+    }
+
     public static string DropColunaMotivoAfastamento(string schemaName)
     {
         var quotedSchema = CitarIdentificador(schemaName);

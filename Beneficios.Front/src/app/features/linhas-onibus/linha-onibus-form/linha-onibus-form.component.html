@@ -1,0 +1,41 @@
+﻿<div class="linha-onibus-form-page">
+  <div class="header">
+    <h1>{{ titulo }}</h1>
+    <a mat-button routerLink="/linhas-onibus">Voltar</a>
+  </div>
+
+  @if (carregando()) {
+    <div class="loading"><mat-spinner diameter="40"></mat-spinner></div>
+  } @else {
+    <form [formGroup]="form" (ngSubmit)="salvar()" class="form">
+      <mat-form-field appearance="outline" class="full">
+        <mat-label>Descrição</mat-label>
+        <input matInput formControlName="descricao" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Data início</mat-label>
+        <input matInput type="date" formControlName="dataInicio" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Data fim</mat-label>
+        <input matInput type="date" formControlName="dataFim" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full">
+        <mat-label>Valor da tarifa</mat-label>
+        <input matInput appCurrencyBrl formControlName="valorTarifa" inputmode="decimal" autocomplete="off" />
+      </mat-form-field>
+
+      <div class="actions">
+        @if (podeSalvar) {
+          <button mat-flat-button color="primary" type="submit" [disabled]="salvando()">
+            {{ salvando() ? 'Salvando…' : 'Salvar' }}
+          </button>
+        }
+        <a mat-button routerLink="/linhas-onibus">Cancelar</a>
+      </div>
+    </form>
+  }
+</div>

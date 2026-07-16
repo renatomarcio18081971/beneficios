@@ -57,6 +57,14 @@ public class TenantProvisioner : ITenantProvisioner
             cancellationToken: cancellationToken));
 
         await connection.ExecuteAsync(new CommandDefinition(
+            TenantSchemaSql.CriarTabelaLinhasOnibus(schemaName),
+            cancellationToken: cancellationToken));
+
+        await connection.ExecuteAsync(new CommandDefinition(
+            TenantSchemaSql.CriarTabelaFuncionarioLinhas(schemaName),
+            cancellationToken: cancellationToken));
+
+        await connection.ExecuteAsync(new CommandDefinition(
             TenantSchemaSql.DropColunaMotivoAfastamento(schemaName),
             cancellationToken: cancellationToken));
 
@@ -140,6 +148,14 @@ public class TenantProvisioner : ITenantProvisioner
 
         await connection.ExecuteAsync(new CommandDefinition(
             TenantSchemaSql.CriarTabelaFuncionarioAfastamentos(schemaName),
+            cancellationToken: cancellationToken));
+
+        await connection.ExecuteAsync(new CommandDefinition(
+            TenantSchemaSql.CriarTabelaLinhasOnibus(schemaName),
+            cancellationToken: cancellationToken));
+
+        await connection.ExecuteAsync(new CommandDefinition(
+            TenantSchemaSql.CriarTabelaFuncionarioLinhas(schemaName),
             cancellationToken: cancellationToken));
 
         await connection.ExecuteAsync(new CommandDefinition(

@@ -1,0 +1,43 @@
+﻿@use '../../../shared/styles/cadastro-form-layout' as layout;
+
+@include layout.cadastro-form-host-center;
+
+.funcionario-linha-form-page {
+  @include layout.cadastro-form-page-center(720px);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.actions {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.vt-warning {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 0.75rem 1rem;
+  border-radius: 4px;
+  background: #fdecea;
+  color: #b71c1c;
+  font-size: 0.875rem;
+}

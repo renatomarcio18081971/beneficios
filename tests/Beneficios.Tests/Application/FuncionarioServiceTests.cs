@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Beneficios.Application.DTOs;
+using Beneficios.Application.Interfaces;
 using Beneficios.Application.Mappings;
 using Beneficios.Application.Services;
 using Beneficios.Domain.Enums;
@@ -14,12 +15,13 @@ public class FuncionarioServiceTests
 {
     private readonly Mock<IFuncionarioRepository> _repo = new();
     private readonly Mock<IFuncionarioAfastamentoRepository> _afastRepo = new();
+    private readonly Mock<IFuncionarioLinhaService> _linhaService = new();
     private readonly FuncionarioService _sut;
 
     public FuncionarioServiceTests()
     {
         var mapper = new MapperConfiguration(c => c.AddProfile<FuncionarioProfile>()).CreateMapper();
-        _sut = new FuncionarioService(_repo.Object, _afastRepo.Object, mapper);
+        _sut = new FuncionarioService(_repo.Object, _afastRepo.Object, _linhaService.Object, mapper);
     }
 
     [Fact]
@@ -171,6 +173,79 @@ public class FuncionarioServiceTests
         _repo.Verify(r => r.AtualizarAsync(
             It.Is<FuncionarioAtualizarParams>(p => p.Id == id),
             It.IsAny<IReadOnlyList<FuncionarioBeneficioSalvarParams>>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task AtualizarAsync_VtInativo_DeveEncerrarVinculosAbertos()
+    {
+        var id = Guid.NewGuid();
+        var usuarioId = Guid.NewGuid();
+        _repo.Setup(r => r.ObterPorIdAsync(id)).ReturnsAsync(new FuncionarioQueryResult
+        {
+            Id = id,
+            Nome = "Ana",
+            Cpf = "52998224725",
+            Cargo = "Analista",
+            SalarioBase = 1,
+            TipoContrato = TipoContrato.Clt,
+            Situacao = SituacaoFuncionario.Ativo,
+            Jornada = JornadaTrabalho.QuarentaHorasSegSex,
+            DataAdmissao = new DateOnly(2024, 1, 1),
+            DataInclusao = DateTime.UtcNow,
+        });
+        _afastRepo.Setup(r => r.ObterAtivoEmAsync(id, It.IsAny<DateOnly>()))
+            .ReturnsAsync((FuncionarioAfastamentoQueryResult?)null);
+        _repo.Setup(r => r.CpfExisteAsync(It.IsAny<string>(), id)).ReturnsAsync(false);
+
+        var dto = CriarAtualizarDto(SituacaoFuncionario.Ativo) with
+        {
+            Beneficios =
+            [
+                new FuncionarioBeneficioSalvarDto("vale_transporte", false, new DateOnly(2024, 1, 10), null, true),
+            ],
+        };
+
+        await _sut.AtualizarAsync(id, dto, usuarioId);
+
+        _linhaService.Verify(
+            s => s.EncerrarAbertosPorFuncionarioAsync(id, usuarioId),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task AtualizarAsync_VtAtivo_NaoDeveEncerrarVinculos()
+    {
+        var id = Guid.NewGuid();
+        _repo.Setup(r => r.ObterPorIdAsync(id)).ReturnsAsync(new FuncionarioQueryResult
+        {
+            Id = id,
+            Nome = "Ana",
+            Cpf = "52998224725",
+            Cargo = "Analista",
+            SalarioBase = 1,
+            TipoContrato = TipoContrato.Clt,
+            Situacao = SituacaoFuncionario.Ativo,
+            Jornada = JornadaTrabalho.QuarentaHorasSegSex,
+            DataAdmissao = new DateOnly(2024, 1, 1),
+            DataInclusao = DateTime.UtcNow,
+        });
+        _afastRepo.Setup(r => r.ObterAtivoEmAsync(id, It.IsAny<DateOnly>()))
+            .ReturnsAsync((FuncionarioAfastamentoQueryResult?)null);
+        _repo.Setup(r => r.CpfExisteAsync(It.IsAny<string>(), id)).ReturnsAsync(false);
+
+        var dto = CriarAtualizarDto(SituacaoFuncionario.Ativo) with
+        {
+            Beneficios =
+            [
+                new FuncionarioBeneficioSalvarDto("vale_transporte", true, new DateOnly(2024, 1, 10), null, true),
+            ],
+        };
+
+        await _sut.AtualizarAsync(id, dto, null);
+
+        _linhaService.Verify(
+            s => s.EncerrarAbertosPorFuncionarioAsync(It.IsAny<Guid>(), It.IsAny<Guid?>()),
+            Times.Never);
     }
 
     [Fact]

@@ -1,0 +1,2 @@
+﻿-- Referência: tabela funcionario_linhas no schema tenant
+-- Aplicado via TenantSchemaSql.CriarTabelaFuncionarioLinhas

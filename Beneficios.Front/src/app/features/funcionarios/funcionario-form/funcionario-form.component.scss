@@ -1,6 +1,9 @@
-﻿.funcionario-form-page {
-  padding: 16px;
-  max-width: 960px;
+﻿@use '../../../shared/styles/cadastro-form-layout' as layout;
+
+@include layout.cadastro-form-host-center;
+
+.funcionario-form-page {
+  @include layout.cadastro-form-page-center(960px);
 }
 
 h1 {
@@ -31,6 +34,7 @@ section h2 {
 
 .vt {
   align-items: center;
+  row-gap: 28px;
 }
 
 .actions {

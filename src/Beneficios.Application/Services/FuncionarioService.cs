@@ -23,15 +23,18 @@ public class FuncionarioService : IFuncionarioService
 
     private readonly IFuncionarioRepository _repository;
     private readonly IFuncionarioAfastamentoRepository _afastamentoRepository;
+    private readonly IFuncionarioLinhaService _funcionarioLinhaService;
     private readonly IMapper _mapper;
 
     public FuncionarioService(
         IFuncionarioRepository repository,
         IFuncionarioAfastamentoRepository afastamentoRepository,
+        IFuncionarioLinhaService funcionarioLinhaService,
         IMapper mapper)
     {
         _repository = repository;
         _afastamentoRepository = afastamentoRepository;
+        _funcionarioLinhaService = funcionarioLinhaService;
         _mapper = mapper;
     }
 
@@ -50,6 +53,7 @@ public class FuncionarioService : IFuncionarioService
 
         var id = Guid.NewGuid();
         await _repository.SalvarAsync(MapearSalvar(dto, id, cpf, matricula), beneficios);
+        await EncerrarVinculosSeVtInativoAsync(id, beneficios, usuarioAlteracaoId);
         return id;
     }
 
@@ -70,6 +74,7 @@ public class FuncionarioService : IFuncionarioService
             throw new InvalidOperationException(MensagemMatriculaDuplicada);
 
         await _repository.AtualizarAsync(MapearAtualizar(dto, id, cpf, matricula, usuarioAlteracaoId), beneficios);
+        await EncerrarVinculosSeVtInativoAsync(id, beneficios, usuarioAlteracaoId);
     }
 
     public async Task<FuncionarioDto?> ObterPorIdAsync(Guid id)
@@ -136,6 +141,19 @@ public class FuncionarioService : IFuncionarioService
             funcionarioId.Value, DateOnly.FromDateTime(DateTime.UtcNow));
         if (ativo is not null)
             throw new InvalidOperationException(MensagemAtivoComAfastamento);
+    }
+
+    private async Task EncerrarVinculosSeVtInativoAsync(
+        Guid funcionarioId,
+        IReadOnlyList<FuncionarioBeneficioSalvarParams> beneficios,
+        Guid? usuarioAlteracaoId)
+    {
+        var vtAtivo = beneficios.Any(b =>
+            string.Equals(b.CodigoBeneficio, CodigoValeTransporte, StringComparison.OrdinalIgnoreCase)
+            && b.Ativo);
+
+        if (!vtAtivo)
+            await _funcionarioLinhaService.EncerrarAbertosPorFuncionarioAsync(funcionarioId, usuarioAlteracaoId);
     }
 
     private static IReadOnlyList<FuncionarioBeneficioSalvarParams> NormalizarBeneficios(

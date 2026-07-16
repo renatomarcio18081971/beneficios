@@ -21,6 +21,7 @@ import {
   UFS_BRASIL,
 } from '../../../core/api/funcionario.models';
 import { PermissaoService } from '../../../core/auth/permissao.service';
+import { CurrencyBrlInputDirective } from '../../../shared/utils/currency-brl-input.directive';
 
 @Component({
   selector: 'app-funcionario-form',
@@ -35,6 +36,7 @@ import { PermissaoService } from '../../../core/auth/permissao.service';
     MatSlideToggleModule,
     MatSnackBarModule,
     MatProgressSpinnerModule,
+    CurrencyBrlInputDirective,
   ],
   templateUrl: './funcionario-form.component.html',
   styleUrl: './funcionario-form.component.scss',
@@ -57,6 +59,7 @@ export class FuncionarioFormComponent implements OnInit {
   readonly id = signal<string | null>(null);
   readonly podeEditar = this.permissao.possuiPermissao('funcionarios', 'editar');
   readonly podeCriar = this.permissao.possuiPermissao('funcionarios', 'criar');
+  readonly podeVerLinhas = this.permissao.possuiPermissao('funcionario_linhas', 'visualizar');
 
   readonly form = this.fb.nonNullable.group({
     nome: ['', Validators.required],

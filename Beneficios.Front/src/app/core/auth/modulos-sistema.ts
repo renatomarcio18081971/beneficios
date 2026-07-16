@@ -45,4 +45,18 @@ export const MODULOS_SISTEMA: readonly ModuloSistema[] = [
     icone: 'event_busy',
     acoesSuportadas: ['visualizar', 'criar', 'editar', 'excluir'],
   },
+  {
+    codigo: 'linhas_onibus',
+    nomeExibicao: 'Linhas de Ônibus',
+    rota: '/linhas-onibus',
+    icone: 'directions_bus',
+    acoesSuportadas: ['visualizar', 'criar', 'editar', 'excluir'],
+  },
+  {
+    codigo: 'funcionario_linhas',
+    nomeExibicao: 'Funcionário × Linhas',
+    rota: '/funcionario-linhas',
+    icone: 'commute',
+    acoesSuportadas: ['visualizar', 'criar', 'editar', 'excluir'],
+  },
 ] as const;

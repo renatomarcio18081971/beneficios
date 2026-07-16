@@ -34,6 +34,27 @@ public class TenantSchemaSqlTests
     }
 
     [Fact]
+    public void CriarTabelaLinhasOnibus_DeveCriarTabelaEIndices()
+    {
+        var sql = TenantSchemaSql.CriarTabelaLinhasOnibus("tenant_acme");
+        Assert.Contains("linhas_onibus", sql);
+        Assert.Contains("valor_tarifa", sql);
+        Assert.Contains("CREATE INDEX IF NOT EXISTS", sql);
+        Assert.False(string.IsNullOrWhiteSpace(sql));
+    }
+
+    [Fact]
+    public void CriarTabelaFuncionarioLinhas_DeveCriarTabelaComFksEUnique()
+    {
+        var sql = TenantSchemaSql.CriarTabelaFuncionarioLinhas("tenant_acme");
+        Assert.Contains("funcionario_linhas", sql);
+        Assert.Contains("FOREIGN KEY", sql);
+        Assert.Contains("linhas_onibus", sql);
+        Assert.Contains("UNIQUE (funcionario_id, linha_onibus_id)", sql);
+        Assert.False(string.IsNullOrWhiteSpace(sql));
+    }
+
+    [Fact]
     public void RecalcularSituacoesPorAfastamento_DeveUsarAfastadoEPreservarDesligado()
     {
         var sql = TenantSchemaSql.RecalcularSituacoesPorAfastamento("tenant_acme");

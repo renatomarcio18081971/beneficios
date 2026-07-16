@@ -33,19 +33,24 @@
 }
 
 .filter-field {
-  flex: 1 1 200px;
+  flex: 1 1 160px;
   min-width: 0;
 }
 
 .filter-actions {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
   gap: 8px;
   margin-bottom: 22px;
+  flex: 1 1 auto;
+  min-width: fit-content;
 }
 
 .filter-button {
   height: 56px;
+  min-width: 120px;
 }
 
 .filter-error {
