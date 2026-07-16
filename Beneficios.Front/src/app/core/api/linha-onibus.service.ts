@@ -18,6 +18,7 @@ export class LinhaOnibusService {
     if (filtro.descricao) params = params.set('descricao', filtro.descricao);
     if (filtro.somenteVigentes === true) params = params.set('somenteVigentes', 'true');
     if (filtro.somenteVigentes === false) params = params.set('somenteVigentes', 'false');
+    if (filtro.referencia) params = params.set('referencia', filtro.referencia);
     return this.http.get<LinhaOnibusDto[]>(this.baseUrl, { params });
   }
 

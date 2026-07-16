@@ -74,21 +74,22 @@ public class LinhaOnibusService : ILinhaOnibusService
         return entity is null ? null : _mapper.Map<LinhaOnibusDto>(entity);
     }
 
-    public async Task<IReadOnlyList<LinhaOnibusDto>> FiltrarAsync(string? descricao, bool? somenteVigentes)
+    public async Task<IReadOnlyList<LinhaOnibusDto>> FiltrarAsync(
+        string? descricao,
+        bool? somenteVigentes,
+        DateOnly? referencia = null)
     {
+        var dataRef = referencia ?? DateOnly.FromDateTime(DateTime.UtcNow);
         var lista = await _linhaRepository.FiltrarAsync(new LinhaOnibusFiltroParams
         {
             Descricao = descricao,
             SomenteVigentes = somenteVigentes,
-            Referencia = somenteVigentes == true ? DateOnly.FromDateTime(DateTime.UtcNow) : null,
+            Referencia = somenteVigentes == true ? dataRef : null,
         });
 
         IEnumerable<LinhaOnibusQueryResult> filtrada = lista;
         if (somenteVigentes == true)
-        {
-            var referencia = DateOnly.FromDateTime(DateTime.UtcNow);
-            filtrada = lista.Where(l => AfastamentoPeriodo.EstaAtivoEm(l.DataInicio, l.DataFim, referencia));
-        }
+            filtrada = lista.Where(l => AfastamentoPeriodo.EstaAtivoEm(l.DataInicio, l.DataFim, dataRef));
 
         return _mapper.Map<List<LinhaOnibusDto>>(filtrada.ToList());
     }

@@ -67,7 +67,13 @@ public class FuncionarioLinhaService : IFuncionarioLinhaService
         var existente = await _vinculoRepository.ObterPorIdAsync(id)
             ?? throw new InvalidOperationException(MensagemVinculoNaoEncontrado);
 
-        await GarantirFuncionarioComVtAsync(existente.FuncionarioId);
+        // VT só é exigido se o vínculo permanecer aberto após o save (criar/reabrir/manter vigente).
+        // Encerrar (dataFim no passado ou hoje) deve ser permitido sem VT ativo.
+        var hoje = DateOnly.FromDateTime(DateTime.UtcNow);
+        var permaneceAberto = dto.DataFim is null || dto.DataFim >= hoje;
+        if (permaneceAberto)
+            await GarantirFuncionarioComVtAsync(existente.FuncionarioId);
+
         await GarantirLinhaVigenteAsync(dto.LinhaOnibusId, dto.DataInicio);
 
         if (await _vinculoRepository.ExisteParAsync(existente.FuncionarioId, dto.LinhaOnibusId, id))

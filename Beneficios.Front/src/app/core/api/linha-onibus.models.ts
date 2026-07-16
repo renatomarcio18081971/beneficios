@@ -16,4 +16,6 @@ export interface LinhaOnibusSalvarDto {
 export interface LinhaOnibusFiltroRequest {
   descricao?: string;
   somenteVigentes?: boolean;
+  /** yyyy-MM-dd — data de referência para filtro de vigência (default: hoje no servidor). */
+  referencia?: string;
 }

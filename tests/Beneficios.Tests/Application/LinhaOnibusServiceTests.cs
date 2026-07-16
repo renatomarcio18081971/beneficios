@@ -160,6 +160,37 @@ public class LinhaOnibusServiceTests
     }
 
     [Fact]
+    public async Task FiltrarAsync_SomenteVigentesComReferencia_DeveUsarDataInformada()
+    {
+        var referencia = new DateOnly(2025, 6, 15);
+        _linhaRepo.Setup(r => r.FiltrarAsync(It.Is<LinhaOnibusFiltroParams>(
+                f => f.SomenteVigentes == true && f.Referencia == referencia)))
+            .ReturnsAsync(
+            [
+                new LinhaOnibusQueryResult
+                {
+                    Id = Guid.NewGuid(),
+                    Descricao = "Na referencia",
+                    DataInicio = new DateOnly(2025, 1, 1),
+                    DataFim = new DateOnly(2025, 12, 31),
+                    ValorTarifa = 1m,
+                },
+                new LinhaOnibusQueryResult
+                {
+                    Id = Guid.NewGuid(),
+                    Descricao = "Fora",
+                    DataInicio = new DateOnly(2026, 1, 1),
+                    DataFim = null,
+                    ValorTarifa = 2m,
+                },
+            ]);
+
+        var lista = await _sut.FiltrarAsync(null, true, referencia);
+        Assert.Single(lista);
+        Assert.Equal("Na referencia", lista[0].Descricao);
+    }
+
+    [Fact]
     public async Task ObterPorIdAsync_NaoEncontrada_DeveRetornarNull()
     {
         var id = Guid.NewGuid();

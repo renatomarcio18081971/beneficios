@@ -40,7 +40,7 @@ public class LinhasOnibusControllerTests
             .Setup(x => x.GarantirPermissaoAsync(It.IsAny<Guid>(), "linhas_onibus", AcaoPermissao.Visualizar))
             .ThrowsAsync(new UnauthorizedAccessException("Sem permissão para esta operação."));
 
-        var result = await CreateController().Filtrar(null, null);
+        var result = await CreateController().Filtrar(null, null, null);
         var obj = Assert.IsType<ObjectResult>(result);
         Assert.Equal(403, obj.StatusCode);
     }
@@ -51,10 +51,10 @@ public class LinhasOnibusControllerTests
         _permissao
             .Setup(x => x.GarantirPermissaoAsync(It.IsAny<Guid>(), "linhas_onibus", AcaoPermissao.Visualizar))
             .Returns(Task.CompletedTask);
-        _service.Setup(x => x.FiltrarAsync(null, null))
+        _service.Setup(x => x.FiltrarAsync(null, null, null))
             .ReturnsAsync(Array.Empty<LinhaOnibusDto>());
 
-        var result = await CreateController().Filtrar(null, null);
+        var result = await CreateController().Filtrar(null, null, null);
         Assert.IsType<OkObjectResult>(result);
     }
 
@@ -196,9 +196,9 @@ public class LinhasOnibusControllerTests
         _permissao
             .Setup(x => x.GarantirPermissaoAsync(It.IsAny<Guid>(), "linhas_onibus", AcaoPermissao.Visualizar))
             .Returns(Task.CompletedTask);
-        _service.Setup(x => x.FiltrarAsync(null, null)).ThrowsAsync(new Exception("boom"));
+        _service.Setup(x => x.FiltrarAsync(null, null, null)).ThrowsAsync(new Exception("boom"));
 
-        var result = await CreateController().Filtrar(null, null);
+        var result = await CreateController().Filtrar(null, null, null);
         var obj = Assert.IsType<ObjectResult>(result);
         Assert.Equal(500, obj.StatusCode);
     }

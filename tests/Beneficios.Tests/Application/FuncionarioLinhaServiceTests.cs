@@ -200,6 +200,67 @@ public class FuncionarioLinhaServiceTests
     }
 
     [Fact]
+    public async Task AtualizarAsync_EncerrarSemVt_DevePermitir()
+    {
+        var id = Guid.NewGuid();
+        var hoje = DateOnly.FromDateTime(DateTime.UtcNow);
+        _vinculoRepo.Setup(r => r.ObterPorIdAsync(id))
+            .ReturnsAsync(new FuncionarioLinhaQueryResult
+            {
+                Id = id,
+                FuncionarioId = _funcionarioId,
+                LinhaOnibusId = _linhaId,
+                Quantidade = 1,
+                DataInicio = hoje.AddDays(-30),
+            });
+        SetupFuncionarioExiste();
+        _funcionarioRepo.Setup(r => r.ObterBeneficiosAsync(_funcionarioId))
+            .ReturnsAsync(Array.Empty<FuncionarioBeneficioQueryResult>());
+        _linhaRepo.Setup(r => r.ObterPorIdAsync(_linhaId))
+            .ReturnsAsync(new LinhaOnibusQueryResult
+            {
+                Id = _linhaId,
+                Descricao = "Linha 100",
+                DataInicio = hoje.AddDays(-60),
+                DataFim = null,
+                ValorTarifa = 4.50m,
+            });
+        _vinculoRepo.Setup(r => r.ExisteParAsync(_funcionarioId, _linhaId, id)).ReturnsAsync(false);
+
+        await _sut.AtualizarAsync(id, new FuncionarioLinhaAtualizarDto(
+            _linhaId, 1, hoje.AddDays(-30), hoje.AddDays(-1)), null);
+
+        _vinculoRepo.Verify(r => r.AtualizarAsync(It.Is<FuncionarioLinhaAtualizarParams>(
+            p => p.Id == id && p.DataFim == hoje.AddDays(-1))), Times.Once);
+        _funcionarioRepo.Verify(r => r.ObterBeneficiosAsync(It.IsAny<Guid>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task AtualizarAsync_ManterAbertoSemVt_DeveFalhar()
+    {
+        var id = Guid.NewGuid();
+        _vinculoRepo.Setup(r => r.ObterPorIdAsync(id))
+            .ReturnsAsync(new FuncionarioLinhaQueryResult
+            {
+                Id = id,
+                FuncionarioId = _funcionarioId,
+                LinhaOnibusId = _linhaId,
+                Quantidade = 1,
+                DataInicio = new DateOnly(2026, 1, 1),
+            });
+        SetupFuncionarioExiste();
+        _funcionarioRepo.Setup(r => r.ObterBeneficiosAsync(_funcionarioId))
+            .ReturnsAsync(Array.Empty<FuncionarioBeneficioQueryResult>());
+        SetupLinhaVigente();
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            _sut.AtualizarAsync(id, DtoAtualizar(), null));
+
+        Assert.Equal(FuncionarioLinhaService.MensagemVtInativo, ex.Message);
+        _vinculoRepo.Verify(r => r.AtualizarAsync(It.IsAny<FuncionarioLinhaAtualizarParams>()), Times.Never);
+    }
+
+    [Fact]
     public async Task FiltrarAsync_SomenteVigentes_DeveFiltrar()
     {
         var hoje = DateOnly.FromDateTime(DateTime.UtcNow);

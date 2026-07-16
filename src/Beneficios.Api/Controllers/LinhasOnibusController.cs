@@ -33,14 +33,15 @@ public class LinhasOnibusController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> Filtrar(
         [FromQuery] string? descricao,
-        [FromQuery] bool? somenteVigentes)
+        [FromQuery] bool? somenteVigentes,
+        [FromQuery] DateOnly? referencia)
     {
         try
         {
             if (await DenyIfUnauthorizedAsync(AcaoPermissao.Visualizar) is { } denied)
                 return denied;
 
-            var lista = await _service.FiltrarAsync(descricao, somenteVigentes);
+            var lista = await _service.FiltrarAsync(descricao, somenteVigentes, referencia);
             return Ok(lista);
         }
         catch (UnauthorizedAccessException ex)

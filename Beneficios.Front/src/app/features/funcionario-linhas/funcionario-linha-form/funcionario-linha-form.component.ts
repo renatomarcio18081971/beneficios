@@ -7,7 +7,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { finalize } from 'rxjs';
+import { distinctUntilChanged, finalize, of, startWith, switchMap } from 'rxjs';
 import { FuncionarioLinhaService } from '../../../core/api/funcionario-linha.service';
 import { FuncionarioService } from '../../../core/api/funcionario.service';
 import { Funcionario } from '../../../core/api/funcionario.models';
@@ -54,6 +54,8 @@ export class FuncionarioLinhaFormComponent implements OnInit {
   readonly podeEditar = this.permissao.possuiPermissao('funcionario_linhas', 'editar');
   readonly podeCriar = this.permissao.possuiPermissao('funcionario_linhas', 'criar');
 
+  private incluirLinhaAtual: { id: string; descricao: string } | undefined;
+
   readonly form = this.fb.nonNullable.group({
     funcionarioId: ['', Validators.required],
     linhaOnibusId: ['', Validators.required],
@@ -71,7 +73,19 @@ export class FuncionarioLinhaFormComponent implements OnInit {
   }
 
   get submitDesabilitado(): boolean {
-    return this.salvando() || this.verificandoVt() || !!this.mensagemVtInativo();
+    if (this.salvando() || this.verificandoVt()) return true;
+    // Mesma regra do backend: VT só bloqueia se o vínculo permanecer aberto.
+    return !!this.mensagemVtInativo() && this.permaneceAbertoAposSalvar();
+  }
+
+  private permaneceAbertoAposSalvar(): boolean {
+    const dataFim = this.form.controls.dataFim.value?.trim();
+    if (!dataFim) return true;
+    const hoje = new Date();
+    const y = hoje.getFullYear();
+    const m = String(hoje.getMonth() + 1).padStart(2, '0');
+    const d = String(hoje.getDate()).padStart(2, '0');
+    return dataFim >= `${y}-${m}-${d}`;
   }
 
   ngOnInit(): void {
@@ -80,9 +94,36 @@ export class FuncionarioLinhaFormComponent implements OnInit {
       error: () => this.funcionarios.set([]),
     });
 
-    this.form.controls.funcionarioId.valueChanges.subscribe((funcionarioId) => {
-      this.verificarVtAtivo(funcionarioId);
-    });
+    this.form.controls.funcionarioId.valueChanges
+      .pipe(
+        switchMap((funcionarioId) => {
+          if (!funcionarioId) {
+            this.mensagemVtInativo.set(null);
+            this.verificandoVt.set(false);
+            return of(null);
+          }
+          this.verificandoVt.set(true);
+          return this.funcionarioService.obterPorId(funcionarioId).pipe(
+            finalize(() => this.verificandoVt.set(false)),
+          );
+        }),
+      )
+      .subscribe({
+        next: (f) => {
+          if (!f) return;
+          const vtAtivo = f.beneficios?.some(
+            (b) => b.codigoBeneficio === 'vale_transporte' && b.ativo,
+          );
+          this.mensagemVtInativo.set(vtAtivo ? null : MSG_VT_INATIVO);
+        },
+        error: () => {
+          this.mensagemVtInativo.set(MSG_VT_INATIVO);
+        },
+      });
+
+    this.form.controls.dataInicio.valueChanges
+      .pipe(startWith(this.form.controls.dataInicio.value), distinctUntilChanged())
+      .subscribe(() => this.carregarLinhasVigentes(this.incluirLinhaAtual));
 
     const id = this.route.snapshot.paramMap.get('id');
     const funcionarioId = this.route.snapshot.queryParamMap.get('funcionarioId');
@@ -91,7 +132,6 @@ export class FuncionarioLinhaFormComponent implements OnInit {
     }
 
     if (!id) {
-      this.carregarLinhasVigentes();
       if (!this.podeCriar && !this.podeEditar) this.form.disable();
       return;
     }
@@ -103,7 +143,7 @@ export class FuncionarioLinhaFormComponent implements OnInit {
       .pipe(finalize(() => this.carregando.set(false)))
       .subscribe({
         next: (v) => {
-          this.carregarLinhasVigentes({ id: v.linhaOnibusId, descricao: v.linhaDescricao });
+          this.incluirLinhaAtual = { id: v.linhaOnibusId, descricao: v.linhaDescricao };
           this.form.patchValue({
             funcionarioId: v.funcionarioId,
             linhaOnibusId: v.linhaOnibusId,
@@ -123,7 +163,7 @@ export class FuncionarioLinhaFormComponent implements OnInit {
   salvar(): void {
     if (this.form.invalid || !this.podeSalvar || this.submitDesabilitado) {
       this.form.markAllAsTouched();
-      if (this.mensagemVtInativo()) {
+      if (this.mensagemVtInativo() && this.permaneceAbertoAposSalvar()) {
         this.snack.open(this.mensagemVtInativo()!, 'Fechar', { duration: 5000 });
       }
       return;
@@ -164,61 +204,47 @@ export class FuncionarioLinhaFormComponent implements OnInit {
     }
   }
 
-  private verificarVtAtivo(funcionarioId: string | null | undefined): void {
-    if (!funcionarioId) {
-      this.mensagemVtInativo.set(null);
-      this.verificandoVt.set(false);
-      return;
-    }
-
-    this.verificandoVt.set(true);
-    this.funcionarioService
-      .obterPorId(funcionarioId)
-      .pipe(finalize(() => this.verificandoVt.set(false)))
-      .subscribe({
-        next: (f) => {
-          const vtAtivo = f.beneficios?.some(
-            (b) => b.codigoBeneficio === 'vale_transporte' && b.ativo,
-          );
-          this.mensagemVtInativo.set(vtAtivo ? null : MSG_VT_INATIVO);
-        },
-        error: () => {
-          this.mensagemVtInativo.set(MSG_VT_INATIVO);
-        },
-      });
-  }
-
   private carregarLinhasVigentes(incluir?: { id: string; descricao: string }): void {
-    this.linhaService.filtrar({ somenteVigentes: true }).subscribe({
-      next: (lista) => {
-        if (incluir && !lista.some((l) => l.id === incluir.id)) {
-          lista = [
-            ...lista,
-            {
-              id: incluir.id,
-              descricao: incluir.descricao,
-              dataInicio: '',
-              dataFim: null,
-              valorTarifa: 0,
-            },
-          ];
-        }
-        this.linhas.set(lista);
-      },
-      error: () =>
-        this.linhas.set(
-          incluir
-            ? [
-                {
-                  id: incluir.id,
-                  descricao: incluir.descricao,
-                  dataInicio: '',
-                  dataFim: null,
-                  valorTarifa: 0,
-                },
-              ]
-            : [],
-        ),
-    });
+    const dataInicio = this.form.controls.dataInicio.value?.trim();
+    this.linhaService
+      .filtrar({
+        somenteVigentes: true,
+        referencia: dataInicio || undefined,
+      })
+      .subscribe({
+        next: (lista) => {
+          if (incluir && !lista.some((l) => l.id === incluir.id)) {
+            lista = [
+              ...lista,
+              {
+                id: incluir.id,
+                descricao: incluir.descricao,
+                dataInicio: '',
+                dataFim: null,
+                valorTarifa: 0,
+              },
+            ];
+          }
+          this.linhas.set(lista);
+          const selecionada = this.form.controls.linhaOnibusId.value;
+          if (selecionada && !lista.some((l) => l.id === selecionada)) {
+            this.form.controls.linhaOnibusId.setValue('');
+          }
+        },
+        error: () =>
+          this.linhas.set(
+            incluir
+              ? [
+                  {
+                    id: incluir.id,
+                    descricao: incluir.descricao,
+                    dataInicio: '',
+                    dataFim: null,
+                    valorTarifa: 0,
+                  },
+                ]
+              : [],
+          ),
+      });
   }
 }
