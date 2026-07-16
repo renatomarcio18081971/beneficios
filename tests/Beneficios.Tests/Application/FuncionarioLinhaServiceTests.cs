@@ -261,10 +261,13 @@ public class FuncionarioLinhaServiceTests
     }
 
     [Fact]
-    public async Task FiltrarAsync_SomenteVigentes_DeveFiltrar()
+    public async Task FiltrarAsync_SomenteVigentes_DeveDelegarFiltroAoRepositorio()
     {
         var hoje = DateOnly.FromDateTime(DateTime.UtcNow);
-        _vinculoRepo.Setup(r => r.FiltrarAsync(It.IsAny<FuncionarioLinhaFiltroParams>()))
+        _vinculoRepo.Setup(r => r.FiltrarAsync(It.Is<FuncionarioLinhaFiltroParams>(
+                f => f.FuncionarioId == _funcionarioId
+                     && f.SomenteVigentes == true
+                     && f.Referencia == hoje)))
             .ReturnsAsync(
             [
                 new FuncionarioLinhaQueryResult
@@ -278,22 +281,13 @@ public class FuncionarioLinhaServiceTests
                     DataInicio = hoje.AddDays(-10),
                     DataFim = null,
                 },
-                new FuncionarioLinhaQueryResult
-                {
-                    Id = Guid.NewGuid(),
-                    FuncionarioId = _funcionarioId,
-                    FuncionarioNome = "Ana",
-                    LinhaOnibusId = Guid.NewGuid(),
-                    LinhaDescricao = "Encerrada",
-                    Quantidade = 1,
-                    DataInicio = hoje.AddDays(-30),
-                    DataFim = hoje.AddDays(-1),
-                },
             ]);
 
         var lista = await _sut.FiltrarAsync(_funcionarioId, true);
         Assert.Single(lista);
         Assert.Equal("Vigente", lista[0].LinhaDescricao);
+        _vinculoRepo.Verify(r => r.FiltrarAsync(It.Is<FuncionarioLinhaFiltroParams>(
+            f => f.SomenteVigentes == true && f.Referencia == hoje)), Times.Once);
     }
 
     [Fact]

@@ -106,14 +106,7 @@ public class FuncionarioLinhaService : IFuncionarioLinhaService
             Referencia = somenteVigentes == true ? DateOnly.FromDateTime(DateTime.UtcNow) : null,
         });
 
-        IEnumerable<FuncionarioLinhaQueryResult> filtrada = lista;
-        if (somenteVigentes == true)
-        {
-            var referencia = DateOnly.FromDateTime(DateTime.UtcNow);
-            filtrada = lista.Where(v => AfastamentoPeriodo.EstaAtivoEm(v.DataInicio, v.DataFim, referencia));
-        }
-
-        return _mapper.Map<List<FuncionarioLinhaDto>>(filtrada.ToList());
+        return _mapper.Map<List<FuncionarioLinhaDto>>(lista);
     }
 
     public Task EncerrarAbertosPorFuncionarioAsync(Guid funcionarioId, Guid? usuarioAlteracaoId)

@@ -130,10 +130,11 @@ public class LinhaOnibusServiceTests
     }
 
     [Fact]
-    public async Task FiltrarAsync_SomenteVigentes_DeveFiltrar()
+    public async Task FiltrarAsync_SomenteVigentes_DeveDelegarFiltroAoRepositorio()
     {
         var hoje = DateOnly.FromDateTime(DateTime.UtcNow);
-        _linhaRepo.Setup(r => r.FiltrarAsync(It.IsAny<LinhaOnibusFiltroParams>()))
+        _linhaRepo.Setup(r => r.FiltrarAsync(It.Is<LinhaOnibusFiltroParams>(
+                f => f.SomenteVigentes == true && f.Referencia == hoje)))
             .ReturnsAsync(
             [
                 new LinhaOnibusQueryResult
@@ -144,19 +145,13 @@ public class LinhaOnibusServiceTests
                     DataFim = null,
                     ValorTarifa = 1m,
                 },
-                new LinhaOnibusQueryResult
-                {
-                    Id = Guid.NewGuid(),
-                    Descricao = "Encerrada",
-                    DataInicio = hoje.AddDays(-30),
-                    DataFim = hoje.AddDays(-1),
-                    ValorTarifa = 2m,
-                },
             ]);
 
         var lista = await _sut.FiltrarAsync(null, true);
         Assert.Single(lista);
         Assert.Equal("Vigente", lista[0].Descricao);
+        _linhaRepo.Verify(r => r.FiltrarAsync(It.Is<LinhaOnibusFiltroParams>(
+            f => f.SomenteVigentes == true && f.Referencia == hoje)), Times.Once);
     }
 
     [Fact]
@@ -174,14 +169,6 @@ public class LinhaOnibusServiceTests
                     DataInicio = new DateOnly(2025, 1, 1),
                     DataFim = new DateOnly(2025, 12, 31),
                     ValorTarifa = 1m,
-                },
-                new LinhaOnibusQueryResult
-                {
-                    Id = Guid.NewGuid(),
-                    Descricao = "Fora",
-                    DataInicio = new DateOnly(2026, 1, 1),
-                    DataFim = null,
-                    ValorTarifa = 2m,
                 },
             ]);
 

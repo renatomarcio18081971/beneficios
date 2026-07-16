@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using Beneficios.Application.DTOs;
 using Beneficios.Application.Interfaces;
-using Beneficios.Domain;
 using Beneficios.Domain.Interfaces;
 using Beneficios.Domain.Models;
 
@@ -87,11 +86,7 @@ public class LinhaOnibusService : ILinhaOnibusService
             Referencia = somenteVigentes == true ? dataRef : null,
         });
 
-        IEnumerable<LinhaOnibusQueryResult> filtrada = lista;
-        if (somenteVigentes == true)
-            filtrada = lista.Where(l => AfastamentoPeriodo.EstaAtivoEm(l.DataInicio, l.DataFim, dataRef));
-
-        return _mapper.Map<List<LinhaOnibusDto>>(filtrada.ToList());
+        return _mapper.Map<List<LinhaOnibusDto>>(lista);
     }
 
     private static void Validar(DateOnly dataInicio, DateOnly? dataFim, decimal valorTarifa)

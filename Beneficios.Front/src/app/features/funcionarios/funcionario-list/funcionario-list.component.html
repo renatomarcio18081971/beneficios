@@ -142,7 +142,14 @@
             </a>
           }
           @if (podeVerLinhas) {
-            <a mat-button [routerLink]="['/funcionario-linhas']" [queryParams]="{ funcionarioId: row.id }">Linhas</a>
+            <a
+              mat-button
+              [routerLink]="['/funcionario-linhas']"
+              [queryParams]="{ funcionarioId: row.id }"
+              title="Linhas de ônibus"
+            >
+              <mat-icon>directions_bus</mat-icon>
+            </a>
           }
         </td>
       </ng-container>
