@@ -37,6 +37,20 @@ public class ModulosSistemaCatalogTests
     }
 
     [Fact]
+    public void Todos_DeveConterLinhasOnibus()
+    {
+        Assert.Contains(ModulosSistemaCatalog.Todos,
+            m => m.Codigo == "linhas_onibus" && m.Rota == "/linhas-onibus");
+    }
+
+    [Fact]
+    public void Todos_DeveConterFuncionarioLinhas()
+    {
+        Assert.Contains(ModulosSistemaCatalog.Todos,
+            m => m.Codigo == "funcionario_linhas" && m.Rota == "/funcionario-linhas");
+    }
+
+    [Fact]
     public void ModulosDePerfil_DevemSuportarTodasAsAcoes()
     {
         foreach (var codigo in new[] { "usuarios", "perfis", "calendario", "funcionarios", "afastamentos" })

@@ -16,6 +16,8 @@ public static class ModulosSistemaCatalog
         new("calendario", "Calendário", "/calendario", AcaoPermissao.Todas),
         new("funcionarios", "Funcionários", "/funcionarios", AcaoPermissao.Todas),
         new("afastamentos", "Afastamentos/Férias", "/afastamentos", AcaoPermissao.Todas),
+        new("linhas_onibus", "Linhas de Ônibus", "/linhas-onibus", AcaoPermissao.Todas),
+        new("funcionario_linhas", "Funcionário × Linhas", "/funcionario-linhas", AcaoPermissao.Todas),
     ];
 
     public static ModuloSistema? ObterPorCodigo(string codigo) =>
